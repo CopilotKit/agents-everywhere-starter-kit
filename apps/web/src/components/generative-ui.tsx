@@ -20,12 +20,12 @@ const toneColor = { neutral: "var(--muted)", good: "#2e7d5b", attention: "var(--
 
 export function GenerativeUI() {
   useComponent({
-    name: "brief_card",
+    name: "incident_card",
     description:
-      "Render a short brief as a card: a headline, a one-line summary, up to four labelled facts, and optional next steps. Use this instead of a paragraph whenever the answer has structure.",
+      "Draw the current state of the incident as a card. Call this once you have read the context, and again when the picture changes.",
     parameters: z.object({
-      headline: z.string().describe("Six words or fewer."),
-      summary: z.string().describe("One sentence."),
+      headline: z.string().describe("What is broken, in under ten words."),
+      summary: z.string().describe("Who or what is affected."),
       facts: z.array(z.object({ label: z.string(), value: z.string() })).max(4).default([]),
       nextSteps: z.array(z.string()).max(3).default([]),
       tone: z.enum(["neutral", "good", "attention"]).default("neutral"),
@@ -56,9 +56,9 @@ export function GenerativeUI() {
   });
 
   useComponent({
-    name: "comparison_table",
+    name: "timeline",
     description:
-      "Render rows of structured data as a table. Use for comparisons or lists of items sharing attributes.",
+      "Draw an ordered timeline of what happened when. Call this when there are three or more events worth ordering.",
     parameters: z.object({
       title: z.string().optional(),
       columns: z.array(z.string()).min(1).max(4),
@@ -102,12 +102,12 @@ export function GenerativeUI() {
    * @copilotkit/core, which is only a transitive dependency here.
    */
   useHumanInTheLoop({
-    name: "confirm_action",
+    name: "propose_action",
     description:
-      "Ask the human to approve an irreversible action before taking it. Call this FIRST and only continue if it returns approval.",
+      "Ask for approval before anything that touches production. Call this FIRST and only continue if it returns approval.",
     parameters: z.object({
       action: z.string().describe("What you are about to do, in one plain sentence."),
-      consequence: z.string().describe("What changes in the real world if this proceeds."),
+      blastRadius: z.string().describe("What this affects if it goes wrong."),
     }),
     render: ({ args, respond, result }) => {
       if (!respond) {
@@ -120,7 +120,7 @@ export function GenerativeUI() {
       return (
         <article className="ck-card ck-card--gate">
           <h3>{args.action ?? "Confirm this action"}</h3>
-          <p>{args.consequence}</p>
+          <p>{args.blastRadius}</p>
           <div className="ck-actions">
             <button
               type="button"

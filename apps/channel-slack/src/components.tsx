@@ -1,13 +1,12 @@
 /**
- * Agent-rendered components.
+ * Agent-rendered components for the on-call agent.
  *
  * `defineChannelComponent` turns a component into a tool the agent can call to
- * draw UI itself. This is rung 3 of the Context Ladder: the agent stops writing
- * paragraphs and starts rendering in the surface's own idioms — Block Kit on
- * Slack, Adaptive Cards on Teams, embeds on Discord, from one tree.
+ * draw UI itself. This is rung 3 of the Context Ladder: at 2am nobody reads a
+ * paragraph, but everyone reads a card.
  *
- * Registered components also let their handlers be recovered after a restart
- * when a durable store is configured.
+ * One tree renders as Slack Block Kit, Teams Adaptive Cards, and Discord
+ * components. A surface that cannot render a node skips it rather than failing.
  */
 import {
   defineChannelComponent,
@@ -27,40 +26,52 @@ import {
 } from "@copilotkit/channels";
 import { z } from "zod";
 
-/** A decision the agent wants a human to see at a glance. */
-export const BriefCard = defineChannelComponent({
-  name: "brief_card",
+/** Severity drives the colour rail, so the channel can triage by glance. */
+const SEVERITY = {
+  sev1: { accent: "#C4145F", label: "SEV1 · customer-facing" },
+  sev2: { accent: "#8A5C10", label: "SEV2 · degraded" },
+  sev3: { accent: "#5B6478", label: "SEV3 · internal" },
+  resolved: { accent: "#2E7D5B", label: "RESOLVED" },
+} as const;
+
+/**
+ * The state of the incident, as one glanceable card.
+ *
+ * Deliberately has no "what happened" prose field. The thread is the narrative;
+ * this is the summary a person joining at minute 40 needs.
+ */
+export const IncidentCard = defineChannelComponent({
+  name: "incident_card",
   description:
-    "Render a short brief as a native card: a headline, a one-line summary, up to four labelled facts, and an optional list of suggested next steps. Use this instead of writing a paragraph whenever the answer has structure.",
+    "Draw the current state of the incident as a card: severity, what is affected, what is known, and what is being tried. Call this once you have read the thread, and call it again when the picture changes. Prefer it over describing the incident in prose.",
   parameters: z.object({
-    headline: z.string().describe("Six words or fewer."),
-    summary: z.string().describe("One sentence. What the reader needs to know."),
-    facts: z
-      .array(z.object({ label: z.string(), value: z.string() }))
-      .max(4)
-      .default([])
-      .describe("Labelled facts. Keep to four; a card is not a table."),
-    nextSteps: z.array(z.string()).max(3).default([]).describe("Suggested next steps."),
-    tone: z.enum(["neutral", "good", "attention"]).default("neutral"),
+    severity: z.enum(["sev1", "sev2", "sev3", "resolved"]),
+    headline: z.string().describe("What is broken, in under ten words."),
+    impact: z.string().describe("Who or what is affected, concretely."),
+    started: z.string().describe("When it started, as stated in the thread. 'unknown' is a valid answer."),
+    known: z.array(z.string()).max(4).default([]).describe("What the thread has established."),
+    trying: z.array(z.string()).max(3).default([]).describe("What is currently being attempted."),
+    owner: z.string().optional().describe("Who is driving, if the thread says."),
   }),
-  render({ headline, summary, facts, nextSteps, tone }) {
-    const accent = tone === "good" ? "#2E7D5B" : tone === "attention" ? "#C4145F" : "#5B6478";
+  render({ severity, headline, impact, started, known, trying, owner }) {
+    const sev = SEVERITY[severity];
     return (
-      <Message accent={accent}>
+      <Message accent={sev.accent}>
         <Header>{headline}</Header>
-        <Section>
-          <Markdown>{summary}</Markdown>
-        </Section>
-        {facts.length > 0 && (
-          <Fields>
-            {facts.map((fact) => (
-              <Field label={fact.label}>{fact.value}</Field>
-            ))}
-          </Fields>
-        )}
-        {nextSteps.length > 0 && (
+        <Context>{sev.label}</Context>
+        <Fields>
+          <Field label="Impact">{impact}</Field>
+          <Field label="Started">{started}</Field>
+          {owner && <Field label="Driving">{owner}</Field>}
+        </Fields>
+        {known.length > 0 && (
           <Section>
-            <Markdown>{nextSteps.map((step) => `• ${step}`).join("\n")}</Markdown>
+            <Markdown>{`*What we know*\n${known.map((k) => `• ${k}`).join("\n")}`}</Markdown>
+          </Section>
+        )}
+        {trying.length > 0 && (
+          <Section>
+            <Markdown>{`*Being tried*\n${trying.map((t) => `• ${t}`).join("\n")}`}</Markdown>
           </Section>
         )}
       </Message>
@@ -68,66 +79,80 @@ export const BriefCard = defineChannelComponent({
   },
 });
 
-/** Structured comparison. Slack renders a real table; thin surfaces degrade. */
-export const ComparisonTable = defineChannelComponent({
-  name: "comparison_table",
+/**
+ * The incident timeline. Handover and the postmortem both run on this, which is
+ * why it is worth keeping in the thread rather than someone's notes app.
+ */
+export const Timeline = defineChannelComponent({
+  name: "timeline",
   description:
-    "Render rows of structured data as a native table. Use for comparisons, lists of items with shared attributes, or anything you would otherwise format as an ASCII table.",
+    "Draw an ordered timeline of what happened when. Call this when there are three or more events worth ordering — it is what on-call handover and the postmortem are written from.",
   parameters: z.object({
-    title: z.string().optional(),
-    columns: z.array(z.string()).min(1).max(4).describe("Column headers."),
-    rows: z.array(z.array(z.string())).describe("Each row must have one cell per column."),
+    title: z.string().default("Timeline"),
+    events: z
+      .array(
+        z.object({
+          at: z.string().describe("Time as the thread states it, e.g. '02:14' or '~20m ago'."),
+          what: z.string().describe("What happened, in one line."),
+          who: z.string().optional(),
+        }),
+      )
+      .min(1)
+      .max(12),
   }),
-  render({ title, columns, rows }) {
+  render({ title, events }) {
     return (
       <Message>
-        {title && <Header>{title}</Header>}
-        <Table columns={columns.map((header) => ({ header }))}>
-          {rows.map((row) => (
+        <Header>{title}</Header>
+        <Table
+          columns={[{ header: "When" }, { header: "What" }, { header: "Who" }]}
+        >
+          {events.map((event) => (
             <Row>
-              {row.map((cell) => (
-                <Cell>{cell}</Cell>
-              ))}
+              <Cell>{event.at}</Cell>
+              <Cell>{event.what}</Cell>
+              <Cell>{event.who ?? "—"}</Cell>
             </Row>
           ))}
         </Table>
         <Divider />
-        <Context>{rows.length} row(s)</Context>
+        <Context>{`${events.length} event(s) · newest last`}</Context>
       </Message>
     );
   },
 });
 
 /**
- * The welcome message. Worth shipping: a bot that says nothing when invited
- * looks broken, and a bot that lists what it can do gets used.
+ * The welcome message. A bot that says nothing when invited looks broken; one
+ * that says what it will do on its own gets used.
  */
 export function welcomeMessage(platform: string) {
   return (
     <Message accent="#C4145F">
-      <Header>I'm in the thread now</Header>
+      <Header>On-call assistant, in the thread</Header>
       <Section>
         <Markdown>
-          {"Mention me and I'll answer using what's already here — the thread, who's asking, and this " +
+          {"When something breaks, @-mention me. I read what has already been said in this " +
             platform +
-            " conversation. I ask before doing anything irreversible."}
+            " thread first — you should never have to re-explain an outage to me."}
         </Markdown>
       </Section>
       <Fields>
-        <Field label="Try">Recap this thread</Field>
-        <Field label="Try">What changed since this morning?</Field>
+        <Field label="I will">Summarise, keep a timeline, look things up</Field>
+        <Field label="I won't">Touch production without a click</Field>
       </Fields>
       <Actions>
         <Button
-          value="recap"
+          value="catchup"
           style="primary"
           onClick={async ({ thread }) => {
             await thread.runAgent({
-              prompt: "Recap this thread for someone who just joined it, then propose next steps.",
+              prompt:
+                "Read this thread and bring me up to speed on the incident. Draw the incident card.",
             });
           }}
         >
-          Recap this thread
+          Catch me up
         </Button>
       </Actions>
     </Message>

@@ -1,71 +1,93 @@
 # Demo prompts
 
-Thirty seconds from "it's running" to "that's the demo." Invite the bot to a
-channel, @-mention it, and try these in order.
+Thirty seconds from "it's running" to "that's the demo." The example agent is an
+**on-call assistant** — it lives in the channel where the incident is already
+being discussed, which is the whole reason it belongs there.
+
+## Set the scene first
+
+The demo only works if the thread has something in it, because the point is that
+the agent reads instead of asking. Paste these into a Slack thread as separate
+messages before you mention the bot:
+
+> checkout is timing out for a bunch of EU customers
+> started around 02:14, right after the web deploy went out
+> rolled web back, didn't help — still seeing 4s+ on /checkout
+> queue depth on payments-worker is climbing
 
 ## Rung 1 — it's reachable
 
-> @agent are you there?
+> @agent you around?
 
-Proves delivery end to end. If this works, Slack → Intelligence → your process
-is wired.
+Proves Slack → Intelligence → your process end to end.
 
 ## Rung 2 — it's situated
 
-Paste three or four messages of a fake discussion into a thread first, then:
+> @agent catch me up
 
-> @agent recap this thread for someone who just joined
+Calls `read_thread`, then `incident_card`. **The line to say out loud: nobody told
+it what the incident was.** It knows the impact, the start time, that the rollback
+failed, and that the queue is climbing — because it read the thread.
 
-This calls `read_thread`. The demo point is the one to say out loud: **nobody
-told it what the thread was about.** Delete the context and the answer changes —
-that is the difference between rung 1 and rung 2.
+Then the test that separates rung 1 from rung 2:
+
+> @agent what changed right before this started?
+
+It answers "the web deploy at 02:14" from the thread. Delete the thread context
+and the same question has no answer.
 
 ## Rung 3 — it's native
 
-> @agent compare the four surfaces from the hackathon brief as a table
+> @agent build me a timeline
 
-Calls `comparison_table` and renders real Block Kit — not an ASCII table in a
-code fence. Then:
+Calls `timeline` and renders real Block Kit — not an ASCII table in a code fence.
+This is the artifact handover and the postmortem are written from.
 
-> @agent summarise where we landed as a card, with next steps
+## The moment that wins it
 
-Calls `brief_card`. Watch the accent rail change with the tone.
+> @agent restart the payments worker
 
-## The approval gate
+The agent calls `propose_action` and **stops**. You get a card naming the blast
+radius and whether it's reversible, with Approve and Hold.
 
-> @agent post this recap to #general
+**Click Hold, on camera.** An agent that visibly declines to touch production is a
+better demo than one that always says yes — and an outage is exactly when people
+feel entitled to skip the gate.
 
-The agent calls `confirm_action` first and stops. You get a card with Approve and
-Cancel, and it cannot proceed until someone clicks. **Click Cancel on camera** —
-a bot that visibly declines to act is a better demo than one that always says
-yes.
+Then, for the durable path (needs `TRIGGER_SECRET_KEY`):
+
+> @agent go trawl the last hour of payments-worker logs
+
+Calls `run_deep_work`: creates a waitpoint, hands the job to Trigger.dev, posts an
+approval card, and **returns immediately**. The thread stays usable while a job
+that outlives the conversation waits on a human.
 
 ## Grounding (needs `EXA_API_KEY`)
 
-> @agent what shipped in the CopilotKit Channels SDK, and when?
+> @agent is there a known issue with the Stripe API right now?
 
-Calls `search_web`. With `showToolStatus: true` the audience watches it search.
+Calls `search_web`. With `showToolStatus: true` the room watches it search.
 
-## Local surface
-
-For iterating on the prompt without a Slack round trip:
+## Iterating without Slack
 
 ```bash
 npm run dev:local
 ```
 
 ```
-› you're in a Slack thread with three engineers arguing about a rollback. what do you do?
+› you're in an on-call channel at 2am. three engineers are arguing about whether to fail over. what do you do?
 ```
 
-Good for tuning tone before you demo it.
+Fastest way to tune the prompt — no Slack round trip.
 
 ## For the two-minute video
 
-1. **Ten seconds of context.** The surface, not the tech. "This is our on-call
+1. **Ten seconds of context.** The surface, not the tech: "this is our on-call
    channel at 2am."
-2. **One mention, one native card.** No narration over dead air.
-3. **The approval gate, declined.** This is the beat that separates you.
-4. **Same agent, second surface.** Terminal, phone, or voice — the "one agent,
-   every surface" claim, shown rather than asserted.
-5. **Say why the context matters.** The submission asks for it explicitly.
+2. **One mention, one native card.** `catch me up` → `incident_card`. No narration
+   over dead air.
+3. **The gate, declined.** `restart the payments worker` → Hold. This is the beat.
+4. **Same agent, second surface.** Ten seconds of the terminal, phone, or voice —
+   the "one agent, every surface" claim shown rather than asserted.
+5. **Say why the context matters.** The submission asks for it in writing; say it
+   out loud too: *nobody had to re-explain the outage.*

@@ -1,13 +1,13 @@
 /**
- * The widget ChatGPT renders for `brief_card`.
+ * The widget ChatGPT renders for `incident_card`.
  *
  * Must be self-contained — no external scripts or stylesheets. It reads the
  * tool's `structuredContent` from `window.openai.toolOutput`, and respects
  * `window.openai.theme` so it does not glow white inside a dark conversation.
  */
-export const BRIEF_CARD_HTML = /* html */ `<!doctype html>
+export const INCIDENT_CARD_HTML = /* html */ `<!doctype html>
 <html lang="en">
-<head><meta charset="utf-8"><title>Brief</title>
+<head><meta charset="utf-8"><title>Incident</title>
 <style>
   :root { --bg:#fff; --fg:#1b1721; --muted:#6e6779; --line:#e0dbe7; --accent:#c4145f; }
   html[data-theme="dark"] { --bg:#1b1724; --fg:#eeebf2; --muted:#948ca1; --line:#2e2739; --accent:#ff5c9b; }

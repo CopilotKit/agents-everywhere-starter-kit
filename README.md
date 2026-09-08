@@ -20,7 +20,7 @@ The build window is **11:15–15:30**. That is **255 minutes**, and every decisi
 
 - **One credential gets you a running agent.** No Docker, no Postgres, no second process.
 - **Zero tunnel for Slack.** No ngrok, no public URL of your own, no app-level token.
-- **One agent, every surface.** Terminal, Slack, web, voice, ChatGPT and mobile all run the *same* agent. Adding another is a new binding, not a rewrite.
+- **Six surfaces, so you can pick one.** Terminal, Slack, web, voice, ChatGPT and mobile all run the *same* agent. Take one and go deep — see [Pick one surface](#pick-one-surface).
 - **A pre-flight check that fails loudly**, with a numbered list of exactly what to fix.
 
 Everything here is meant to be gutted. Keep the plumbing, throw away the demo.
@@ -38,6 +38,36 @@ The challenge is not "build a bot." It is: *make it meaningfully more useful **b
 | **3** | **Native** | acts and renders in the surface's own idioms — Block Kit cards, approval buttons, reactions, notifications — and its side effects land where the work lives | Does it look like it belongs, or like a chat window wearing a costume? |
 
 Rung 3 is where a global review separates submissions. This kit ships working code for all three: `read_thread` for rung 2, `brief_card` / `comparison_table` for rung 3, and `confirm_action` for the approval gate that makes an agent trustworthy enough to leave in a channel.
+
+---
+
+## Pick one surface
+
+The event is explicit: **"a sharp, working demo beats a broad concept."** This kit
+ships six surfaces so you can choose the one your idea actually belongs in — not
+so you can build all six. A team that demos six half-finished surfaces loses to a
+team that demos one that genuinely belongs somewhere.
+
+So: **pick one, go deep, and use a second only as the closing beat of your video.**
+
+| If your idea lives… | Start here | Why this one |
+|---|---|---|
+| where a team argues about something | `apps/channel-slack` | The thread is already the record. Highest ceiling, lowest setup — no tunnel. |
+| in a tool someone stares at all day | `apps/web` | Generative UI: the agent operates the app, not just talks about it. |
+| in a room, hands busy | `apps/web/voice` | Realtime over WebRTC. The only surface where latency *is* the product. |
+| inside ChatGPT itself | `apps/mcp` | Distribution you don't have to build. Verified against the live protocol. |
+| in a pocket, between things | `apps/mobile` | Notifications and one-tap approvals beat another chat app. |
+
+Two honest cautions before you choose:
+
+- **`apps/mobile` is the least proven** — it installs and typechecks, but nobody
+  has run it on a device. Don't pick it at 11:15 and discover that at 15:00.
+- **Voice punishes slow tools.** If your agent needs `deep` research, it will feel
+  broken out loud. Exa's `instant` profile exists for this.
+
+The other surfaces still boot, so a second one is nearly free — that is what makes
+"and it also works on my phone" a ten-second closing shot rather than a second
+project.
 
 ---
 
@@ -73,6 +103,19 @@ npx copilotkit@latest channels add --name my-agent \
 Then put the Channel **Code** in `CHANNEL_CODE`, a project-scoped key in `INTELLIGENCE_API_KEY`, and run `npm run dev` again. In Slack: `/invite @yourbot`, then @-mention it.
 
 Full walkthrough: **[dev-docs/setup.md](dev-docs/setup.md)**. Stuck: **[dev-docs/troubleshooting.md](dev-docs/troubleshooting.md)**.
+
+### Verify it
+
+```bash
+npm run verify
+```
+
+![npm run verify — pre-flight, typecheck, tests, and a real MCP protocol round trip](assets/verify.gif)
+
+Typechecks all six packages, runs the component and safety tests, and drives the
+MCP server over the **real protocol** — initialize, tools/list, tools/call,
+resources/read. No credentials needed for any of it. It also names the three
+things it cannot prove, rather than implying they passed.
 
 ### Requirements
 
@@ -238,6 +281,8 @@ Honest status. What ships works and is typechecked; the rest is scaffolding you 
 Everything marked *working* was exercised, not just compiled. The two that are not
 say so, and `apps/mobile/README.md` and `apps/durable/src/approvals.ts` explain
 exactly what is left.
+
+This is a menu, not a checklist. See [Pick one surface](#pick-one-surface).
 
 **The two-tier approval is already built**, minus its last mile. `confirm_action`
 gates cheap things with an in-thread button that blocks the tool. `run_deep_work`

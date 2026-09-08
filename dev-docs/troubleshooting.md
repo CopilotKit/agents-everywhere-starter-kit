@@ -113,8 +113,26 @@ thirty-line stack.
 `rl.question()` after stdin closed — happens whenever input is piped rather than
 typed. `apps/local-chat` guards on `rl.once("close")`.
 
+## `npm install` fails with "Cannot read properties of null (reading 'edgesOut')"
+
+You added **vitest**. `@copilotkit/channels` declares `vitest: ^4.0.0` as a peer
+dependency, and npm's dependency resolver crashes trying to reconcile that with
+vitest as a direct dependency — at the root *or* in a workspace, and from a
+completely clean `node_modules`. The error names nothing useful.
+
+That is why this kit tests with **`node:test`**, Node's built-in runner: no
+install, no peer conflict, and `mock.fn()` covers what `vi.fn()` was doing.
+
+```bash
+npm test          # node --import tsx --test 'src/**/*.test.tsx'
+```
+
+If you genuinely need vitest, `--legacy-peer-deps` gets you past it — put it in
+`.npmrc` so it applies to every install, not just the one you remember.
+
 ## Still stuck
 
+- `npm run verify` — typecheck, tests, and a real MCP protocol round trip
 - `npm run check-env` — numbered list of what is missing
 - `npm run channel:status` — real doctor command for the Channel
 - `.agents/skills/build-channels-agent/SKILL.md` — the verified API surface plus

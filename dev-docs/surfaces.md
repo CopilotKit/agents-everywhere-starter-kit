@@ -1,8 +1,14 @@
-# Adding a surface
+# Surfaces
 
-The kit's thesis: **one agent, every surface.** `packages/agent-core` owns the
-model, the prompt, and the surface-agnostic capabilities. Each app in `apps/` is
-a thin binding.
+**Read this first: pick one surface and go deep.** The event rewards "a sharp,
+working demo" over breadth, and six shallow surfaces is the most common way to
+lose a hackathon you were winning at 14:00. The selection table lives in the
+[README](../README.md#pick-one-surface).
+
+The reason six exist is that `packages/agent-core` owns the model, the prompt and
+the capabilities, so each app in `apps/` is a thin binding — which makes a
+*second* surface nearly free once your first one is good. That is a closing shot
+for the video, not a second project.
 
 ## What ships today
 

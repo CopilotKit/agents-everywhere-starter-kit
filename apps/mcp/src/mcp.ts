@@ -13,9 +13,9 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { isSearchConfigured, searchWeb } from "agent-core";
 import { z } from "zod";
-import { BRIEF_CARD_HTML } from "./widgets/brief-card";
+import { INCIDENT_CARD_HTML } from "./widgets/incident-card";
 
-const BRIEF_CARD_URI = "ui://widget/brief-card.html";
+const INCIDENT_CARD_URI = "ui://widget/incident-card.html";
 
 export function createMcpServer(): McpServer {
   const server = new McpServer(
@@ -28,11 +28,11 @@ export function createMcpServer(): McpServer {
 
   // ── the widget resource the brief_card tool points at ──────────────────────
   server.registerResource(
-    "brief-card-widget",
-    BRIEF_CARD_URI,
+    "incident-card-widget",
+    INCIDENT_CARD_URI,
     {
-      title: "Brief card",
-      description: "Renders a headline, a summary, labelled facts and next steps.",
+      title: "Incident card",
+      description: "Renders incident severity, impact, what is known, and next steps.",
       mimeType: "text/html+skybridge",
       _meta: {
         ui: {
@@ -40,23 +40,23 @@ export function createMcpServer(): McpServer {
           csp: { connectDomains: [], resourceDomains: [], frameDomains: [] },
         },
         "openai/widgetDescription":
-          "A compact card showing a headline, one-line summary, up to four labelled facts, and suggested next steps.",
+          "A compact incident card: severity, impact, what is known, and next steps.",
       },
     },
     async () => ({
       contents: [
-        { uri: BRIEF_CARD_URI, mimeType: "text/html+skybridge", text: BRIEF_CARD_HTML },
+        { uri: INCIDENT_CARD_URI, mimeType: "text/html+skybridge", text: INCIDENT_CARD_HTML },
       ],
     }),
   );
 
   // ── brief_card ────────────────────────────────────────────────────────────
   server.registerTool(
-    "brief_card",
+    "incident_card",
     {
-      title: "Render a brief",
+      title: "Draw the incident",
       description:
-        "Render a short brief as a card: a headline, a one-line summary, up to four labelled facts, and optional next steps. Use this instead of a paragraph whenever the answer has structure.",
+        "Draw the current state of an incident as a card: what is broken, who is affected, what is known, and what happens next. Prefer it over prose whenever the answer has structure.",
       inputSchema: {
         headline: z.string().describe("Six words or fewer."),
         summary: z.string().describe("One sentence."),
@@ -68,10 +68,10 @@ export function createMcpServer(): McpServer {
       },
       _meta: {
         // Points the tool at the HTML resource above.
-        "openai/outputTemplate": BRIEF_CARD_URI,
-        "openai/toolInvocation/invoking": "Drafting the brief",
-        "openai/toolInvocation/invoked": "Brief ready",
-        ui: { resourceUri: BRIEF_CARD_URI },
+        "openai/outputTemplate": INCIDENT_CARD_URI,
+        "openai/toolInvocation/invoking": "Assessing the incident",
+        "openai/toolInvocation/invoked": "Incident card ready",
+        ui: { resourceUri: INCIDENT_CARD_URI },
       },
     },
     async ({ headline, summary, facts, nextSteps }) => ({
@@ -79,7 +79,7 @@ export function createMcpServer(): McpServer {
       structuredContent: { headline, summary, facts, nextSteps },
       // The text block is what the MODEL reads back. Keep it short so it does
       // not restate the card in prose.
-      content: [{ type: "text" as const, text: `Rendered a brief card: ${headline}.` }],
+      content: [{ type: "text" as const, text: `Drew the incident card: ${headline}.` }],
     }),
   );
 

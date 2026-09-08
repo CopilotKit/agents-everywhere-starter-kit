@@ -1,15 +1,15 @@
 import { createChannel } from "@copilotkit/channels";
 import { makeAgent, isSearchConfigured } from "agent-core";
 import { required } from "./env";
-import { BriefCard, ComparisonTable, welcomeMessage } from "./components";
-import { confirmAction, readThread, searchTheWeb } from "./tools";
+import { IncidentCard, Timeline, welcomeMessage } from "./components";
+import { proposeAction, readThread, searchTheWeb } from "./tools";
 import { isDurableConfigured, runDeepWork } from "./durable";
 
 // Tools are registered only when their credential is present, so the agent is
 // never handed a tool that will fail when it calls it.
 const tools = [
   readThread,
-  confirmAction,
+  proposeAction,
   ...(isSearchConfigured() ? [searchTheWeb] : []),
   ...(isDurableConfigured() ? [runDeepWork] : []),
 ];
@@ -27,7 +27,7 @@ export const channel = createChannel({
 
   agent: makeAgent,
   tools,
-  components: [BriefCard, ComparisonTable],
+  components: [IncidentCard, Timeline],
 
   // Injected into the agent's prompt on every run.
   context: [
@@ -35,7 +35,12 @@ export const channel = createChannel({
     {
       description: "Rendering",
       value:
-        "You can draw native UI by calling brief_card or comparison_table. Prefer them over prose whenever the answer has structure.",
+        "You can draw native UI by calling incident_card or timeline. Prefer them over prose whenever the answer has structure.",
+    },
+    {
+      description: "Surface",
+      value:
+        "This is a chat thread in a channel people are actively working in. Assume others are reading and that some joined late.",
     },
   ],
 

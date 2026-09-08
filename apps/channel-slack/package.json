@@ -7,7 +7,8 @@
   "scripts": {
     "dev": "node --env-file=../../.env --import tsx --watch src/server.ts",
     "start": "node --env-file=../../.env --import tsx src/server.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "node --import tsx --test 'src/**/*.test.tsx'"
   },
   "dependencies": {
     "@copilotkit/channels": "0.9.2",
