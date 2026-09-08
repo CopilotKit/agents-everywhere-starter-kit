@@ -1,10 +1,9 @@
+/**
+ * Server surface. Importing this from a client component pulls
+ * @copilotkit/runtime (and Express, and Node's `fs`) into the browser bundle.
+ * Client code wants `agent-core/shared`.
+ */
 export { makeAgent } from "./agent";
-export { resolveModel, DEFAULT_MODEL, MODEL_NOTES } from "./model";
-export { SYSTEM_PROMPT } from "./prompt";
-export {
-  searchWeb,
-  searchWebParameters,
-  isSearchConfigured,
-  type SearchWebArgs,
-  type SearchHit,
-} from "./capabilities/search";
+export { resolveModel } from "./model";
+export { searchWeb, isSearchConfigured } from "./capabilities/search";
+export * from "./shared";

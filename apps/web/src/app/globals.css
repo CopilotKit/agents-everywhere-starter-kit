@@ -108,3 +108,15 @@ body {
 .ck-btn--primary { background: var(--accent); border-color: var(--accent); color: #fff; }
 .ck-btn--tiny { font-size: .75rem; padding: .15rem .5rem; }
 .ck-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.ck-status {
+  align-self: center; font-family: ui-monospace, monospace; font-size: .7rem;
+  letter-spacing: .1em; text-transform: uppercase; color: var(--muted);
+}
+.ck-status[data-status="live"] { color: #2e7d5b; }
+.ck-status[data-status="error"] { color: var(--accent); }
+.ck-transcript {
+  font-family: ui-monospace, monospace; font-size: .8rem; line-height: 1.8;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 3px;
+  padding: .9rem 1rem; overflow-x: auto; white-space: pre-wrap;
+}
