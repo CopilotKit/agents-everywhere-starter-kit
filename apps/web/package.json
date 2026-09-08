@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@copilotkit/react-core": "1.70.1",
-    "@copilotkit/runtime": "1.70.1",
+    "@copilotkit/runtime": "1.70.2",
     "@openai/agents": "^0.17.2",
     "agent-core": "*",
     "next": "^15.5.0",

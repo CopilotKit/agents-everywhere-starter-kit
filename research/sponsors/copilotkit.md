@@ -12,6 +12,10 @@ The event is literally named **"Bots, Channels, & More."** CopilotKit shipped th
 
 ### Verified versions (npm, checked 2026-09-08)
 
+> Snapshot, not live. `@copilotkit/runtime` published **1.70.2** later the same
+> day; the kit tracks that. Treat the repo's `package.json` as the source of
+> truth and re-run `npm view` rather than trusting this table.
+
 | Package | Version |
 |---|---|
 | `@copilotkit/channels` | **0.9.2** (2026-09-03) |
