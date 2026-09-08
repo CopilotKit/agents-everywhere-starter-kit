@@ -167,7 +167,13 @@ You never expose a port. The cost is that your process must be **long-running** 
 
 ## Stack
 
-### CopilotKit — Channels SDK
+7 of these are **wired** — real code you can read, delete, or build on. 2 are
+**referenced** — named because they fit, with an honest note on what integrating
+them would take. The distinction is marked on each heading, because a logo on a
+banner is not an integration.
+
+
+### CopilotKit — Channels SDK · **wired**
 
 [Channels](https://github.com/CopilotKit/channels-sdk) brings any AG-UI agent into Slack, Microsoft Teams, Discord, Telegram, and WhatsApp with **native, interactive UI** — one JSX tree renders as Slack Block Kit or Teams Adaptive Cards, and a surface that cannot render a node skips it instead of failing. Intelligence manages the platform credentials and delivery; your agent, tools, and business logic stay yours.
 
@@ -175,7 +181,54 @@ Pinned here as a tested pair: `@copilotkit/channels@0.9.2` + `@copilotkit/runtim
 
 [More about Channels →](https://docs.copilotkit.ai/slack) · [CopilotKit docs →](https://docs.copilotkit.ai)
 
-### OpenAI
+### CopilotKit — React & React Native · **wired**
+
+The same agent needs a frontend on every surface it lands on, and both come from
+CopilotKit rather than being hand-rolled.
+
+**Web** — `@copilotkit/react-core@1.70.1`. `apps/web` uses `CopilotKitProvider`,
+`CopilotSidebar`, `useComponent` (controlled generative UI), `useHumanInTheLoop`
+(the approval gate), `useFrontendTool` and `useAgentContext`. Worth knowing: the
+V2 surface lives at `@copilotkit/react-core/v2` — `@copilotkit/react-ui` is the V1
+surface and this kit does not need it.
+
+**Mobile** — `@copilotkit/react-native@1.70.1`. `apps/mobile` is an Expo app on the
+same agent: headless provider, a hand-rolled chat screen, and the same
+`propose_action` approval contract as Slack and web, so the agent behaves
+identically on a phone.
+
+Four things about the React Native SDK that the docs do not tell you, all verified
+against the published 1.70.1 bundles:
+
+- **Import from `@copilotkit/react-native/headless`, never the root barrel.** The
+  root entry imports `expo-document-picker` and `expo-file-system`
+  unconditionally; the headless subpath imports none of the optional native
+  peers, so the app needs no Metro stubs at all.
+- **`index.js` import order is load-bearing.** `react-native-get-random-values`
+  first (otherwise CopilotKit installs a `Math.random()` crypto shim and warns it
+  is not secure), then `@copilotkit/react-native/polyfills`, then the app — the
+  barrel overrides `global.fetch` and React Native's `InitializeCore` clobbers it
+  if imported too early.
+- **One polyfill import is enough on 1.70.1.** The barrel now installs streams,
+  encoding, crypto, DOMException and location plus streaming fetch. Older
+  versions only did streaming-fetch and needed all five granular subpaths.
+- **Render tool calls through `useRenderToolCall()`.** It resolves the renderer
+  *and* supplies `respond`, which is what makes an approval card answerable.
+  Walking the render registry by hand is a trap: the local `useRenderTool`
+  registry passes only `{ args, status }` with no `respond`, so the card renders
+  perfectly and silently cannot be answered.
+
+`apps/mobile` is deliberately **not** an npm workspace member — React Native pins
+its own `react` and `react-native`, and hoisting those can break `apps/web`. It
+installs and runs on its own.
+
+> Installs, resolves and typechecks with Expo-blessed versions (SDK 54, RN 0.81.5,
+> react 19.1.0). **Not run on a device** — that is the one surface here nobody has
+> launched. See `apps/mobile/README.md`.
+
+[React Native quickstart →](https://docs.copilotkit.ai/react-native) · [CopilotKit reference →](https://docs.copilotkit.ai/reference)
+
+### OpenAI · **wired**
 
 The default model provider. The kit runs on **`gpt-5.6-sol`**, with **`gpt-6-astra`** a one-line change away when a build needs the hardest end-to-end reasoning — and `gpt-5.6-luna` a one-line change the other way if hackathon credits start running out.
 
@@ -183,13 +236,13 @@ Also behind two of the surfaces here: the **Realtime API** (`gpt-realtime-2.1` o
 
 [Models →](https://developers.openai.com/api/docs/models) · [Realtime →](https://developers.openai.com/api/docs/guides/realtime) · [Plugins →](https://developers.openai.com/plugins/)
 
-### OpenRouter
+### OpenRouter · **wired**
 
 An AI gateway across hundreds of models, with cost-optimized routing and provider fallbacks. In this kit it is **live-demo insurance**: set `OPENROUTER_API_KEY` and the whole agent re-routes with no other change. If OpenAI rate-limits you at 14:00 with a demo at 15:30, that is the line that saves the day.
 
 [More about OpenRouter →](https://openrouter.ai/docs/quickstart)
 
-### Exa
+### Exa · **wired**
 
 Search built for agents, and the grounding layer for every surface here. The detail that matters: Exa's search types are a **latency dial**, and `instant` (~250ms) / `fast` (~450ms) are the only sane choices inside a chat thread — `deep-reasoning` can take 40 seconds and reads as a hung bot. The kit defaults to `fast` and the pre-flight check warns if you pick a slow one.
 
@@ -197,7 +250,7 @@ Search built for agents, and the grounding layer for every surface here. The det
 
 [More about Exa →](https://exa.ai/docs) · hosted MCP at `mcp.exa.ai/mcp`
 
-### Trigger.dev
+### Trigger.dev · **wired**
 
 Open-source background jobs in plain async code — queuing, retries, elastic scaling. Its **waitpoint tokens** are the natural partner to a Channels approval gate: a button click completes a `wait.forToken()`, and the task resumes to do work that outlives the chat turn.
 
@@ -205,21 +258,38 @@ Wired up in `apps/durable` and exposed to Slack as the `run_deep_work` tool. See
 
 [More about Trigger.dev →](https://trigger.dev/docs/quick-start)
 
-### Auth0
+### Auth0 · **referenced**
 
 Identity for agents: **Token Vault** so the agent calls third-party APIs as *the asking user* rather than a service account, **CIBA** for out-of-band approval on someone's phone, and **FGA** for document-level access control in RAG. The natural escalation above an in-thread button.
 
+**Not integrated.** `apps/durable/src/approvals.ts` is the seam and it throws
+deliberately: the CIBA flow is clear (POST `/bc-authorize` → `auth_req_id` → poll
+`/oauth/token`) but the parameter set and polling error codes are not in the
+overview docs, and a plausible guess there 400s for reasons nobody can see. The
+Trigger.dev waitpoint is already waiting — completing it from an Auth0 callback
+changes nothing else in the chain.
+
 [More about Auth0 for AI Agents →](https://auth0.com/ai/docs)
 
-### Mozilla.ai
+### Mozilla.ai · **referenced**
 
 `any-llm` (one interface across providers), `any-agent` (one interface across seven agent frameworks, plus OpenTelemetry traces and agent-as-a-judge evaluation), and **`mcpd`** — "requirements.txt for agentic systems", a daemon that manages MCP servers from declarative config. All open source.
 
-`any-agent`'s graded traces are an underrated demo asset: showing *why* the agent did what it did lands harder than showing that it worked.
+**Not integrated, and worth knowing why.** `mcpd` looked like the natural fit —
+one declarative file for the agent's MCP servers, working the same locally and in
+a container. But it exposes servers as **REST** (`/api/v1/servers/{server}/tools/{tool}`),
+not over the MCP protocol, so it is not a drop-in for `mcpServers` and would need
+a real adapter. `any-llm` and `any-agent` are Python and would fight a
+TypeScript-first kit.
+
+If you are building in Python, invert that: `any-agent` behind an AG-UI endpoint
+and every surface here works unchanged. Its graded traces are an underrated demo
+asset — showing *why* the agent did what it did lands harder than showing that it
+worked.
 
 [More about Mozilla.ai →](https://www.mozilla.ai/open-tools/choice-first-stack)
 
-### Ambiguous AI
+### Ambiguous AI · **wired**
 
 A workspace of 17 productivity apps — Docs, Mail, Sheets, Chat, CRM, Calendar, Tasks and more — where AI coworkers hold their own identity and work on the same data as the team. Free for teams of five.
 
@@ -229,7 +299,13 @@ The fastest *at work* integration available, because there is no admin consent s
 npx ambiguous auth signup --name "My Agent" --human-email you@example.com
 ```
 
-MCP at `https://app.ambiguous.ai/mcp`, with `mail.*` `tasks.*` `crm.*` `docs.*` tool namespaces.
+Wired as an MCP server in `packages/agent-core/src/capabilities/workplace.ts`, so
+the on-call agent can file the follow-up task and send the summary itself instead
+of telling a human to. Set `AMBIGUOUS_API_KEY` and the tools appear; leave it
+unset and the agent is never offered them.
+
+> Written against the documented MCP surface and typechecked, but **not run
+> against a live workspace** — that needs a key. Ten minutes to prove.
 
 [More about Ambiguous AI →](https://www.ambiguous.ai/)
 
@@ -275,7 +351,9 @@ Honest status. What ships works and is typechecked; the rest is scaffolding you 
 | ChatGPT / Claude / Codex — MCP server | **working** — verified against the live protocol: initialize, tools/list, tools/call, resources/read |
 | Trigger.dev durable work + waitpoint approval | **wired** — typechecked; needs a Trigger.dev project to run |
 | Mobile — Expo + `@copilotkit/react-native` | **scaffolded** — installs, Expo-aligned, typechecks; **not** device-verified |
-| Auth0 CIBA out-of-band approval | **seam only** — deliberately a throwing stub, not a guess |
+| Ambiguous AI workplace (mail / tasks / CRM over MCP) | **wired** — typechecked; needs a key to prove against a live workspace |
+| Auth0 CIBA out-of-band approval | **referenced** — deliberately a throwing stub, not a guess |
+| Mozilla.ai | **referenced** — `mcpd` is REST, not MCP protocol, so it needs an adapter |
 | Discord / Telegram / WhatsApp | adapters ship in `@copilotkit/channels`; not wired here |
 
 Everything marked *working* was exercised, not just compiled. The two that are not

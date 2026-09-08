@@ -1,5 +1,5 @@
 import { createChannel } from "@copilotkit/channels";
-import { makeAgent, isSearchConfigured } from "agent-core";
+import { makeAgent, isSearchConfigured, isWorkplaceConfigured, WORKPLACE_CONTEXT } from "agent-core";
 import { required } from "./env";
 import { IncidentCard, Timeline, welcomeMessage } from "./components";
 import { proposeAction, readThread, searchTheWeb } from "./tools";
@@ -37,6 +37,9 @@ export const channel = createChannel({
       value:
         "You can draw native UI by calling incident_card or timeline. Prefer them over prose whenever the answer has structure.",
     },
+    ...(isWorkplaceConfigured()
+      ? [{ description: "Workplace", value: WORKPLACE_CONTEXT }]
+      : []),
     {
       description: "Surface",
       value:

@@ -86,6 +86,10 @@ if [ -f .env ]; then
     warn "EXA_API_KEY not set — the web search tool will not be registered."
   fi
 
+  if [ -z "${AMBIGUOUS_API_KEY:-}" ]; then
+    warn "AMBIGUOUS_API_KEY not set — the agent has no workplace to act in (no mail/tasks/CRM tools)."
+  fi
+
   if [ -n "${TRIGGER_SECRET_KEY:-}" ]; then
     case "$TRIGGER_SECRET_KEY" in
       tr_dev_*|tr_prod_*) ;;

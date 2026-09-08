@@ -1,6 +1,7 @@
 import { BuiltInAgent } from "@copilotkit/runtime/v2";
 import { resolveModel } from "./model";
 import { SYSTEM_PROMPT } from "./prompt";
+import { workplaceMcpServers } from "./capabilities/workplace";
 
 /**
  * The agent factory.
@@ -27,12 +28,11 @@ export function makeAgent(threadId: string) {
     // agent with tools needs room to loop.
     maxSteps: 10,
 
-    // Give the agent MCP tools if you want them. Note the HTTP transport takes
-    // `options` (StreamableHTTPClientTransportOptions), not `headers` — for
-    // authenticated servers pass a wrapped `options.fetch`. The SSE variant is
-    // the one with a plain `headers` field.
-    //
-    // mcpServers: [{ type: "http", url: "https://mcp.example.com/mcp" }],
+    // The workplace, when one is configured. Empty array when it is not, so the
+    // agent is never handed tools that would 401. Add your own MCP servers here
+    // the same way — note HTTP transport takes `options` (with a wrapped
+    // `options.fetch` for auth), not `headers`.
+    mcpServers: [...workplaceMcpServers()],
   });
   agent.threadId = threadId;
   return agent;
