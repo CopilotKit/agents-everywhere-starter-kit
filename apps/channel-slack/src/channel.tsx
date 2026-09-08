@@ -1,8 +1,8 @@
 import { createChannel } from "@copilotkit/channels";
 import { makeAgent, isSearchConfigured } from "agent-core";
-import { required } from "./env.js";
-import { BriefCard, ComparisonTable, welcomeMessage } from "./components.js";
-import { confirmAction, readThread, searchTheWeb } from "./tools.js";
+import { required } from "./env";
+import { BriefCard, ComparisonTable, welcomeMessage } from "./components";
+import { confirmAction, readThread, searchTheWeb } from "./tools";
 
 const tools = [readThread, confirmAction, ...(isSearchConfigured() ? [searchTheWeb] : [])];
 

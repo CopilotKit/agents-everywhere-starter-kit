@@ -1,6 +1,6 @@
 import { BuiltInAgent } from "@copilotkit/runtime/v2";
-import { resolveModel } from "./model.js";
-import { SYSTEM_PROMPT } from "./prompt.js";
+import { resolveModel } from "./model";
+import { SYSTEM_PROMPT } from "./prompt";
 
 /**
  * The agent factory.

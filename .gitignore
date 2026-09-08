@@ -6,3 +6,5 @@ dist/
 .DS_Store
 .turbo/
 *.tsbuildinfo
+.next/
+next-env.d.ts

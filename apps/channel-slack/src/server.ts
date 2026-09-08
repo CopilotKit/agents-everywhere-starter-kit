@@ -6,8 +6,8 @@
 import { createServer } from "node:http";
 import { CopilotKitIntelligence, CopilotRuntime } from "@copilotkit/runtime/v2";
 import { createCopilotNodeListener } from "@copilotkit/runtime/v2/node";
-import { channel } from "./channel.js";
-import { required } from "./env.js";
+import { channel } from "./channel";
+import { required } from "./env";
 
 const intelligence = new CopilotKitIntelligence({
   apiKey: required("INTELLIGENCE_API_KEY"),
