@@ -10,7 +10,10 @@
   },
   "workspaces": [
     "packages/*",
-    "apps/*"
+    "apps/channel-slack",
+    "apps/local-chat",
+    "apps/web",
+    "apps/mcp"
   ],
   "scripts": {
     "check-env": "bash scripts/check-env.sh",
@@ -20,7 +23,9 @@
     "channel:status": "npx copilotkit@latest channels status --json",
     "channel:setup": "npx copilotkit@latest channels setup",
     "typecheck": "npm run typecheck --workspaces --if-present",
-    "dev:local": "npm run dev --workspace local-chat"
+    "dev:local": "npm run dev --workspace local-chat",
+    "dev:web": "npm run dev --workspace web",
+    "dev:mcp": "npm run dev --workspace mcp"
   },
   "overrides": {
     "@ag-ui/client": "0.0.59"

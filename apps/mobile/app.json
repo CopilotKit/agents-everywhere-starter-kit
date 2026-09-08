@@ -1,0 +1,12 @@
+{
+  "expo": {
+    "name": "Agents Everywhere",
+    "slug": "agents-everywhere",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "ios": { "supportsTablet": true, "bundleIdentifier": "ai.copilotkit.agentseverywhere" },
+    "android": { "package": "ai.copilotkit.agentseverywhere" }
+  }
+}
