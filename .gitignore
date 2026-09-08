@@ -8,3 +8,4 @@ dist/
 *.tsbuildinfo
 .next/
 next-env.d.ts
+assets/fonts/

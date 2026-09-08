@@ -1,5 +1,7 @@
 <div align="center">
 
+![Agents, everywhere — starter kit](assets/banner.png)
+
 # Agents, Everywhere — Starter Kit
 
 **Build an agent that belongs where people already work.**
