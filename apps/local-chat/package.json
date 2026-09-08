@@ -1,0 +1,15 @@
+{
+  "name": "local-chat",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Tier 0. The same agent, in your terminal, with one credential.",
+  "scripts": {
+    "dev": "node --env-file=../../.env --import tsx src/index.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@ag-ui/client": "0.0.59",
+    "agent-core": "*"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "name": "agent-core",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "The one agent every surface points at. Model, prompt, and surface-agnostic capabilities.",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@ai-sdk/openai": "^3.0.36",
+    "@copilotkit/runtime": "1.70.1",
+    "exa-js": "^2.19.0",
+    "zod": "^3.24.1"
+  }
+}

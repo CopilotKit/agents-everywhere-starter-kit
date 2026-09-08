@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "copilotkit": {
+      "type": "http",
+      "url": "https://mcp.copilotkit.ai/mcp"
+    },
+    "exa": {
+      "type": "http",
+      "url": "https://mcp.exa.ai/mcp"
+    }
+  }
+}

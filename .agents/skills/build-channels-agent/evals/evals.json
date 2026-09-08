@@ -1,0 +1,61 @@
+{
+  "skill_name": "build-channels-agent",
+  "evals": [
+    {
+      "id": 0,
+      "name": "slack-oncall-managed",
+      "prompt": "I'm building a Slack bot for my team using the CopilotKit Channels SDK (@copilotkit/channels). When someone @mentions it, it should answer using our agent. It also needs a tool that looks up who is currently on call for a given team name. Write the complete setup code in TypeScript and save it as channel.ts.",
+      "expected_output": "A channel.ts using createChannel (NOT createBot) with the required identifyUser, an agent factory (threadId) => agent, and defineChannelTool (NOT defineBotTool) for the on-call lookup with a Standard Schema. channel.onMention calls thread.runAgent(). Nothing in the prompt says the developer holds the Slack tokens, so the managed path is the expected answer: NO adapters array, and `name` from the Intelligence Channel Code (typically process.env.CHANNEL_CODE). A direct slack({ botToken, appToken }) adapter is acceptable only if the output also explains it is the secondary path; inventing an adapter to 'connect Slack' is a fail. Because there is no channel.start(), startup must go through CopilotRuntime({ agents: {}, intelligence, channels: [channel] }) + createCopilotNodeListener, then gate on listener.channels.status().overall === 'online' (ready() alone is not proof of life). Intelligence env vars should be INTELLIGENCE_API_KEY (not COPILOTKIT_INTELLIGENCE_API_KEY). No invented APIs.",
+      "files": []
+    },
+    {
+      "id": 1,
+      "name": "slack-oncall-direct",
+      "prompt": "I'm building a Slack bot with the CopilotKit Channels SDK (@copilotkit/channels). I already have my own Slack app and I hold the bot and app tokens myself — I don't want CopilotKit holding the Slack credentials. When someone @mentions it it should answer using our agent. Write the setup code in TypeScript and save it as channel.ts.",
+      "expected_output": "The direct-adapter path, because the prompt establishes that the developer owns the platform connection: createChannel with identifyUser and adapters: [slack({ botToken, appToken })] imported from @copilotkit/channels/slack, plus defaultSlackTools / defaultSlackContext. Should still attach the Channel to CopilotRuntime with an intelligence connection and create the listener — a direct adapter does NOT remove the runtime or the Intelligence requirement. Claiming the direct adapter runs standalone, or calling channel.start(), is a fail.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "name": "hitl-confirm",
+      "prompt": "Using the CopilotKit Channels SDK, I want a confirmation with Approve and Cancel buttons before my agent runs a destructive tool that deletes a database. Show me the code for the tool that renders the human-in-the-loop confirmation and only proceeds if the user approves. Save it as delete-tool.tsx.",
+      "expected_output": "A defineChannelTool (NOT defineBotTool) whose handler calls thread.awaitChoice<boolean> with an Actions/Button tree (values true/false, style primary/danger) and only deletes on approval. Components imported from @copilotkit/channels (the root import re-exports them) — importing from @copilotkit/channels-ui is a miss unless that package is added as a direct dependency. No lowercase intrinsic tags (<b>, <span>): emphasis goes inside <Markdown>. File is .tsx because it contains JSX; should mention or assume jsxImportSource: \"@copilotkit/channels\". The handler should return a short natural-language result for the agent, not { ok: true }.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "name": "hn-top",
+      "prompt": "Build a CopilotKit Channels SDK slash command called /top that posts the top 5 Hacker News stories as one interactive message. Each story should show its title and points, with a button that opens the story link. Include the Hacker News fetch. Save it as top-command.tsx.",
+      "expected_output": "channel.onCommand('top', ...) (or defineChannelCommand, NOT defineBotCommand) that fetches HN top stories and posts a Message with per-story Section/Fields and a link Button (url=...). JSX imported from @copilotkit/channels in a .tsx file. If the handler reads the command argument, it must come from ctx.text (raw) or ctx.options (typed) — ctx.args does not exist. Handler body must be a block that awaits thread.post, not a concise arrow returning it.",
+      "files": []
+    },
+    {
+      "id": 4,
+      "name": "subscribe-all-messages",
+      "prompt": "With the CopilotKit Channels SDK, I want my agent to answer every message in a Slack channel after someone @mentions it once, instead of needing a mention every time. Save it as channel.ts.",
+      "expected_output": "Uses the persisted subscription flag: channel.onMention marks the conversation with await thread.subscribe() then runs the agent, and channel.onMessage gates on `if (await thread.isSubscribed())` before calling thread.runAgent(). Inventing a module-level Map/Set flag instead of thread.subscribe()/isSubscribed() is a miss — it does not survive restart and is not per-conversation-persisted. Handlers receive { thread, message }; expecting a `user` field on onMessage is a fail.",
+      "files": []
+    },
+    {
+      "id": 5,
+      "name": "memory-grant",
+      "prompt": "I'm using the CopilotKit Channels SDK and I want my agent to remember things about each user across conversations using CopilotKit Intelligence Memory. How do I turn that on for a run?",
+      "expected_output": "Explains that Memory is granted per run via thread.runAgent({ memory: { user, project } }), where each scope is \"none\" | \"read\" | \"read-write\", and that OMITTING the grant disables Memory — there is no implicit access. Should note resume(value, { memory, subject }) takes the same grant. Claiming Memory is on by default, or that a createChannel option alone enables it, is a fail. Noting that identifyUser must resolve a user for per-user Memory to mean anything is a plus.",
+      "files": []
+    },
+    {
+      "id": 6,
+      "name": "abstractagent-clash",
+      "prompt": "I set up a CopilotKit Channels project and it won't compile. Passing my agent to createChannel gives: error TS2322: Type 'BuiltInAgent' is not assignable to type 'AbstractAgent'. Types have separate declarations of a private property '_debug'. What's wrong?",
+      "expected_output": "Diagnoses this as a DUPLICATE @ag-ui/client install, not a bug in the agent or a wrong agent type: @copilotkit/channels and @copilotkit/runtime pin one exact version while a transitive dep (@ag-ui/mcp-middleware) pulls an older one, so two copies of AbstractAgent exist and the nominal private field makes them incompatible. Fix is to dedupe to a single copy — npm `overrides` (pnpm.overrides / yarn resolutions) set to the version Runtime declares, then reinstall; `npm ls @ag-ui/client` confirms. Casting with `as AbstractAgent`, `as any`, or telling the user to change agent classes / disable strict is a fail — it hides a genuinely broken install graph.",
+      "files": []
+    },
+    {
+      "id": 7,
+      "name": "modal-view",
+      "prompt": "With the CopilotKit Channels SDK, my slash command opens a modal but TypeScript says: Argument of type 'ChannelNode' is not assignable to parameter of type 'ModalView'. My code passes <Modal callbackId=\"x\" title=\"X\">…</Modal> to openModal. How do I fix it?",
+      "expected_output": "Explains that this JSX runtime declares JSX.Element = ChannelNode, so any JSX expression loses the ModalView narrowing openModal needs, and the fix is to call the component as a function — Modal({ callbackId, title, children: [ ... ] }) — with children passed as a prop (children may still be JSX). Should keep the optional call `openModal?.(...)` since openModal is optional on CommandContext. Casting to ModalView / `as any`, or claiming <Modal> works, is a fail.",
+      "files": []
+    }
+  ]
+}

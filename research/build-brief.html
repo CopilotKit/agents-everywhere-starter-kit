@@ -1,0 +1,770 @@
+<title>Agents Everywhere Build Brief</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+
+<style>
+  /* ─── light palette: the complete token set ─────────────────────── */
+  :root {
+    --ground:      #F4F2F6;
+    --surface:     #FFFFFF;
+    --surface-alt: #EDEAF1;
+    --border:      #E0DBE7;
+    --border-firm: #C9C2D3;
+    --text:        #1B1721;
+    --text-soft:   #4A4355;
+    --text-muted:  #6E6779;
+
+    --accent:      #C4145F;
+    --accent-soft: #FBE9F1;
+    --accent-line: #E9B9CE;
+
+    --ok:          #24705A;
+    --ok-soft:     #E2F0EA;
+    --warn:        #8A5C10;
+    --warn-soft:   #F7EEDC;
+    --bad:         #A82F2A;
+    --bad-soft:    #F8E6E4;
+
+    --shadow: 0 1px 2px rgba(27,23,33,.05), 0 8px 24px -16px rgba(27,23,33,.18);
+
+    --display: "Bricolage Grotesque", "Helvetica Neue", Arial, sans-serif;
+    --body: "Instrument Sans", "Helvetica Neue", Arial, sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  }
+
+  /* ─── dark: tokens only, so an explicit light choice still wins ─── */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground:      #131019;
+      --surface:     #1B1724;
+      --surface-alt: #221D2E;
+      --border:      #2E2739;
+      --border-firm: #443B53;
+      --text:        #EEEBF2;
+      --text-soft:   #BDB6C8;
+      --text-muted:  #948CA1;
+
+      --accent:      #FF5C9B;
+      --accent-soft: #2A1622;
+      --accent-line: #56283C;
+
+      --ok:          #56C79A;
+      --ok-soft:     #16281F;
+      --warn:        #DDAA4B;
+      --warn-soft:   #2A2113;
+      --bad:         #F5817A;
+      --bad-soft:    #2C1817;
+
+      --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 28px -18px rgba(0,0,0,.7);
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground:      #131019;
+    --surface:     #1B1724;
+    --surface-alt: #221D2E;
+    --border:      #2E2739;
+    --border-firm: #443B53;
+    --text:        #EEEBF2;
+    --text-soft:   #BDB6C8;
+    --text-muted:  #948CA1;
+
+    --accent:      #FF5C9B;
+    --accent-soft: #2A1622;
+    --accent-line: #56283C;
+
+    --ok:          #56C79A;
+    --ok-soft:     #16281F;
+    --warn:        #DDAA4B;
+    --warn-soft:   #2A2113;
+    --bad:         #F5817A;
+    --bad-soft:    #2C1817;
+
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 28px -18px rgba(0,0,0,.7);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--text);
+    font-family: var(--body);
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ─── shell ──────────────────────────────────────────────────────── */
+  .shell {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 0 24px 96px;
+    display: grid;
+    grid-template-columns: 216px minmax(0, 1fr);
+    gap: 56px;
+    align-items: start;
+  }
+
+  /* ─── masthead ───────────────────────────────────────────────────── */
+  .masthead {
+    grid-column: 1 / -1;
+    border-bottom: 1px solid var(--border-firm);
+    padding: 56px 0 28px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 32px;
+    align-items: flex-end;
+    justify-content: space-between;
+  }
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 14px;
+  }
+  h1 {
+    font-family: var(--display);
+    font-optical-sizing: auto;
+    font-weight: 800;
+    font-size: clamp(2.4rem, 5.6vw, 3.9rem);
+    line-height: .96;
+    letter-spacing: -.028em;
+    margin: 0;
+    text-wrap: balance;
+  }
+  .dek {
+    margin: 18px 0 0;
+    max-width: 54ch;
+    font-size: 1.06rem;
+    color: var(--text-soft);
+  }
+
+  /* the clock: the one number every decision hangs on */
+  .clock {
+    border: 1px solid var(--accent-line);
+    background: var(--accent-soft);
+    border-radius: 3px;
+    padding: 16px 22px 14px;
+    text-align: right;
+    flex-shrink: 0;
+  }
+  .clock b {
+    display: block;
+    font-family: var(--display);
+    font-weight: 800;
+    font-size: 3.1rem;
+    line-height: 1;
+    letter-spacing: -.04em;
+    color: var(--accent);
+    font-variant-numeric: tabular-nums;
+  }
+  .clock span {
+    display: block;
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--text-soft);
+    margin-top: 6px;
+  }
+
+  /* ─── fact strip ─────────────────────────────────────────────────── */
+  .facts {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(126px, 1fr));
+    gap: 1px;
+    background: var(--border);
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 8px;
+  }
+  .facts div {
+    background: var(--ground);
+    padding: 16px 4px 18px;
+  }
+  .facts dt {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: .11em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 5px;
+  }
+  .facts dd {
+    margin: 0;
+    font-family: var(--display);
+    font-weight: 600;
+    font-size: 1.02rem;
+    letter-spacing: -.01em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ─── side rail ──────────────────────────────────────────────────── */
+  nav {
+    position: sticky;
+    top: 28px;
+    font-family: var(--mono);
+    font-size: 12px;
+  }
+  nav p {
+    font-size: 10px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin: 0 0 12px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  nav ol {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    counter-reset: navi;
+  }
+  nav a {
+    display: flex;
+    gap: 9px;
+    padding: 5px 8px 5px 4px;
+    color: var(--text-soft);
+    text-decoration: none;
+    border-radius: 2px;
+    line-height: 1.35;
+  }
+  nav a::before {
+    counter-increment: navi;
+    content: counter(navi, decimal-leading-zero);
+    color: var(--text-muted);
+    flex-shrink: 0;
+  }
+  nav a:hover { background: var(--surface-alt); color: var(--text); }
+  nav a:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+  /* ─── main flow ──────────────────────────────────────────────────── */
+  main { display: flex; flex-direction: column; gap: 60px; min-width: 0; }
+  section { scroll-margin-top: 24px; }
+
+  h2 {
+    font-family: var(--display);
+    font-weight: 800;
+    font-size: 1.68rem;
+    letter-spacing: -.022em;
+    line-height: 1.12;
+    margin: 0 0 6px;
+    text-wrap: balance;
+  }
+  .sub {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin: 0 0 26px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  h3 {
+    font-family: var(--display);
+    font-weight: 600;
+    font-size: 1.06rem;
+    letter-spacing: -.012em;
+    margin: 0 0 8px;
+  }
+  p { margin: 0 0 16px; max-width: 68ch; color: var(--text-soft); }
+  p.lead { color: var(--text); font-size: 1.04rem; }
+  main strong { color: var(--text); font-weight: 600; }
+  a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+
+  code {
+    font-family: var(--mono);
+    font-size: .855em;
+    background: var(--surface-alt);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    padding: .1em .34em;
+    white-space: nowrap;
+  }
+
+  /* ─── the ladder: a real sequence, so numbered ───────────────────── */
+  .ladder { display: flex; flex-direction: column; gap: 0; margin: 0; padding: 0; list-style: none; }
+  .rung {
+    display: grid;
+    grid-template-columns: 62px minmax(0, 1fr);
+    gap: 22px;
+    padding: 22px 0;
+    border-top: 1px solid var(--border);
+  }
+  .rung:last-child { border-bottom: 1px solid var(--border); }
+  .rung > b {
+    font-family: var(--display);
+    font-weight: 800;
+    font-size: 2.5rem;
+    line-height: .8;
+    letter-spacing: -.05em;
+    color: var(--border-firm);
+    font-variant-numeric: tabular-nums;
+  }
+  .rung:last-child > b { color: var(--accent); }
+  .rung p { margin: 0 0 10px; }
+  .rung p:last-child { margin: 0; }
+  .rung .test {
+    font-size: .93rem;
+    color: var(--text-muted);
+    border-left: 2px solid var(--border-firm);
+    padding-left: 12px;
+  }
+  .rung:last-child .test { border-left-color: var(--accent); }
+
+  /* ─── tables ─────────────────────────────────────────────────────── */
+  .scroller { overflow-x: auto; border: 1px solid var(--border); border-radius: 3px; background: var(--surface); }
+  table { border-collapse: collapse; width: 100%; font-size: .915rem; }
+  th, td { text-align: left; padding: 11px 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  thead th {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    font-weight: 500;
+    background: var(--surface-alt);
+    white-space: nowrap;
+    position: sticky;
+    top: 0;
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody th {
+    font-family: var(--display);
+    font-weight: 600;
+    font-size: .96rem;
+    white-space: nowrap;
+    color: var(--text);
+  }
+  td { color: var(--text-soft); }
+  td.num, td.ver { font-family: var(--mono); font-size: .82rem; font-variant-numeric: tabular-nums; white-space: nowrap; color: var(--text); }
+
+  /* ─── pills ──────────────────────────────────────────────────────── */
+  .pill {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: .07em;
+    text-transform: uppercase;
+    padding: 2.5px 7px;
+    border-radius: 2px;
+    white-space: nowrap;
+    border: 1px solid;
+  }
+  .p-ok   { color: var(--ok);   background: var(--ok-soft);   border-color: var(--ok); }
+  .p-warn { color: var(--warn); background: var(--warn-soft); border-color: var(--warn); }
+  .p-bad  { color: var(--bad);  background: var(--bad-soft);  border-color: var(--bad); }
+  .p-flat { color: var(--text-muted); background: var(--surface-alt); border-color: var(--border-firm); }
+
+  /* ─── tiers ──────────────────────────────────────────────────────── */
+  .tiers { display: grid; grid-template-columns: repeat(auto-fit, minmax(232px, 1fr)); gap: 14px; }
+  .tier {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-top: 3px solid var(--border-firm);
+    border-radius: 3px;
+    padding: 18px 18px 20px;
+    box-shadow: var(--shadow);
+  }
+  .tier:first-child { border-top-color: var(--ok); }
+  .tier:nth-child(2) { border-top-color: var(--accent); }
+  .tier h3 { margin-bottom: 2px; }
+  .tier .cost {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: .09em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 14px;
+  }
+  .tier p { font-size: .92rem; margin-bottom: 0; }
+
+  pre {
+    font-family: var(--mono);
+    font-size: 12.5px;
+    line-height: 1.65;
+    background: var(--surface-alt);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 14px 16px;
+    overflow-x: auto;
+    margin: 0 0 18px;
+    color: var(--text);
+  }
+  pre b { color: var(--accent); font-weight: 500; }
+  pre i { color: var(--text-muted); font-style: normal; }
+
+  /* ─── patterns ───────────────────────────────────────────────────── */
+  .pattern {
+    border: 1px solid var(--accent-line);
+    background: var(--accent-soft);
+    border-radius: 3px;
+    padding: 20px 22px;
+    margin-bottom: 14px;
+  }
+  .pattern h3 { color: var(--text); }
+  .pattern p:last-child { margin-bottom: 0; }
+  .flow {
+    font-family: var(--mono);
+    font-size: 12px;
+    line-height: 2;
+    color: var(--text);
+    margin: 0 0 12px;
+  }
+  .flow em { color: var(--accent); font-style: normal; }
+
+  /* ─── traps: a set, not a sequence — no numbering ────────────────── */
+  .traps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 3px; }
+  .traps li {
+    background: var(--surface);
+    padding: 13px 16px;
+    display: grid;
+    grid-template-columns: 116px minmax(0, 1fr);
+    gap: 16px;
+    align-items: baseline;
+    font-size: .93rem;
+    color: var(--text-soft);
+  }
+  .traps li > span:first-child { padding-top: 1px; }
+
+  .stack { display: flex; flex-direction: column; gap: 26px; }
+
+  .qs { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+  .qs li {
+    padding-left: 16px;
+    border-left: 2px solid var(--warn);
+    font-size: .95rem;
+    color: var(--text-soft);
+  }
+  .qs b { color: var(--text); }
+
+  footer {
+    grid-column: 1 / -1;
+    margin-top: 72px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border-firm);
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: .04em;
+    color: var(--text-muted);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 28px;
+  }
+
+  @media (max-width: 880px) {
+    .shell { grid-template-columns: minmax(0, 1fr); gap: 0; }
+    nav { display: none; }
+    .masthead { padding-top: 36px; }
+    .rung { grid-template-columns: 44px minmax(0, 1fr); gap: 14px; }
+    .rung > b { font-size: 1.8rem; }
+    .traps li { grid-template-columns: minmax(0, 1fr); gap: 6px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+</style>
+
+<div class="shell">
+
+  <header class="masthead">
+    <div>
+      <p class="eyebrow">Starter-kit research · 8 Sep 2026</p>
+      <h1>Agents Everywhere<br>Build Brief</h1>
+      <p class="dek">What the hackathon actually asks for, what each sponsor actually ships this week, and the kit that gets a team from clone to first reply before they lose the room.</p>
+    </div>
+    <div class="clock">
+      <b>255</b>
+      <span>minutes to build</span>
+    </div>
+  </header>
+
+  <dl class="facts">
+    <div><dt>Date</dt><dd>Sat 12 Sep</dd></div>
+    <div><dt>Cities</dt><dd>51</dd></div>
+    <div><dt>Build window</dt><dd>11:15–15:30</dd></div>
+    <div><dt>Demos</dt><dd>15:30–16:30</dd></div>
+    <div><dt>Local judging</dt><dd>None</dd></div>
+    <div><dt>Review pool</dt><dd>Global</dd></div>
+  </dl>
+
+  <nav>
+    <p>Contents</p>
+    <ol>
+      <li><a href="#brief">The brief</a></li>
+      <li><a href="#ladder">The Context Ladder</a></li>
+      <li><a href="#sponsors">Sponsor stack</a></li>
+      <li><a href="#pins">Verified pins</a></li>
+      <li><a href="#arch">One agent, every surface</a></li>
+      <li><a href="#tiers">Setup tiers</a></li>
+      <li><a href="#patterns">Flagship patterns</a></li>
+      <li><a href="#teardown">Prior-kit teardown</a></li>
+      <li><a href="#traps">Known traps</a></li>
+      <li><a href="#open">Open questions</a></li>
+    </ol>
+  </nav>
+
+  <main>
+
+    <section id="brief">
+      <h2>The brief</h2>
+      <p class="sub">Read it once, then design against the clock</p>
+      <p class="lead">Most agents still wait inside a separate chat window. The challenge starts somewhere else: build an agent that belongs in a place people already work, talk, and live — and make it <strong>meaningfully more useful because of that context</strong>.</p>
+      <p>Four example surfaces, explicitly not separate tracks: <strong>at work</strong> (Slack, Teams, email, docs, calendars, tickets), <strong>in your pocket</strong> (messaging, mobile, notifications), <strong>on the web</strong> (browsers and software where an agent can research, navigate, transact), and <strong>in the room</strong> (voice, vision, wearables, robotics).</p>
+      <p>Every team submits five things: a title, a written description covering who it's for and why the context matters, a public GitHub repo, a two-minute demo video, and a public social post tagging sponsors. Every eligible project from all 51 cities enters one global review.</p>
+      <p>The design constraint that dominates everything else is the build window. Doors open at 10:00, but hands hit keyboards at <strong>11:15</strong> and submission closes at <strong>17:00</strong> with demos eating the hour before. A starter kit that spends an hour on OAuth apps, tunnels, and Docker has taken a quarter of the day.</p>
+    </section>
+
+    <section id="ladder">
+      <h2>The Context Ladder</h2>
+      <p class="sub">The kit's conceptual spine — three levels of belonging</p>
+      <p>The previous kit organized itself around the generative-UI spectrum. This one needs its own axis, and the challenge statement hands it over: <em>because of that context</em>. That's a ladder, and it climbs.</p>
+      <ol class="ladder">
+        <li class="rung">
+          <b>01</b>
+          <div>
+            <h3>Reachable</h3>
+            <p>The agent is addressable where you already are. Mention it, it answers.</p>
+            <p class="test">Table stakes. Every submission in every city clears this rung.</p>
+          </div>
+        </li>
+        <li class="rung">
+          <b>02</b>
+          <div>
+            <h3>Situated</h3>
+            <p>It reads the surface's context without being told — thread history, the document you're inside, who is asking, which channel, what happened an hour ago.</p>
+            <p class="test">The test: delete the context and ask again. Same answer? You're still on rung 01.</p>
+          </div>
+        </li>
+        <li class="rung">
+          <b>03</b>
+          <div>
+            <h3>Native</h3>
+            <p>It acts and renders in the surface's own idioms — Block Kit cards, approval buttons, reactions, push notifications — and its side effects land where the work actually lives.</p>
+            <p class="test">The test: does it look like it belongs, or like a chat window wearing a costume?</p>
+          </div>
+        </li>
+      </ol>
+      <p style="margin-top:22px">Rung 03 is where a global review separates submissions. The kit's job is to make rung 01 free, rung 02 easy, and rung 03 obvious.</p>
+    </section>
+
+    <section id="sponsors">
+      <h2>Sponsor stack</h2>
+      <p class="sub">What each one actually ships, and its honest role in the kit</p>
+      <div class="scroller">
+        <table>
+          <thead>
+            <tr><th>Sponsor</th><th>What it is</th><th>Role in the kit</th><th>Setup cost</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th>OpenAI</th>
+              <td>Marquee sponsor. Agents SDK, Realtime API, Plugins (the surface formerly pitched as the Apps SDK), and the new backend-triggered Workspace Agents.</td>
+              <td>Default model provider and the <em>in the room</em> surface via Realtime over WebRTC.</td>
+              <td class="num">1 key</td>
+            </tr>
+            <tr>
+              <th>CopilotKit</th>
+              <td>Channels SDK — brings any AG-UI agent into Slack, Teams, Discord, Telegram, WhatsApp with native interactive UI. Plus generative UI, AG-UI, React Native.</td>
+              <td><strong>The spine.</strong> The event is named "Bots, Channels &amp; More"; Channels is the reference answer.</td>
+              <td class="num">2 keys</td>
+            </tr>
+            <tr>
+              <th>OpenRouter</th>
+              <td>AI gateway across hundreds of models, with cost-optimized routing and provider fallbacks.</td>
+              <td>One-line model swap and live-demo insurance — not a separate template.</td>
+              <td class="num">1 key</td>
+            </tr>
+            <tr>
+              <th>Exa</th>
+              <td>Search built for agents. Six speed profiles from <code>instant</code> (~250&nbsp;ms) to <code>deep-reasoning</code> (40&nbsp;s). Hosted MCP at <code>mcp.exa.ai/mcp</code>.</td>
+              <td>The grounding layer, wired into the shared agent core so every surface inherits it.</td>
+              <td class="num">2 min</td>
+            </tr>
+            <tr>
+              <th>Trigger.dev</th>
+              <td>Open-source background jobs in plain async code. Waitpoint tokens pause a run until something external completes it.</td>
+              <td>Durable work that outlives a chat turn, and the machinery behind in-thread approvals.</td>
+              <td class="num">5 min</td>
+            </tr>
+            <tr>
+              <th>Auth0</th>
+              <td>Identity for agents: Token Vault for per-user third-party API access, CIBA for out-of-band approval, FGA for document-level RAG control.</td>
+              <td>Out-of-band approval on a phone — the second tier of the approval pattern.</td>
+              <td class="num">15 min</td>
+            </tr>
+            <tr>
+              <th>Mozilla.ai</th>
+              <td><code>any-llm</code>, <code>any-agent</code> (one interface across 7 frameworks, plus OTel traces and agent-as-judge), and <code>mcpd</code> — "requirements.txt for agentic systems".</td>
+              <td>Optional: <code>mcpd</code> as the declarative tool layer; traces and grading for the demo video.</td>
+              <td class="num">5 min</td>
+            </tr>
+            <tr>
+              <th>Ambiguous AI</th>
+              <td>A workspace of 17 productivity apps where AI coworkers hold their own identity. MCP at <code>app.ambiguous.ai/mcp</code>; free for teams of five.</td>
+              <td><strong>The fastest "at work" template.</strong> A whole workplace to act in, with no admin consent screen.</td>
+              <td class="num">3 min</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="margin-top:18px"><strong>Rosters vary by city.</strong> Veris AI hosts the NYC venue — high-fidelity agent simulation, but onboarding needs a Veris engineer to release your environment, which makes it a post-hackathon tool. Google Cloud Run appears on the Toronto page. Confirm your own city's list before the README names a sponsor.</p>
+    </section>
+
+    <section id="pins">
+      <h2>Verified pins</h2>
+      <p class="sub">Checked against npm on 8 Sep 2026 — not from memory</p>
+      <div class="scroller">
+        <table>
+          <thead><tr><th>Package</th><th>Version</th><th>Note</th></tr></thead>
+          <tbody>
+            <tr><th><code>@copilotkit/channels</code></th><td class="ver">0.9.2</td><td>Meta-package: core, ui, slack, teams, discord, telegram, whatsapp — all lockstep</td></tr>
+            <tr><th><code>@copilotkit/runtime</code></th><td class="ver">1.70.1</td><td>Tested <em>pair</em> with channels. Bump together, <code>--save-exact</code></td></tr>
+            <tr><th><code>@ag-ui/client</code></th><td class="ver">0.0.59</td><td>Exactly what runtime 1.70.1 bundles. Drifting gives <code>AbstractAgent</code> type errors</td></tr>
+            <tr><th><code>@copilotkit/react-core</code> · <code>react-ui</code> · <code>react-native</code></th><td class="ver">1.70.1</td><td>React Native is the <em>in your pocket</em> surface</td></tr>
+            <tr><th><code>copilotkit</code> (CLI)</th><td class="ver">4.9.37</td><td>Unscoped. The old <code>@copilotkit/cli</code> sits at 0.0.6 — the prior kit's README is stale here</td></tr>
+            <tr><th><code>@openai/agents</code></th><td class="ver">0.17.1</td><td>Published the same day this was checked; moving fast</td></tr>
+            <tr><th><code>@trigger.dev/sdk</code></th><td class="ver">4.5.16</td><td>Import from the root only — never <code>/v3</code>, never <code>defineJob()</code></td></tr>
+            <tr><th><code>exa-js</code> · <code>@openrouter/sdk</code> · <code>@auth0/ai</code></th><td class="ver">2.19.0 · 1.2.108 · 6.0.2</td><td>—</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="margin-top:18px">Node <strong>22+</strong>, for global <code>WebSocket</code>. And ignore the deploy-and-operate doc's instruction to pin channels 0.6.1 with runtime 1.65.0 — that page is four minor versions behind npm.</p>
+    </section>
+
+    <section id="arch">
+      <h2>One agent, every surface</h2>
+      <p class="sub">The thesis, and what AG-UI is for</p>
+      <p>Every app points at the <strong>same</strong> agent over AG-UI. Swapping surfaces becomes a config change instead of a rewrite — which means a team can demo their agent in Slack <em>and</em> on a phone inside the two-minute video, while 51 cities submit chat bots.</p>
+<pre>packages/
+  agent-core/        <i>ONE AG-UI agent. Tools, model routing, memory.</i>
+  context-kit/       <i>thread history, participants, files, locale</i>
+
+apps/
+  channel-slack/     <b>@copilotkit/channels</b> → managed Slack      <i>[at work]</i>
+  channel-teams/     <i>same listener, Teams adapter</i>              <i>[at work]</i>
+  web/               <i>Next.js + CopilotKit generative UI</i>         <i>[on the web]</i>
+  mobile/            <i>Expo + @copilotkit/react-native</i>            <i>[in your pocket]</i>
+  voice/             <i>OpenAI Realtime over WebRTC</i>                <i>[in the room]</i>
+  plugin/            <i>MCP server + optional ChatGPT UI</i>           <i>[ChatGPT]</i></pre>
+      <p><code>agent-core</code> stays framework-agnostic: CopilotKit's <code>BuiltInAgent</code> by default — zero Python, zero extra process — with documented one-file swaps to LangGraph, Mastra, Pydantic AI, CrewAI, or Google ADK. The prior kit forced a Python <code>uv</code> plus <code>langgraph dev</code> process on everyone, and that cost isn't justified at minute zero.</p>
+      <h3 style="margin-top:26px">Why Channels needs no tunnel</h3>
+      <p>Delivery runs on two legs, and neither is Socket Mode. The provider posts inbound HTTPS to a CopilotKit-hosted request URL — Slack signed with a signing secret Intelligence holds, Teams with a Microsoft-signed bearer JWT. Then Intelligence dials <em>your</em> runtime over an <strong>outbound websocket</strong> authenticated by your project key. No ngrok, no public URL of your own, no app-level token. On a 255-minute clock that is the single biggest advantage the kit has over a raw Bolt app.</p>
+      <p>The flip side: the listener is a <strong>long-running worker</strong>, so it deploys like a queue consumer — Railway, Cloud Run with min-instances ≥ 1, Fly, plain Docker. <span class="pill p-bad">not serverless</span> Say so plainly in the README, or someone loses their 15:30 demo to a Vercel function.</p>
+    </section>
+
+    <section id="tiers">
+      <h2>Setup tiers</h2>
+      <p class="sub">Cumulative, and each one ships something demoable</p>
+      <div class="tiers">
+        <div class="tier">
+          <h3>Tier 0 — it answers</h3>
+          <p class="cost">5 min · one credential</p>
+          <p>Clone, install, drop in <code>OPENAI_API_KEY</code>, <code>npm run dev</code>. Web app and agent core, replying. No Docker, no Postgres, no provider app. Arrive at 11:15, write product code by 11:22.</p>
+        </div>
+        <div class="tier">
+          <h3>Tier 1 — it lives in Slack</h3>
+          <p class="cost">+15 min · zero tunnel</p>
+          <p><code>npx copilotkit@latest channels setup</code> installs a skill and prints a prompt your coding agent drives. Adds <code>INTELLIGENCE_API_KEY</code> and <code>CHANNEL_CODE</code>. Create the Channel <em>before</em> the Slack app — the wizard generates the manifest.</p>
+        </div>
+        <div class="tier">
+          <h3>Tier 2 — it does real work</h3>
+          <p class="cost">opt-in · one file each</p>
+          <p>Exa for grounded search, Ambiguous for a whole workplace, Trigger.dev for durable work, Auth0 for out-of-band approval, <code>mcpd</code> for declarative tools, OpenRouter for fallback. Pick two, not six.</p>
+        </div>
+      </div>
+      <p style="margin-top:22px">Keep the prior kit's two best habits verbatim: a <code>predev</code> pre-flight check that fails loudly with a <em>numbered</em> list of what's missing, and an <code>.env.example</code> where every variable carries a comment saying where to click plus a <code>stub-replace-me</code> placeholder so the app boots before credentials exist.</p>
+    </section>
+
+    <section id="patterns">
+      <h2>Flagship patterns</h2>
+      <p class="sub">Two working demos worth shipping in the kit</p>
+      <p>Both are honest combinations rather than sponsor checkboxes, and both make a two-minute video.</p>
+      <div class="pattern">
+        <h3>The two-tier approval</h3>
+        <p class="flow">agent proposes → <em>cheap</em>: in-thread Channels button → <em>expensive</em>: Auth0 CIBA push to phone → completes a Trigger.dev waitpoint → durable task resumes</p>
+        <p>Three sponsors, one coherent story, and it answers "why does this belong here" out loud. Managed Slack delivers button and select clicks (though not slash commands or modals), which is precisely what makes the in-thread gate fire.</p>
+      </div>
+      <div class="pattern">
+        <h3>Situated recall</h3>
+        <p class="flow">read thread history + participants + linked doc → ground via Exa <em>instant</em> → write back into the workplace as a native card</p>
+        <p>Rung 03 of the ladder in a single demo. The output lands in Ambiguous <code>tasks.*</code> or <code>mail.*</code> — where the work lives — rendered as a card rather than a paragraph.</p>
+      </div>
+    </section>
+
+    <section id="teardown">
+      <h2>Prior-kit teardown</h2>
+      <p class="sub">Generative UI Global Hackathon Starter Kit — cloned and read in full</p>
+      <div class="stack">
+        <div>
+          <h3>Keep</h3>
+          <p>The loud pre-flight check. The inline-documented <code>.env.example</code>. A conceptual spine in the README rather than just commands. Per-sponsor sections that are easy to add or drop. Pre-installed skills for three coding agents. The <code>dev-docs/</code> split that keeps the README a quickstart. And <code>demo-prompts.md</code> — underrated; it tells a team what to type to get something working in thirty seconds.</p>
+        </div>
+        <div>
+          <h3>Change</h3>
+          <div class="scroller">
+            <table>
+              <thead><tr><th>Problem</th><th>Fix</th></tr></thead>
+              <tbody>
+                <tr><td>Setup too heavy for the clock: Docker Compose with Postgres and Redis, a Python <code>uv sync</code>, four concurrent processes</td><td>A tier-0 path needing one credential and one process; Docker becomes opt-in</td></tr>
+                <tr><td>Notion's per-database share — the README itself calls it "the most common point of failure", three separate times</td><td>Default to an integration with no per-object ACL dance. Ambiguous provisions in one command</td></tr>
+                <tr><td>One monolithic demo, so a different idea meant gutting the repo</td><td>Several thin templates over one shared agent core</td></tr>
+                <tr><td>The same 11 skills copied into three directories — drift guaranteed</td><td>One <code>.agents/skills/</code>, symlinked. Exactly what channels-sdk already does</td></tr>
+                <tr><td>Gemini as the default model</td><td>OpenAI is the marquee sponsor: default <code>gpt-5.4-mini</code>, document <code>gpt-5.6-luna</code> (cheaper) and OpenRouter as swaps</td></tr>
+                <tr><td>A sample-data ZIP the builder imports through a web UI</td><td>Seed via API or CLI</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="traps">
+      <h2>Known traps</h2>
+      <p class="sub">Each one has already cost someone real time — seed the troubleshooting doc with all of them</p>
+      <ul class="traps">
+        <li><span class="pill p-warn">looks green</span><span><code>channels.ready()</code> resolves on <code>setup_required</code> as well as <code>online</code>. Assert <code>channels.status().overall === "online"</code>.</span></li>
+        <li><span class="pill p-warn">silent</span><span>Lifecycle breadcrumbs are emitted at <code>warn</code> while the runtime logger defaults to <code>error</code>. Run <code>LOG_LEVEL=debug</code> and watch for <code>channel "&lt;name&gt;" requires setup</code>.</span></li>
+        <li><span class="pill p-bad">race</span><span>Two runtimes declaring one Channel name race per delivery, and the loser gets nothing. The tell is a Slack reply your terminal knows nothing about. One project per local runtime.</span></li>
+        <li><span class="pill p-bad">no event</span><span>Workspace-installed is not the same as channel member — Slack emits no <code>app_mention</code> at all. <code>/invite @Bot</code>.</span></li>
+        <li><span class="pill p-flat">routing</span><span>Mentioned turns hit <code>onMention</code>, falling back to <code>onMessage</code>. Non-mentioned turns only ever reach <code>onMessage</code>. Verify with a channel mention first.</span></li>
+        <li><span class="pill p-flat">by design</span><span>Managed Slack delivers no slash commands and no modal submissions. Code registering them compiles, starts, reports online, and never fires.</span></li>
+        <li><span class="pill p-bad">authless</span><span>Slack wants a signing secret; Teams wants a Microsoft-signed bearer JWT. Cross them and the app installs cleanly and authenticates nothing.</span></li>
+        <li><span class="pill p-warn">order</span><span>Create the Channel <em>before</em> the provider app. The wizard generates a manifest already pointed at the right request URL; the kebab-case Code must match <code>createChannel({ name })</code> character for character.</span></li>
+        <li><span class="pill p-ok">not broken</span><span>The dashboard's "Agent run: —" and "AGENT: Not declared" are not failures. The <strong>Usage</strong> tab — completed turns, non-zero outbound — is what proves a round trip.</span></li>
+        <li><span class="pill p-flat">repo</span><span>GitHub only inline-plays video uploaded through a comment box as a user-attachment. Raw repo files and release assets serve <code>octet-stream</code> with <code>nosniff</code>, so a committed <code>&lt;video&gt;</code> stays dead.</span></li>
+      </ul>
+    </section>
+
+    <section id="open">
+      <h2>Open questions</h2>
+      <p class="sub">Resolve before Saturday</p>
+      <ul class="qs">
+        <li><b>The judging rubric and prize categories are unpublished</b> — promised to builders before the day. If they land, re-check that the Context Ladder still aligns with what's actually rewarded.</li>
+        <li><b>Builder credits and promo codes are unannounced.</b> Ship a <code>CREDITS.md</code> stub and fill it in at the 10:30 opening.</li>
+        <li><b>Local sponsor rosters differ.</b> Keep sponsor content in per-file sections so a city can drop one without editing prose.</li>
+        <li><b>Managed Teams support</b> needs a status check. Slack is the safe surface to demo.</li>
+        <li><b>Whether an official OpenAI or AI Tinkerers starter repo also ships</b> — and whether this kit should complement it rather than compete.</li>
+      </ul>
+    </section>
+
+  </main>
+
+  <footer>
+    <span>Agents, Everywhere: Bots, Channels &amp; More — Global Hackathon</span>
+    <span>Research compiled 8 Sep 2026</span>
+    <span>Versions verified against npm, not recalled</span>
+  </footer>
+
+</div>
