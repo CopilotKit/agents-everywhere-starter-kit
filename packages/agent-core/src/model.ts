@@ -1,8 +1,8 @@
 /**
  * Model resolution.
  *
- * Defaults to OpenAI (marquee sponsor, and `gpt-5.4-mini` is cheap enough to run
- * a whole build day on). Setting OPENROUTER_API_KEY flips the whole kit onto
+ * Defaults to OpenAI (marquee sponsor) on `gpt-5.6-sol`, with `gpt-6-astra` one
+ * env var away. Setting OPENROUTER_API_KEY flips the whole kit onto
  * OpenRouter with no other change — that is your insurance if OpenAI
  * rate-limits you at 14:00 with the demo at 15:30.
  *

@@ -38,7 +38,7 @@ if [ -f .env ]; then
     sk-*)               ;;
     *)                  warn "OPENAI_API_KEY does not start with 'sk-'. If you are proxying through a gateway, ignore this." ;;
   esac
-  [ -z "${MODEL:-}" ] && warn "MODEL is unset; falling back to gpt-5.4-mini."
+  [ -z "${MODEL:-}" ] && warn "MODEL is unset; falling back to gpt-5.6-sol."
 
   # ── tier 1: all-or-nothing. Half-configured Channels is the worst state. ──
   if [ -n "${INTELLIGENCE_API_KEY:-}" ] || [ -n "${CHANNEL_CODE:-}" ]; then

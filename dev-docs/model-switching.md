@@ -3,15 +3,21 @@
 ## Change the model
 
 ```dotenv
-MODEL=gpt-5.4-mini
+MODEL=gpt-5.6-sol
 ```
 
 | Model | Note |
 |---|---|
-| `gpt-5.4-mini` | the kit default · $0.38/$2.25 per MTok |
-| `gpt-5.6-luna` | cheapest current model · $0.20/$1.20 |
-| `gpt-5.6-sol` | flagship; reach for it when the agent has to reason |
-| `gpt-6-astra` | most capable, and slow and costly for a chat turn |
+| `gpt-5.6-sol` | the kit default · flagship · $5.00/$30.00 per MTok |
+| `gpt-6-astra` | most capable — built for the hardest end-to-end work |
+| `gpt-5.6-terra` | balances capability with cost |
+| `gpt-5.6-luna` | cheapest · $0.20/$1.20 per MTok |
+
+**On cost:** the default is a flagship model, which is the right call for an agent
+that has to read a thread, pick a tool, and render a card in one turn. If you are
+running on hackathon credits and watching them drain, `gpt-5.6-luna` is roughly
+25x cheaper per token and holds up fine for chat-shaped work — it is a one-line
+change and nothing else in the kit cares.
 
 The runtime's resolver normalises `/` and `:`, so `openai/gpt-5.6-luna` and
 `openai:gpt-5.6-luna` are the same thing. A bare name gets `openai:` prefixed.
@@ -36,8 +42,8 @@ OPENROUTER_API_KEY=sk-or-...
 
 `packages/agent-core/src/model.ts` detects it and routes everything through
 OpenRouter's OpenAI-compatible endpoint, with cost-optimized routing and provider
-fallbacks behind it. `MODEL` is turned into an OpenRouter slug (`gpt-5.4-mini` →
-`openai/gpt-5.4-mini`); set a full slug yourself to pick a different vendor:
+fallbacks behind it. `MODEL` is turned into an OpenRouter slug (`gpt-5.6-sol` →
+`openai/gpt-5.6-sol`); set a full slug yourself to pick a different vendor:
 
 ```dotenv
 MODEL=anthropic/claude-sonnet-4-6

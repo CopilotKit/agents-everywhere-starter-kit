@@ -1,10 +1,9 @@
 <div align="center">
 
-![Agents, everywhere — starter kit](assets/banner.png)
-
 # Agents, Everywhere — Starter Kit
 
-**Build an agent that belongs where people already work.**
+![Agents, everywhere — build an agent that belongs where people already work](assets/banner.png)
+
 Slack and Teams out of the box, one agent behind every surface, and no tunnel.
 
 [Quickstart](#run-it-locally) · [The Context Ladder](#the-context-ladder) · [Stack](#stack) · [dev-docs](dev-docs/) · [Submission checklist](SUBMISSION.md)
@@ -135,7 +134,7 @@ Pinned here as a tested pair: `@copilotkit/channels@0.9.2` + `@copilotkit/runtim
 
 ### OpenAI
 
-The default model provider. `gpt-5.4-mini` is cheap enough to run a whole build day on; `gpt-5.6-luna` is cheaper still and `gpt-5.6-sol` is the one to reach for when the agent actually has to reason — all one-line changes.
+The default model provider. The kit runs on **`gpt-5.6-sol`**, with **`gpt-6-astra`** a one-line change away when a build needs the hardest end-to-end reasoning — and `gpt-5.6-luna` a one-line change the other way if hackathon credits start running out.
 
 Also behind two of the surfaces here: the **Realtime API** (`gpt-realtime-2.1` over WebRTC) drives `/voice`, and the **plugins** model — an MCP server plus skills plus optional UI — is what `apps/mcp` implements for agents living inside ChatGPT itself.
 

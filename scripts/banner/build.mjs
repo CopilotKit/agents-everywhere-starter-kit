@@ -36,16 +36,39 @@ const C = {
   primary: "#EEE6FE",
 };
 
-const SURFACES = ["SLACK", "TEAMS", "WEB", "VOICE", "CHATGPT", "MOBILE"];
+/**
+ * The sponsor lineup, in the event's own order: global sponsors first, then the
+ * developer-infrastructure partners. Every mark in assets/sponsors/ is the
+ * brand's own official lockup, flattened to one colour by monochrome.py —
+ * shapes untouched, paint only.
+ *
+ * `scale` is an OPTICAL correction, not a whim. Normalising every lockup to the
+ * same box height makes them look wrong, because they carry different amounts
+ * of internal padding: Mozilla.ai's wordmark fills its viewBox edge to edge
+ * while Auth0's sits small inside a tall box. These multipliers were tuned by
+ * eye against a contact sheet so the row reads as one weight.
+ *
+ * CopilotKit is a global sponsor too, but sits bottom-right as the kit's
+ * publisher rather than appearing twice.
+ */
+const SPONSORS = [
+  { slug: "openai", name: "OpenAI", scale: 1.0 },
+  { slug: "openrouter", name: "OpenRouter", scale: 1.18 },
+  { slug: "exa", name: "Exa", scale: 1.06 },
+  { slug: "trigger", name: "Trigger.dev", scale: 1.05 },
+  { slug: "auth0", name: "Auth0", scale: 1.3 },
+  { slug: "mozilla", name: "Mozilla.ai", scale: 0.72 },
+  { slug: "ambiguous", name: "Ambiguous AI", scale: 0.95 },
+];
+
+const MARK_H = 23; // base optical height, before each mark's scale
 
 const spec = {
   eyebrow: { font: SSM, wght: 500, text: "GLOBAL HACKATHON · 12 SEPTEMBER 2026", size: 15, tracking: 2.6 },
   hero: { font: PJS, wght: 800, text: "Agents, everywhere", size: 76, tracking: -1.2 },
   sub: { font: PJS, wght: 400, text: "Build an agent that belongs where people already work.", size: 22 },
   foot: { font: PJS, wght: 500, text: "Starter kit · one agent, every surface", size: 13, tracking: 0.1 },
-  ...Object.fromEntries(
-    SURFACES.map((label) => [`pill_${label}`, { font: SSM, wght: 500, text: label, size: 14, tracking: 1.4 }]),
-  ),
+  builtwith: { font: SSM, wght: 500, text: "BUILT WITH", size: 12, tracking: 2.4 },
 };
 
 // The brand fonts are fetched on demand rather than vendored, so the repo
@@ -75,22 +98,35 @@ const runs = JSON.parse(
 const place = (key, x, y, fill) =>
   `  <path transform="translate(${x} ${y})" d="${runs[key].d}" fill="${fill}"/>`;
 
-// ── pills, sized from their own measured label widths ───────────────────────
-const PILL_PAD = 22;
-const PILL_H = 38;
-const PILL_GAP = 12;
-const PILL_Y = 340;
-let pillX = 96;
-const pills = SURFACES.flatMap((label) => {
-  const w = runs[`pill_${label}`].width;
-  const boxW = Math.round(w + PILL_PAD * 2);
-  const parts = [
-    `  <rect x="${pillX}" y="${PILL_Y}" width="${boxW}" height="${PILL_H}" rx="${PILL_H / 2}" fill="${C.white}" stroke="${C.line}"/>`,
-    place(`pill_${label}`, pillX + PILL_PAD, PILL_Y + 24, "#2B2B2B"),
-  ];
-  pillX += boxW + PILL_GAP;
-  return parts;
+// ── sponsor row ────────────────────────────────────────────────────────────
+// Each mark is embedded as its own <image> data URI, so gradient ids from the
+// original brand files cannot collide. `currentColor` is substituted for a
+// literal here because an <image> is a separate document and would not inherit
+// the parent's colour.
+const MARK_FILL = C.body;
+const ROW_Y = 372; // vertical centre of the row
+const ITEM_GAP = 40;
+
+const sponsorMark = (slug) => {
+  const raw = readFileSync(join(assets, "sponsors", `${slug}.svg`), "utf8");
+  const vb = raw.match(/viewBox="([^"]+)"/)[1].split(/\s+/).map(Number);
+  const painted = raw.replaceAll("currentColor", MARK_FILL);
+  return {
+    ratio: vb[2] / vb[3],
+    href: `data:image/svg+xml;base64,${Buffer.from(painted).toString("base64")}`,
+  };
+};
+
+let rowX = 96;
+const sponsorRow = SPONSORS.map((sp) => {
+  const mark = sponsorMark(sp.slug);
+  const h = +(MARK_H * sp.scale).toFixed(2);
+  const w = +(h * mark.ratio).toFixed(2);
+  const el = `  <image x="${rowX}" y="${(ROW_Y - h / 2).toFixed(2)}" width="${w}" height="${h}" xlink:href="${mark.href}"><title>${sp.name}</title></image>`;
+  rowX += w + ITEM_GAP;
+  return el;
 });
+const rowWidth = rowX - ITEM_GAP - 96;
 
 // ── the packaged logotype, never redrawn ───────────────────────────────────
 const logo = readFileSync(join(assets, "copilotkit-logo-full.svg"), "utf8");
@@ -119,13 +155,14 @@ ${[["Lilac", C.lilac, 0.55], ["Mint", C.mint, 0.4], ["Primary", C.primary, 0.85]
   <circle cx="1120" cy="380" r="300" fill="url(#glowPrimary)"/>
   <circle cx="120" cy="470" r="240" fill="url(#glowLilac)" opacity="0.5"/>
 
-${place("eyebrow", 96, 132, C.body)}
-${place("hero", 94, 228, C.ink)}
-${place("sub", 96, 286, C.body)}
+${place("eyebrow", 96, 128, C.body)}
+${place("hero", 94, 224, C.ink)}
+${place("sub", 96, 282, C.body)}
 
-${pills.join("\n")}
+${place("builtwith", 96, 340, C.faint)}
+${sponsorRow.join("\n")}
 
-${place("foot", 96, 438, C.faint)}
+${place("foot", 96, 448, C.faint)}
 
   <!-- clearspace >= 1/2 the logotype height on every side -->
   <image x="1240" y="${(500 - LOGO_H - 58).toFixed(2)}" width="${LOGO_W}" height="${LOGO_H}"
@@ -144,4 +181,4 @@ await sharp(Buffer.from(svg), { density: 96 })
 const meta = await sharp(join(assets, "banner.png")).metadata();
 console.log(`banner.svg  ${(svg.length / 1024).toFixed(0)}kB (self-contained, outlines)`);
 console.log(`banner.png  ${meta.width}x${meta.height}`);
-console.log(`hero run width ${runs.hero.width.toFixed(0)}px · pills end at ${pillX - PILL_GAP}px`);
+console.log(`hero ${runs.hero.width.toFixed(0)}px · sponsor row ${rowWidth.toFixed(0)}px of 1408px available`);
