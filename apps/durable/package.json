@@ -1,0 +1,21 @@
+{
+  "name": "durable",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Durable work that outlives a chat turn \u2014 Trigger.dev tasks and the approval chain.",
+  "scripts": {
+    "dev": "npx trigger.dev@latest dev",
+    "deploy": "npx trigger.dev@latest deploy",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@trigger.dev/sdk": "^4.5.16",
+    "agent-core": "*",
+    "zod": "^4.1.0"
+  },
+  "exports": {
+    ".": "./src/index.ts",
+    "./trigger/*": "./src/trigger/*.ts"
+  }
+}

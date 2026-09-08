@@ -13,6 +13,8 @@
     "@copilotkit/channels": "0.9.2",
     "@copilotkit/runtime": "1.70.1",
     "agent-core": "*",
-    "zod": "^4.1.0"
+    "zod": "^4.1.0",
+    "@trigger.dev/sdk": "^4.5.16",
+    "durable": "*"
   }
 }

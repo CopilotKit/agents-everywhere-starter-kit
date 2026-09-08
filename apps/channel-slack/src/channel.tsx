@@ -3,8 +3,16 @@ import { makeAgent, isSearchConfigured } from "agent-core";
 import { required } from "./env";
 import { BriefCard, ComparisonTable, welcomeMessage } from "./components";
 import { confirmAction, readThread, searchTheWeb } from "./tools";
+import { isDurableConfigured, runDeepWork } from "./durable";
 
-const tools = [readThread, confirmAction, ...(isSearchConfigured() ? [searchTheWeb] : [])];
+// Tools are registered only when their credential is present, so the agent is
+// never handed a tool that will fail when it calls it.
+const tools = [
+  readThread,
+  confirmAction,
+  ...(isSearchConfigured() ? [searchTheWeb] : []),
+  ...(isDurableConfigured() ? [runDeepWork] : []),
+];
 
 export const channel = createChannel({
   // Must equal the Channel Code in Intelligence, character for character. A

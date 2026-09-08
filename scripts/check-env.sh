@@ -44,6 +44,15 @@ if [ -f .env ]; then
   if [ -n "${INTELLIGENCE_API_KEY:-}" ] || [ -n "${CHANNEL_CODE:-}" ]; then
     [ -z "${INTELLIGENCE_API_KEY:-}" ] && fail "CHANNEL_CODE is set but INTELLIGENCE_API_KEY is not. Create a project-scoped key under API Keys in the Intelligence sidebar."
     [ -z "${CHANNEL_CODE:-}" ]         && fail "INTELLIGENCE_API_KEY is set but CHANNEL_CODE is not. Copy the Channel Code from Intelligence — exactly."
+    # The runtime parses the project id out of the key and fails activation if
+    # it cannot. Catch a wrong-format key here instead of at startup.
+    if [ -n "${INTELLIGENCE_API_KEY:-}" ]; then
+      case "$INTELLIGENCE_API_KEY" in
+        cpk-*_*) ;;
+        *) warn "INTELLIGENCE_API_KEY does not look like 'cpk-{projectId}_...'. The runtime parses the project id out of it and Channel activation will fail with ChannelConfigError. Copy it from API Keys in the Intelligence project sidebar." ;;
+      esac
+    fi
+
     if [ -n "${CHANNEL_CODE:-}" ]; then
       if ! printf '%s' "$CHANNEL_CODE" | grep -Eq '^[a-z][a-z0-9]*(-[a-z0-9]+)*$'; then
         fail "CHANNEL_CODE '$CHANNEL_CODE' is not a valid Channel Code: lowercase letters and digits separated by single hyphens, starting with a letter."
@@ -75,6 +84,15 @@ if [ -f .env ]; then
     esac
   else
     warn "EXA_API_KEY not set — the web search tool will not be registered."
+  fi
+
+  if [ -n "${TRIGGER_SECRET_KEY:-}" ]; then
+    case "$TRIGGER_SECRET_KEY" in
+      tr_dev_*|tr_prod_*) ;;
+      *) warn "TRIGGER_SECRET_KEY does not start with tr_dev_ or tr_prod_. Create one with \"Trigger only\" access in the Trigger.dev dashboard." ;;
+    esac
+  else
+    warn "TRIGGER_SECRET_KEY not set — the durable work tool (run_deep_work) will not be registered."
   fi
 fi
 

@@ -19,7 +19,7 @@ The build window is **11:15–15:30**. That is **255 minutes**, and every decisi
 
 - **One credential gets you a running agent.** No Docker, no Postgres, no second process.
 - **Zero tunnel for Slack.** No ngrok, no public URL of your own, no app-level token.
-- **One agent, every surface.** The Slack listener and the terminal REPL run the *same* agent. Adding web, mobile, or voice is a new binding, not a rewrite.
+- **One agent, every surface.** Terminal, Slack, web, voice, ChatGPT and mobile all run the *same* agent. Adding another is a new binding, not a rewrite.
 - **A pre-flight check that fails loudly**, with a numbered list of exactly what to fix.
 
 Everything here is meant to be gutted. Keep the plumbing, throw away the demo.
@@ -82,23 +82,31 @@ Full walkthrough: **[dev-docs/setup.md](dev-docs/setup.md)**. Stuck: **[dev-docs
 ## How it fits together
 
 ```
-packages/agent-core        ONE agent. Model, prompt, capabilities. Framework-agnostic.
+packages/agent-core        ONE agent. Model, prompt, capabilities.
   src/agent.ts               BuiltInAgent by default — swap for LangGraph, CrewAI,
                              Mastra, Pydantic AI or Google ADK by returning an
                              HttpAgent instead. Nothing else changes.
   src/model.ts               OpenAI by default; one env var flips it to OpenRouter.
   src/prompt.ts              How to behave inside someone else's workspace.
+  src/shared.ts              The browser-safe surface — prompt, schemas, notes.
   src/capabilities/          Surface-agnostic implementations (Exa search).
 
-apps/local-chat            Tier 0 — the same agent, in your terminal.
-apps/channel-slack         Tier 1 — the same agent, in a Slack or Teams thread.
+apps/local-chat            your terminal        — tier 0, one credential
+apps/channel-slack         Slack / Teams        — Channels, zero tunnel
   src/channel.tsx            createChannel + handlers
   src/components.tsx         agent-rendered native cards (rung 3)
   src/tools.tsx              read_thread, search_web, confirm_action
+  src/durable.tsx            run_deep_work — the two-tier approval
   src/server.ts              lifecycle — and why `ready()` is not proof of life
+apps/web                   the browser          — generative UI + /voice
+apps/mcp                   ChatGPT / Claude     — MCP server with a UI widget
+apps/durable               Trigger.dev          — work that outlives a chat turn
+apps/mobile                iOS / Android        — Expo, standalone (see below)
 ```
 
-Both apps import the same `makeAgent`. That is the whole point of [AG-UI](https://docs.copilotkit.ai): the agent does not know or care which surface it is talking through.
+Every surface imports the same `makeAgent`. That is the whole point of [AG-UI](https://docs.copilotkit.ai): the agent does not know or care which surface it is talking through.
+
+Two deliberate exceptions, both documented where they live: **voice** cannot run `BuiltInAgent` because Realtime is a different model family, so it shares the prompt and capabilities instead; and **mobile** is not an npm workspace member, because React Native pins its own `react` and hoisting that can break the web app.
 
 ### Why Slack needs no tunnel
 
@@ -127,7 +135,7 @@ Pinned here as a tested pair: `@copilotkit/channels@0.9.2` + `@copilotkit/runtim
 
 The default model provider. `gpt-5.4-mini` is cheap enough to run a whole build day on; `gpt-5.6-luna` is cheaper still and `gpt-5.6-sol` is the one to reach for when the agent actually has to reason — all one-line changes.
 
-Also the answer for two surfaces this kit does not yet ship: the **Realtime API** (`gpt-realtime-2.1` over WebRTC) for *in the room*, and **plugins** — an MCP server plus skills plus optional UI — for agents inside ChatGPT itself.
+Also behind two of the surfaces here: the **Realtime API** (`gpt-realtime-2.1` over WebRTC) drives `/voice`, and the **plugins** model — an MCP server plus skills plus optional UI — is what `apps/mcp` implements for agents living inside ChatGPT itself.
 
 [Models →](https://developers.openai.com/api/docs/models) · [Realtime →](https://developers.openai.com/api/docs/guides/realtime) · [Plugins →](https://developers.openai.com/plugins/)
 
@@ -149,7 +157,7 @@ Search built for agents, and the grounding layer for every surface here. The det
 
 Open-source background jobs in plain async code — queuing, retries, elastic scaling. Its **waitpoint tokens** are the natural partner to a Channels approval gate: a button click completes a `wait.forToken()`, and the task resumes to do work that outlives the chat turn.
 
-Not wired in yet — see [Where to go next](#where-to-go-next).
+Wired up in `apps/durable` and exposed to Slack as the `run_deep_work` tool. See [dev-docs/durable-work.md](dev-docs/durable-work.md).
 
 [More about Trigger.dev →](https://trigger.dev/docs/quick-start)
 
@@ -215,18 +223,29 @@ Honest status. What ships works and is typechecked; the rest is scaffolding you 
 
 | Surface | Status |
 |---|---|
-| Terminal (tier 0) | **working** |
-| Slack (managed Channel) | **working** |
-| Microsoft Teams | **working** — swap `--adapter teams`; same JSX, needs admin consent |
+| Terminal (tier 0) | **working** — reaches the model, verified |
+| Slack (managed Channel) | **working** — boots to real Channel activation; needs your Intelligence project to prove the round trip |
+| Microsoft Teams | swap `--adapter teams`; same JSX renders as Adaptive Cards |
+| Web — Next.js + generative UI | **working** — `next build` passes, `useComponent` / HITL / frontend tools wired |
+| Voice — OpenAI Realtime over WebRTC | **working** — ephemeral client secrets, `gpt-realtime-2.1` |
+| ChatGPT / Claude / Codex — MCP server | **working** — verified against the live protocol: initialize, tools/list, tools/call, resources/read |
+| Trigger.dev durable work + waitpoint approval | **wired** — typechecked; needs a Trigger.dev project to run |
+| Mobile — Expo + `@copilotkit/react-native` | **scaffolded** — installs, Expo-aligned, typechecks; **not** device-verified |
+| Auth0 CIBA out-of-band approval | **seam only** — deliberately a throwing stub, not a guess |
 | Discord / Telegram / WhatsApp | adapters ship in `@copilotkit/channels`; not wired here |
-| Web — Next.js + generative UI | not built · [dev-docs/surfaces.md](dev-docs/surfaces.md) |
-| Mobile — Expo + `@copilotkit/react-native` | not built · the interesting build is notifications, not chat |
-| Voice — OpenAI Realtime | not built · WebRTC for clients, SIP for telephony |
-| ChatGPT plugin — MCP + skills + UI | not built |
-| Trigger.dev durable work + waitpoint approvals | not built · the strongest sponsor pairing here |
-| Auth0 CIBA out-of-band approval | not built |
 
-**The pattern worth building first:** agent proposes → cheap actions get an in-thread button → expensive ones trigger an Auth0 CIBA push to a phone → approval completes a Trigger.dev waitpoint → a durable task resumes. Three sponsors, one coherent story, and it answers "why does this belong here" out loud.
+Everything marked *working* was exercised, not just compiled. The two that are not
+say so, and `apps/mobile/README.md` and `apps/durable/src/approvals.ts` explain
+exactly what is left.
+
+**The two-tier approval is already built**, minus its last mile. `confirm_action`
+gates cheap things with an in-thread button that blocks the tool. `run_deep_work`
+handles the expensive ones: it creates a Trigger.dev waitpoint, hands the job to a
+durable task that parks on it, and posts an approval card — so the thread stays
+live while a job that outlives the conversation waits on a human. Approve, and the
+task wakes up and works. The remaining step is routing that same waitpoint through
+an Auth0 CIBA push instead of a channel button, for the actions where "somebody
+clicked in Slack" is not a strong enough claim about who approved it.
 
 ---
 
