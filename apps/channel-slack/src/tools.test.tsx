@@ -1,16 +1,34 @@
-/**
- * Tool tests — the safety properties, mostly.
- *
- * A channel tool handler takes `(args, ChannelToolContext)`, and these tools
- * touch only the context's `thread`. So a stub thread is enough to assert the
- * two behaviours that actually matter: that the agent is told to stop dead when
- * a human declines, and that missing history degrades into a legible
- * instruction rather than a silent empty array.
- */
 import { describe, it, mock } from "node:test";
 import assert from "node:assert/strict";
-import { renderToIR } from "@copilotkit/channels";
+import { createChannel, Thread } from "@copilotkit/channels";
+import { startChannelsWithGatewayControl } from "@copilotkit/channels-intelligence";
+// Pinned SDK's offline gateway fixture: exercises the actual managed delivery
+// adapter, rendering and action registry without accounts or network calls.
+import { DeliveryTestGateway, preparedDelivery } from "../../../node_modules/@copilotkit/channels-intelligence/dist/delivery-test-gateway.js";
+import { z } from "zod";
 import { proposeAction, readThread } from "./tools";
+
+// The SDK fixture predates the required stable providerMessageId ack field.
+class ManagedGateway extends DeliveryTestGateway {
+  override async join(topic: string, payload: unknown) {
+    const channel = await super.join(topic, payload);
+    return {
+      ...channel,
+      push: async (event: string, packet: unknown) => {
+        const ack = z.object({ result: z.record(z.string(), z.unknown()) }).passthrough()
+          .parse(await channel.push(event, packet));
+        return { ...ack, result: { ...ack.result, providerMessageId: "pid_v1_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQ" } };
+      },
+    };
+  }
+}
+
+function concreteThread(value: unknown): Thread {
+  // createChannel's StatefulThread type narrows state() incompatibly with the
+  // tool context in 0.9.2; verify the actual SDK instance instead of casting.
+  assert.ok(value instanceof Thread);
+  return value;
+}
 
 /** Only the methods these tools call; the rest of Thread is irrelevant here. */
 const stubContext = (thread: Record<string, unknown>) =>
@@ -52,44 +70,77 @@ describe("propose_action", () => {
     reversible: true,
   };
 
-  const choiceTree = (fn: ReturnType<typeof mock.fn>) =>
-    JSON.stringify(renderToIR(fn.mock.calls[0]!.arguments[0] as never));
-
-  it("blocks on awaitChoice and tells the agent to proceed only once approved", async () => {
-    const awaitChoice = mock.fn(async () => true);
-    const result = await proposeAction.handler(args, stubContext({ awaitChoice }));
-
-    assert.equal(awaitChoice.mock.callCount(), 1);
-    assert.match(String(result), /approved/i);
-    assert.match(String(result), /report exactly what you did/i);
-  });
-
-  it("tells the agent to stop dead when the responder holds", async () => {
-    const awaitChoice = mock.fn(async () => false);
-    const result = await proposeAction.handler(args, stubContext({ awaitChoice }));
-    const text = String(result);
-
-    assert.match(text, /do not take the action/i);
-    // The failure mode worth guarding: an agent that reads a refusal as an
-    // invitation to find another way in.
-    assert.match(text, /do not offer a workaround/i);
-    assert.doesNotMatch(text, /\bapproved\b/i);
-  });
-
-  it("puts both an approve and a hold control in front of the human", async () => {
-    const awaitChoice = mock.fn(async () => false);
-    await proposeAction.handler(args, stubContext({ awaitChoice }));
-    const tree = choiceTree(awaitChoice);
-
-    assert.ok(tree.includes("Approve"));
-    assert.ok(tree.includes("Hold"));
-    assert.ok(tree.includes(args.blastRadius));
-  });
-
-  it("says out loud when an action is not easily reversible", async () => {
-    const awaitChoice = mock.fn(async () => false);
-    await proposeAction.handler({ ...args, reversible: false }, stubContext({ awaitChoice }));
-
-    assert.match(choiceTree(awaitChoice), /NOT easily reversible/);
-  });
+  for (const choice of ["Approve", "Hold"]) {
+    it(`posts a real managed card and reports ${choice} on a later delivery`, { timeout: 10_000 }, async () => {
+      const gateway = new ManagedGateway();
+      const channel = createChannel({ name: "support", identifyUser: "platform" });
+      let result: unknown;
+      channel.onMessage(async ({ thread }) => {
+        try {
+          assert.equal(thread.supportsBlockingChoice, false);
+          result = await proposeAction.handler({ ...args, reversible: false }, { thread: concreteThread(thread), user: { id: "u1", name: "Priya" }, actor: { id: "a1", kind: "human" }, platform: "slack" });
+        } catch (error) { result = String(error); throw error; }
+      });
+      const runCanonical = mock.fn();
+      const handle = await startChannelsWithGatewayControl([channel], {
+        session: gateway,
+        scope: { projectId: 1, channelName: "support" },
+        runtimeInstanceId: "rti_proposal",
+        runCanonical: async (args) => {
+          // Neither the proposal handler nor the click resumes an agent.
+          runCanonical();
+          return args.execute({});
+        },
+        loadHistory: async () => [],
+      });
+      try {
+        const proposalDelivery = preparedDelivery("proposal", "slack", { kind: "text", text: "Propose a rollback" });
+        await gateway.deliver(proposalDelivery);
+        assert.match(String(result), /decision pending/, JSON.stringify(gateway.packets));
+        assert.match(String(result), /Do not take the action, call write tools, or offer a workaround/);
+        const payloads = gateway.packets.map(({ payload }) => payload);
+        const card = payloads.find((payload) => payload.kind === "slack.message.create");
+        assert.ok(card, "managed adapter must post the proposal before ending the delivery");
+        assert.match(JSON.stringify(card), /NOT easily reversible/);
+        assert.match(JSON.stringify(card), /All web traffic/);
+        assert.match(JSON.stringify(card), /Approve/);
+        assert.match(JSON.stringify(card), /Hold/);
+        // Read the real Slack action ID generated by Channels, then deliver it
+        // through the gateway in a separate (nonblocking) interaction turn.
+        const blocks = z.array(z.object({ type: z.string(), elements: z.array(z.unknown()).optional() })).parse(card.blocks);
+        const buttons = blocks.flatMap((block) => block.type === "actions" ? block.elements ?? [] : [])
+          .map((element) => z.object({ type: z.literal("button"), text: z.object({ text: z.string() }), action_id: z.string() }).parse(element));
+        const button = buttons.find((element) => element.text.text === choice);
+        assert.ok(button);
+        const clickDelivery = preparedDelivery("proposal_click", "slack", {
+          kind: "interaction",
+          actionId: button.action_id,
+          messageRef: { id: "pref_v1_proposal_message_123" },
+        });
+        await gateway.deliver({ ...proposalDelivery, deliveryId: clickDelivery.deliveryId, turn: clickDelivery.turn });
+        const update = gateway.packets.map(({ payload }) => payload).find((payload) => payload.kind === "slack.message.replace");
+        assert.ok(update, "click must replace the proposal with the decision");
+        assert.match(JSON.stringify(update), /No action was executed/);
+        assert.match(JSON.stringify(update), choice === "Approve" ? /Approved proposal/ : /Do not take the action or offer a workaround/);
+        // The SDK keeps both action IDs registered after replacing the card.
+        // Replay the first choice, then deliver a stale opposite choice: neither
+        // may overwrite the first recorded decision (including an initial Hold).
+        const oppositeButton = buttons.find((element) => element.text.text !== choice);
+        assert.ok(oppositeButton);
+        for (const [index, actionId] of [button.action_id, oppositeButton.action_id].entries()) {
+          const replayDelivery = preparedDelivery(`proposal_replay_${index}`, "slack", {
+            kind: "interaction",
+            actionId,
+            messageRef: { id: "pref_v1_proposal_message_123" },
+          });
+          await gateway.deliver({ ...proposalDelivery, deliveryId: replayDelivery.deliveryId, turn: replayDelivery.turn });
+        }
+        const updates = gateway.packets.map(({ payload }) => payload).filter((payload) => payload.kind === "slack.message.replace");
+        assert.equal(updates.length, 1, "duplicate and opposite clicks must preserve the first decision");
+        assert.equal(runCanonical.mock.callCount(), 0, "click reporting must not automatically resume the agent");
+      } finally {
+        await handle.stop();
+      }
+    });
+  }
 });

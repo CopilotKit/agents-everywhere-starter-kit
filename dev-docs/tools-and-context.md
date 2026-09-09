@@ -5,8 +5,9 @@ live in `apps/channel-slack/src/`.
 
 ## Tools — `defineChannelTool`
 
-A channel tool handler receives the **live thread**, which is what makes an
-approval gate possible: the tool can stop mid-execution, post a card, and block.
+A channel tool handler receives the **live thread**, so it can post native UI
+and return a result to the agent. Managed deliveries finish without waiting for
+a later button click.
 
 ```ts
 const getOncall = defineChannelTool({
@@ -47,11 +48,12 @@ list. A made-up tag does not lower to a valid IR node.
 
 ## Agent-rendered components — `defineChannelComponent`
 
-Turns a component into a tool the agent can call to draw UI itself:
+Turns a component into a tool the agent can call to draw UI itself. This minimal
+illustration is smaller than the incident schema shipped in `components.tsx`:
 
 ```tsx
-export const BriefCard = defineChannelComponent({
-  name: "brief_card",
+export const IncidentCard = defineChannelComponent({
+  name: "incident_card",
   description: "Render a short brief as a native card.",
   parameters: z.object({ headline: z.string(), summary: z.string() }),
   render({ headline, summary }) {
@@ -60,25 +62,34 @@ export const BriefCard = defineChannelComponent({
 });
 ```
 
-Pass via `createChannel({ components: [BriefCard] })`. Registration is also what
+Pass via `createChannel({ components: [IncidentCard] })`. Registration is also what
 lets handlers be recovered after a restart when a durable store is configured.
 
-This kit ships `brief_card` and `comparison_table`. **Ship at least one** — the
-setup guide gates success on a component rendering, and a global review will
-notice the difference between a text bot and one that renders native cards.
+This kit ships `incident_card` and `timeline`. Use a native artifact when it makes
+the incident easier to understand. The Context Ladder is kit design guidance,
+not an announced judging rubric.
 
-## Approval gates — `awaitChoice`
+## Managed action proposals
 
-`thread.awaitChoice<T>(ui)` posts a picker and blocks until someone clicks,
-resolving to the clicked button's `value`. Called from inside a tool handler, it
-is a hard gate: the agent is mid-tool-call and cannot proceed past a refusal.
+`propose_action` uses `thread.post()` with inline `onClick` handlers. It posts a
+native card and immediately returns **decision pending**, instructing the agent
+to stop without calling write tools. On a later delivery, **Approve** replaces
+the card with “Approved proposal. No action was executed.” **Hold** reports that
+nothing ran and the action must not be taken. Neither click resumes the agent.
+This is a proposal demo, not a production executor or a hard authorization gate
+around arbitrary MCP writes.
 
-See `confirm_action` in `apps/channel-slack/src/tools.tsx`. Button clicks are
-delivered on the managed path, so this fires without extra setup.
+The installed managed adapter sets `supportsBlockingChoice: false`:
+`thread.awaitChoice()` rejects before posting a card. Use blocking `awaitChoice`
+only with adapters that support it. Agents that emit interrupts can instead use
+`onInterrupt` plus `Thread.resume()` on a later interaction delivery; this kit's
+BuiltInAgent proposal tool does not implement that continuation flow.
 
-> Inline `onClick` handlers route **in-process only** and are lost on restart.
-> Handlers on a registered component with a durable store survive one — see
-> `references/hitl-patterns.md` in the skill.
+Run **one listener instance**, and keep it running until the click. Inline
+handlers are process-local and cannot be recovered after a restart or by another
+replica. To support replicas, use reconstructible registered-component handlers
+with shared persistent action bindings; a durable store alone cannot restore an
+inline closure.
 
 ## Context — `ContextEntry`
 

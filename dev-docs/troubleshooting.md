@@ -3,6 +3,25 @@
 Ordered by how often each one wastes an afternoon. Every entry here has already
 cost somebody real time.
 
+## OpenRouter-only setup asks for an OpenAI key
+
+Set `MODEL_PROVIDER=openrouter` and `OPENROUTER_API_KEY` in root `.env`, choose an
+available `MODEL` slug, and restart. `npm run check-env` validates the selected
+chat provider. `/voice` separately needs OpenAI Realtime credentials. See
+[model switching](model-switching.md).
+
+## Verification versus configured startup
+
+`npm run verify` needs no `.env` or live credentials. `npm run check-env` does:
+it validates your selected provider and configured surfaces, without authenticating
+against remote services. A successful offline check does not prove live access.
+
+## Background research never arrives
+
+Results are not pushed automatically. Ask `check run_YOUR_ID` in the originating
+thread. Ensure the Trigger worker has its own Exa environment configuration and
+that approval was clicked before a listener restart. See [durable work](durable-work.md).
+
 ## It boots, reports online, and answers nothing
 
 **1. The Channel is `setup_required`, not `online`.**

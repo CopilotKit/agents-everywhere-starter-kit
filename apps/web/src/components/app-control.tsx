@@ -1,44 +1,56 @@
 "use client";
 
-/**
- * In-app actions — rung 3 on the web.
- *
- * A frontend tool lets the agent *operate the app*, not just talk about it.
- * This is the web equivalent of a Slack agent posting a Block Kit card: the
- * side effect lands in the surface the person is already looking at.
- */
 import { useFrontendTool, useAgentContext } from "@copilotkit/react-core/v2";
 import { z } from "zod";
+import { findIncident, workspaceContext, type Followup } from "@/lib/incidents";
 
 export function AppControl({
-  focus,
-  setFocus,
+  selectedId,
+  followups,
+  selectIncident,
+  addFollowup,
 }: {
-  focus: string;
-  setFocus: (next: string) => void;
+  selectedId: string;
+  followups: Followup[];
+  selectIncident: (id: string) => void;
+  addFollowup: (incidentId: string, title: string) => Followup;
 }) {
-  // Ambient context: the agent knows what the page is showing without being
-  // told. This is what moves it from "reachable" to "situated".
   useAgentContext({
-    description: "What the page is currently focused on",
-    value: focus || "nothing yet",
+    description:
+      "The incident workspace currently visible to the user, including sample timeline and local follow-ups. Use this context without asking the user to paste it. Never describe sample observations as live production data.",
+    value: workspaceContext(selectedId, followups),
   });
 
   useFrontendTool(
     {
-      name: "set_focus",
+      name: "select_incident",
       description:
-        "Change what the page is focused on. Use it when the user asks to look at, filter to, or jump to something.",
-      parameters: z.object({
-        focus: z.string().describe("The surface, topic, or filter to focus the page on."),
-      }),
-      handler: async ({ focus: next }) => {
-        setFocus(next);
-        return `The page is now focused on ${next}.`;
+        "Open an existing sample incident in the workspace. Use an ID from availableIncidents.",
+      parameters: z.object({ incidentId: z.string() }),
+      handler: async ({ incidentId }) => {
+        const incident = findIncident(incidentId);
+        selectIncident(incident.id);
+        return `Opened ${incident.id}: ${incident.title}. The visible details and agent context now show this incident.`;
       },
     },
-    [setFocus],
+    [selectIncident],
   );
 
+  useFrontendTool(
+    {
+      name: "create_followup",
+      description:
+        "Add a follow-up task for a known incident in this browser page session only. Does not create a workplace task, send a notification, or change production. Use the selected incident unless the user specifies another.",
+      parameters: z.object({
+        incidentId: z.string(),
+        title: z.string().trim().min(1).max(200),
+      }),
+      handler: async ({ incidentId, title }) => {
+        const task = addFollowup(incidentId, title);
+        return `Added local follow-up ${task.id} to ${task.incidentId}: ${task.title}. It is visible under that incident and will be cleared on refresh; no external system was updated.`;
+      },
+    },
+    [addFollowup],
+  );
   return null;
 }

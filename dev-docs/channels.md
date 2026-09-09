@@ -29,7 +29,7 @@ you have drifted off the managed path.
 | Works | Does not |
 |---|---|
 | mentions, messages | slash commands |
-| button and select clicks (so HITL fires) | modal submissions (`view_submission`) |
+| button and select clicks (nonblocking handlers) | modal submissions (`view_submission`) |
 | reactions | |
 
 Code that registers `onCommand` or `onModalSubmit` compiles, starts, reports
@@ -72,5 +72,11 @@ Multiple runtimes declaring the same Channel name race per delivery, and the
 loser gets nothing — silently. The tell is a Slack reply your terminal knows
 nothing about. **Give a local runtime its own Intelligence project.**
 
-Replicas in production are fine: one runtime claims each delivery, so identical
-builds scale horizontally.
+Run **one listener instance for the shipped proposal and research approval
+buttons**. Their inline handlers live in the process that posted the card. A
+replica can claim the click without that closure, even with an identical build.
+Keep the listener running until approval; before scaling, implement shared
+persistent bindings and reconstructible registered-component handlers.
+
+Managed delivery does not support blocking `awaitChoice`; the proposal demo
+posts a card and a later click reports its decision without resuming the agent.

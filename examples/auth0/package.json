@@ -1,0 +1,16 @@
+{
+  "name": "agents-everywhere-auth0-example",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "start": "node server.mjs",
+    "demo": "node client.mjs",
+    "test": "node --test test.mjs"
+  },
+  "dependencies": {
+    "express": "5.2.1",
+    "express-oauth2-jwt-bearer": "1.10.0"
+  },
+  "devDependencies": { "jose": "6.1.3" }
+}

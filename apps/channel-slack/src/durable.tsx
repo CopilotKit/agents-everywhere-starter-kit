@@ -1,49 +1,38 @@
 /**
- * The two-tier approval, from the Slack side.
- *
- * `confirm_action` (in tools.tsx) gates cheap things: it blocks the tool with
- * `awaitChoice` and the whole thing is over in seconds.
- *
- * This is the other tier. The work is too slow to hold a chat turn open, so:
- *
- *   1. create a Trigger.dev waitpoint token
- *   2. trigger the durable task, which immediately parks on that token
- *   3. post an approval card and RETURN — the thread stays live
- *   4. a button click completes the token; the task wakes up and works
- *
- * Only registered when TRIGGER_SECRET_KEY is set, so the kit still runs without
- * a Trigger.dev account.
+ * Queue approved Exa research without holding the conversation open. The worker
+ * persists in Trigger; check_deep_work retrieves its outcome in a later turn.
+ * Inline approval buttons require the listener to remain running until clicked.
  */
-import {
-  defineChannelTool,
-  Message,
-  Header,
-  Section,
-  Markdown,
-  Context,
-  Actions,
-  Button,
-} from "@copilotkit/channels";
-import type { InteractionContext, MessageRef } from "@copilotkit/channels";
-import { tasks, wait } from "@trigger.dev/sdk";
+import { defineChannelTool } from "@copilotkit/channels";
+import type { InteractionContext } from "@copilotkit/channels";
+import { tasks, runs, wait } from "@trigger.dev/sdk";
 import { z } from "zod";
+import { approvalCard, settleApproval } from "./approval";
 import type { deepWork } from "durable/trigger/deep-work";
+import { reportResearch, requireResearchConfig, researchOriginSchema } from "durable/research";
 
 export function isDurableConfigured(): boolean {
-  return Boolean(process.env.TRIGGER_SECRET_KEY);
+  if (!process.env.TRIGGER_SECRET_KEY?.trim()) return false;
+  requireResearchConfig(process.env);
+  return true;
 }
 
 export const runDeepWork = defineChannelTool({
   name: "run_deep_work",
   description:
-    "Hand a slow, long-running job to the durable worker: anything that would take more than about thirty seconds, needs retries, or must survive a restart. It requires human approval before it starts. Use this INSTEAD of trying to do the work inside the conversation.",
+    "Queue Exa web research after human approval. This searches public web sources; it cannot read logs or execute external actions. The user must ask check_deep_work with the run ID to receive results in this thread.",
   parameters: z.object({
-    request: z.string().describe("What the work is, in one sentence, from the user's point of view."),
-    consequence: z
-      .string()
-      .describe("What actually happens in the real world once this is approved."),
+    request: z.string().trim().min(1).max(2000).describe("The public-web research question."),
   }),
-  async handler({ request, consequence }, { thread, user, message }) {
+  async handler({ request }, { thread }) {
+    requireResearchConfig(process.env);
+    const origin = researchOriginSchema.parse({
+      platform: thread.platform,
+      channelCode: process.env.CHANNEL_CODE,
+      // The concrete SDK Thread exposes this documented property; its UI
+      // interface omits it in 0.9.2. Validate at runtime rather than cast.
+      conversationKey: "conversationKey" in thread ? thread.conversationKey : undefined,
+    });
     // A generous timeout: the ceiling is a human's attention, not the model's.
     const token = await wait.createToken({
       timeout: "30m",
@@ -51,76 +40,47 @@ export const runDeepWork = defineChannelTool({
     });
 
     // Type-only import of the task, so the task's code is never bundled here.
-    await tasks.trigger<typeof deepWork>("deep-work", {
+    const run = await tasks.trigger<typeof deepWork>("deep-work", {
       tokenId: token.id,
       request,
-      origin: {
-        platform: message?.platform ?? "unknown",
-        channelCode: process.env.CHANNEL_CODE ?? "unknown",
-      },
+      origin,
     });
-
-    // `InteractionContext` carries `thread`, `message`, `action`, `values`,
-    // `user`, `actor`, `platform` and an optional `openModal` — but NOT a
-    // `messageRef`, whatever the UI reference implies. So keep the ref from
-    // `thread.post()` in a binding the click handlers close over. Inline
-    // handlers are in-process only anyway, so their lifetime matches this one.
-    let cardRef: MessageRef | undefined;
 
     const settle = async (approved: boolean, ctx: InteractionContext<boolean>) => {
       // Credit the person who actually clicked, not whoever asked.
       const decidedBy = ctx.user?.name ?? ctx.actor?.id ?? "someone in this thread";
-      await wait.completeToken(token.id, { approved, decidedBy });
+      const outcome = await settleApproval(token.id, run.id, { approved, decidedBy }, {
+        complete: (id, decision) => wait.completeToken(id, decision),
+        retrieve: (id) => wait.retrieveToken(id),
+      });
 
-      const outcome = approved ? (
-        <Message accent="#2E7D5B">
-          <Section>
-            <Markdown>{`Approved by ${decidedBy}. Working on it \u2014 this keeps running even if the thread goes quiet.`}</Markdown>
-          </Section>
-        </Message>
-      ) : (
-        <Message>
-          <Section>
-            <Markdown>{`Declined by ${decidedBy}. Nothing ran.`}</Markdown>
-          </Section>
-        </Message>
-      );
-
-      if (cardRef) await ctx.thread.update(cardRef, outcome);
+      // Only the ref stamped for this live interaction can be updated safely.
+      if (ctx.message.ref.id) await ctx.thread.update(ctx.message.ref, outcome);
       else await ctx.thread.post(outcome);
     };
 
-    cardRef = await thread.post(
-      <Message accent="#C4145F">
-        <Header>Waiting on you before this starts</Header>
-        <Section>
-          <Markdown>{`**${request}**\n\n${consequence}`}</Markdown>
-        </Section>
-        <Actions>
-          <Button
-            value={true}
-            style="primary"
-            onClick={async (ctx) => {
-              await settle(true, ctx);
-            }}
-          >
-            Approve
-          </Button>
-          <Button
-            value={false}
-            style="danger"
-            onClick={async (ctx) => {
-              await settle(false, ctx);
-            }}
-          >
-            Cancel
-          </Button>
-        </Actions>
-        <Context>{`waitpoint ${token.id} \u00b7 expires in 30 minutes`}</Context>
-      </Message>,
-    );
+    await thread.post(approvalCard(request, run.id, settle));
 
     // Return immediately. The agent must NOT wait here — that is the whole point.
-    return "Queued the job and posted an approval card. Tell the user it is waiting on their approval and that it will keep running on its own once approved. Do not attempt the work yourself.";
+    return `Queued Exa research ${run.id} and posted an approval card. After approval, ask me to check ${run.id} in this conversation. Results are retrieved on request, not pushed automatically. The worker survives restarts, but these inline approval buttons require the listener to stay running until clicked. Do not attempt the work yourself.`;
+  },
+});
+
+/** Retrieve by visible run ID; origin validation also works after a listener restart. */
+export const checkDeepWork = defineChannelTool({
+  name: "check_deep_work",
+  description: "Check a previously queued Exa research run and show its status or sources in its original conversation. Use the run ID shown on the approval card.",
+  parameters: z.object({ runId: z.string().regex(/^run_[a-zA-Z0-9]+$/) }),
+  async handler({ runId }, { thread }) {
+    return reportResearch(runId, researchOriginSchema.parse({
+      platform: thread.platform,
+      channelCode: process.env.CHANNEL_CODE,
+      // The concrete SDK Thread exposes this documented property; its UI
+      // interface omits it in 0.9.2. Validate at runtime rather than cast.
+      conversationKey: "conversationKey" in thread ? thread.conversationKey : undefined,
+    }), {
+      retrieve: (id) => runs.retrieve<typeof deepWork>(id),
+      post: async (text) => { await thread.post(text); },
+    });
   },
 });

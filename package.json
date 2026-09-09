@@ -27,8 +27,7 @@
     "dev:local": "npm run dev --workspace local-chat",
     "dev:web": "npm run dev --workspace web",
     "dev:mcp": "npm run dev --workspace mcp",
-    "test": "npm run test --workspaces --if-present",
-    "test:watch": "vitest",
+    "test": "node --import tsx --test scripts/check-env.test.ts scripts/verify.test.mjs && npm run test --workspaces --if-present",
     "verify": "bash scripts/verify.sh"
   },
   "overrides": {

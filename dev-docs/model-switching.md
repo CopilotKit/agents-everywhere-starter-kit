@@ -1,73 +1,42 @@
-# Switching models
+# Choose a model provider
 
-## Change the model
+Set `MODEL_PROVIDER` explicitly in root `.env` so another saved credential cannot change your chat provider.
+
+## OpenAI
 
 ```dotenv
+MODEL_PROVIDER=openai
+OPENAI_API_KEY=your-key
 MODEL=gpt-5.6-sol
 ```
 
-| Model | Note |
-|---|---|
-| `gpt-5.6-sol` | the kit default · flagship · $5.00/$30.00 per MTok |
-| `gpt-6-astra` | most capable — built for the hardest end-to-end work |
-| `gpt-5.6-terra` | balances capability with cost |
-| `gpt-5.6-luna` | cheapest · $0.20/$1.20 per MTok |
+Obtain a key from [OpenAI](https://platform.openai.com/api-keys). `MODEL` is a model ID available to your account. The kit accepts a bare OpenAI name or a matching `openai/` or `openai:` prefix.
 
-**On cost:** the default is a flagship model, which is the right call for an agent
-that has to read a thread, pick a tool, and render a card in one turn. If you are
-running on hackathon credits and watching them drain, `gpt-5.6-luna` is roughly
-25x cheaper per token and holds up fine for chat-shaped work — it is a one-line
-change and nothing else in the kit cares.
-
-The runtime's resolver normalises `/` and `:`, so `openai/gpt-5.6-luna` and
-`openai:gpt-5.6-luna` are the same thing. A bare name gets `openai:` prefixed.
-
-## Change the provider
-
-Name it explicitly and the kit passes it through:
+## OpenRouter
 
 ```dotenv
-MODEL=anthropic/claude-sonnet-4-6     # needs ANTHROPIC_API_KEY
-MODEL=google/gemini-2.5-flash         # needs GOOGLE_API_KEY
+MODEL_PROVIDER=openrouter
+OPENROUTER_API_KEY=your-key
+MODEL=openai/gpt-5.6-sol
 ```
 
-## Fail over to OpenRouter mid-demo
+Obtain a key from [OpenRouter](https://openrouter.ai/keys) and choose an available [publisher/model slug](https://openrouter.ai/models). No OpenAI key is required for this chat path. Re-run the same incident prompt to compare model behavior; check source use and tool results as well as answer quality.
 
-This is the one to remember. If OpenAI rate-limits you at 14:00 with a demo at
-15:30, add one line:
+The adapter uses OpenRouter's OpenAI-compatible chat-completions endpoint. Bare model names receive `openai/`; provider separators are normalized while suffixes such as `:free` are preserved. Optional `PUBLIC_APP_URL` and `APP_TITLE` configure attribution headers.
 
-```dotenv
-OPENROUTER_API_KEY=sk-or-...
+```bash
+npm run check-env
+npm run dev
 ```
 
-`packages/agent-core/src/model.ts` detects it and routes everything through
-OpenRouter's OpenAI-compatible endpoint, with cost-optimized routing and provider
-fallbacks behind it. `MODEL` is turned into an OpenRouter slug (`gpt-5.6-sol` →
-`openai/gpt-5.6-sol`); set a full slug yourself to pick a different vendor:
+Restart the app after editing `.env`. Provider availability, tool support, access and pricing depend on the chosen account and model.
 
-```dotenv
-MODEL=anthropic/claude-sonnet-4-6
-```
+## Existing configurations
 
-Attribution headers (`HTTP-Referer`, `X-OpenRouter-Title`) are sent so your build
-shows up on OpenRouter's public rankings. Override with `PUBLIC_APP_URL` and
-`APP_TITLE`.
+With `MODEL_PROVIDER` absent, an `OPENROUTER_API_KEY` selects OpenRouter. Otherwise the prefix in `MODEL` selects a provider, defaulting to OpenAI. Existing `anthropic/` and `google/` prefixes remain supported with `ANTHROPIC_API_KEY` and `GOOGLE_API_KEY`. An explicit non-router provider must match the model prefix; unsupported providers fail with a configuration error.
 
-> Why a `LanguageModel` instance rather than a model string: the runtime's string
-> resolver reads everything before the first separator as the provider name,
-> which would eat the `openai/` half of an OpenRouter slug.
+The browser's `/voice` route uses OpenAI Realtime independently of chat selection. It always needs `OPENAI_API_KEY`; use `npm run check-env -- --voice` before testing it. The MCP server supplies tools to a host and does not use this model resolver. The Mozilla example has its own Python configuration.
 
-## Swap the whole agent
+## Bring another agent backend
 
-`packages/agent-core/src/agent.ts` returns CopilotKit's `BuiltInAgent`. To use
-LangGraph, CrewAI, Mastra, Pydantic AI, or Google ADK instead, return an
-`HttpAgent` pointed at your agent's AG-UI endpoint:
-
-```ts
-import { HttpAgent } from "@ag-ui/client";
-export function makeAgent(threadId: string) {
-  return new HttpAgent({ url: process.env.AGENT_URL! });
-}
-```
-
-Nothing else in the kit changes. That is what AG-UI is for.
+The shared factory in [agent.ts](../packages/agent-core/src/agent.ts) can return an `HttpAgent` pointed at your AG-UI endpoint. Validate context and tool support on each surface you use; voice and the standalone MCP server follow separate paths.

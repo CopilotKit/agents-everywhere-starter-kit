@@ -25,19 +25,69 @@ fi
 
 # ── .env ─────────────────────────────────────────────────────────────────────
 if [ ! -f .env ]; then
-  fail ".env is missing. Run: cp .env.example .env   then fill in OPENAI_API_KEY."
+  fail ".env is missing. Run: cp .env.example .env   then choose MODEL_PROVIDER and fill in its API key."
 else
   set -a; . ./.env; set +a
 fi
 
+# Keep provider/model normalization aligned with agent-core/src/model.ts.
+trim() {
+  local value="$1"
+  value="${value#"${value%%[![:space:]]*}"}"
+  value="${value%"${value##*[![:space:]]}"}"
+  printf '%s' "$value"
+}
+canonical_provider() {
+  local value
+  value="$(trim "$1" | tr '[:upper:]' '[:lower:]')"
+  case "$value" in gemini|google-gemini) value=google ;; esac
+  printf '%s' "$value"
+}
+
 # ── tier 0 ───────────────────────────────────────────────────────────────────
 if [ -f .env ]; then
-  case "${OPENAI_API_KEY:-}" in
-    "")                 fail "OPENAI_API_KEY is empty. Get one: https://platform.openai.com/api-keys" ;;
-    stub-replace-me)    fail "OPENAI_API_KEY is still the placeholder. Get one: https://platform.openai.com/api-keys" ;;
-    sk-*)               ;;
-    *)                  warn "OPENAI_API_KEY does not start with 'sk-'. If you are proxying through a gateway, ignore this." ;;
+  model="$(trim "${MODEL:-gpt-5.6-sol}")"
+  model_id="$model"
+  model_provider=""
+  case "$model" in
+    *[:/]*) candidate_prefix="$(canonical_provider "${model%%[:/]*}")"
+             # A bare model's ':free' or ':nitro' suffix is not a provider.
+             case "$model" in
+               "${model%%[:/]*}/"*) model_provider="$candidate_prefix" ;;
+               *) case "$candidate_prefix" in
+                    openai|openrouter|anthropic|google) model_provider="$candidate_prefix" ;;
+                  esac ;;
+             esac
+             [ -n "$model_provider" ] && model_id="$(trim "${model#*[:/]}")" ;;
   esac
+  [ -z "$model_id" ] && fail "MODEL must include a non-empty model identifier."
+  provider="$(canonical_provider "${MODEL_PROVIDER:-}")"
+  if [ -z "$provider" ]; then
+    if [ -n "${OPENROUTER_API_KEY:-}" ]; then provider=openrouter
+    else provider="${model_provider:-openai}"; fi
+  fi
+  key_name=""
+  case "$provider" in
+    openai) key_name=OPENAI_API_KEY ;;
+    openrouter) key_name=OPENROUTER_API_KEY ;;
+    anthropic) key_name=ANTHROPIC_API_KEY ;;
+    google) key_name=GOOGLE_API_KEY ;;
+    *) fail "Unsupported model provider '$provider'. Set MODEL_PROVIDER to openai, openrouter, anthropic, or google." ;;
+  esac
+  if [ "$provider" != openrouter ] && [ -n "$model_provider" ] && [ "$model_provider" != "$provider" ]; then
+    fail "MODEL provider '$model_provider' does not match MODEL_PROVIDER '$provider'."
+  fi
+  if [ -n "$key_name" ]; then
+    case "${!key_name:-}" in
+      "") fail "$key_name is empty. Configure credentials for $provider." ;;
+      stub-replace-me) fail "$key_name is still the placeholder. Configure credentials for $provider." ;;
+    esac
+  fi
+  if [ "${1:-}" = --voice ]; then
+    case "${OPENAI_API_KEY:-}" in
+      ""|stub-replace-me) fail "OPENAI_API_KEY is required separately for OpenAI Realtime voice, even when chat uses $provider." ;;
+    esac
+  fi
   [ -z "${MODEL:-}" ] && warn "MODEL is unset; falling back to gpt-5.6-sol."
 
   # ── tier 1: all-or-nothing. Half-configured Channels is the worst state. ──

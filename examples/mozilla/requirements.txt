@@ -1,0 +1,3 @@
+any-agent==1.18.0
+# any-agent 1.18.0 imports MCP 1.x types removed in MCP 2.x.
+mcp==1.30.0

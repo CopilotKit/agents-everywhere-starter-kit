@@ -1,40 +1,61 @@
-/**
- * Model resolution.
- *
- * Defaults to OpenAI (marquee sponsor) on `gpt-5.6-sol`, with `gpt-6-astra` one
- * env var away. Setting OPENROUTER_API_KEY flips the whole kit onto
- * OpenRouter with no other change — that is your insurance if OpenAI
- * rate-limits you at 14:00 with the demo at 15:30.
- *
- * Verified against @copilotkit/runtime@1.70.1: `BuiltInAgent` accepts either a
- * `"provider/model"` string or an AI SDK `LanguageModel` instance, and its
- * internal resolver normalises `/` and `:` to the same thing.
- */
+/** Resolve the selected chat provider. Voice uses OpenAI Realtime separately. */
 import { createOpenAI } from "@ai-sdk/openai";
 import { DEFAULT_MODEL } from "./model-meta";
 
-export function resolveModel() {
-  const model = (process.env.MODEL ?? DEFAULT_MODEL).trim();
-  const openRouterKey = process.env.OPENROUTER_API_KEY;
+function canonicalProvider(provider: string) {
+  const normalized = provider.trim().toLowerCase();
+  return normalized === "gemini" || normalized === "google-gemini" ? "google" : normalized;
+}
 
-  if (openRouterKey) {
-    // OpenRouter is OpenAI-compatible, so the AI SDK's OpenAI provider drives it
-    // directly. We build a LanguageModel rather than passing a string, because
-    // the runtime's string resolver would eat the `openai/` half of an
-    // OpenRouter slug as the provider name.
+export function resolveModel() {
+  const model = (process.env.MODEL || DEFAULT_MODEL).trim();
+  const firstSeparator = model.search(/[:/]/);
+  const candidatePrefix = firstSeparator >= 0 ? canonicalProvider(model.slice(0, firstSeparator)) : undefined;
+  // A colon in a bare model name can introduce a variant, such as ':free'.
+  // Only supported provider prefixes use colon syntax; publishers use '/'.
+  const separator = firstSeparator >= 0 && (model[firstSeparator] === "/" ||
+    ["openai", "openrouter", "anthropic", "google"].includes(candidatePrefix || ""))
+    ? firstSeparator : -1;
+  const prefix = separator >= 0 ? candidatePrefix : undefined;
+  const modelId = separator >= 0 ? model.slice(separator + 1).trim() : model;
+  if (!modelId) {
+    throw new Error("MODEL must include a non-empty model identifier.");
+  }
+  // Preserve the original automatic router switch for existing .env files.
+  const provider = canonicalProvider(process.env.MODEL_PROVIDER || "") ||
+    (process.env.OPENROUTER_API_KEY ? "openrouter" : prefix || "openai");
+  const keyNames: { [provider: string]: string | undefined } = {
+    openai: "OPENAI_API_KEY",
+    openrouter: "OPENROUTER_API_KEY",
+    anthropic: "ANTHROPIC_API_KEY",
+    google: "GOOGLE_API_KEY",
+  };
+  const keyName = Object.hasOwn(keyNames, provider) ? keyNames[provider] : undefined;
+  if (!keyName) {
+    throw new Error(`Unsupported model provider '${provider}'. Set MODEL_PROVIDER to openai, openrouter, anthropic, or google.`);
+  }
+  if (provider !== "openrouter" && prefix && prefix !== provider) {
+    throw new Error(`MODEL provider '${prefix}' does not match MODEL_PROVIDER '${provider}'.`);
+  }
+  const apiKey = process.env[keyName];
+  if (!apiKey || apiKey === "stub-replace-me") {
+    throw new Error(`${keyName} is required for ${provider}. Run npm run check-env.`);
+  }
+
+  if (provider === "openrouter") {
     const openRouter = createOpenAI({
       baseURL: "https://openrouter.ai/api/v1",
-      apiKey: openRouterKey,
-      // Attribution headers put your build on OpenRouter's public rankings.
+      apiKey,
       headers: {
         "HTTP-Referer": process.env.PUBLIC_APP_URL ?? "https://aitinkerers.org",
         "X-OpenRouter-Title": process.env.APP_TITLE ?? "Agents, Everywhere",
       },
     });
-    return openRouter(model.includes("/") ? model : `openai/${model}`);
+    // Change only a provider separator; keep suffixes such as ':free' intact.
+    const slug = `${prefix || "openai"}/${modelId}`;
+    // AI SDK OpenAI v3 defaults to /responses. OpenRouter uses /chat/completions.
+    return openRouter.chat(slug);
   }
 
-  // A value that already names a provider passes through untouched, so you can
-  // set MODEL=anthropic/claude-sonnet-4-6 or google/gemini-2.5-flash instead.
-  return model.includes(":") || model.includes("/") ? model : `openai:${model}`;
+  return `${provider}:${modelId}`;
 }
