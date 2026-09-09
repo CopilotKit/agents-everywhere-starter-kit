@@ -10,7 +10,9 @@ Build an agent that belongs where people already work, talk, and live.
 
 </div>
 
-Built for **[Agents, Everywhere: Bots, Channels, & More](https://sf.aitinkerers.org/p/agents-everywhere-bots-channels-more-global-hackathon)**, the AI Tinkerers global hackathon on **September 12, 2026**. Start with a working example, connect the sponsor tools your idea needs, and make the surrounding context useful. You do not need every sponsor or every surface.
+Built for **[Agents, Everywhere: Bots, Channels, & More](https://sf.aitinkerers.org/p/agents-everywhere-bots-channels-more-global-hackathon)**, the AI Tinkerers global hackathon on **September 12, 2026**. Start with a working example, connect the sponsor tools your idea needs, and make the surrounding context useful. You do not need every sponsor or every surface. See the [official portal](https://sf.aitinkerers.org/hackathons/h_XWWQL5eKfJM) for deadlines and judging, and the [handbook](https://sf.aitinkerers.org/hackathons/h_XWWQL5eKfJM/handbook) for eligibility.
+
+**Build eligibility:** This kit and its incident demo are reusable starting points. Your submitted project and its core functionality must be built during the official hackathon period. A pre-existing project cannot be resubmitted or extended and entered as a new project. Explain what you inherited and what you built during the event in [your submission](SUBMISSION.md#build-eligibility).
 
 ## The demo you can build on
 
@@ -83,12 +85,13 @@ Each [sponsor recipe](dev-docs/sponsors.md) includes access, configuration, comm
 | Auth0 | Deny an unauthenticated action, authorize a service, create a local record | [Runnable M2M example](examples/auth0/README.md) |
 | Mozilla.ai | Run an incident tool and save an inspectable agent trace | [Runnable Python example](examples/mozilla/README.md) |
 | Ambiguous AI | Create a real workspace follow-up and return its link | [Workplace actions](dev-docs/sponsors.md#ambiguous-ai) |
+| Google Cloud Run | Host your configured listener beyond your laptop | [Deployment configuration](dev-docs/sponsors.md#google-cloud-run) |
 
 Auth0 and Mozilla are independent examples. Auth0 demonstrates machine authorization; the separate CIBA consent extension is still unimplemented. Live sponsor calls require your own accounts and are not proven by offline checks. Record organizer-provided offers in [CREDITS.md](CREDITS.md).
 
 ## The Context Ladder
 
-Use this **starter-kit design exercise** to sharpen your demo. It is not the event's judging rubric; the event page says that rubric will be announced.
+Use this **starter-kit design exercise** to sharpen your demo. The [published rubric](https://sf.aitinkerers.org/hackathons/h_XWWQL5eKfJM) scores Core Requirements & Functionality, Innovation & Theme Alignment, Technical Execution & Integration, and Usefulness & Agentic Experience from 1–5 each. The ladder supplements that rubric; use the [criterion-by-criterion demo checklist](SUBMISSION.md#evidence-for-the-judging-criteria) to prepare evidence.
 
 | Level | The agent… | Try this |
 |---|---|---|

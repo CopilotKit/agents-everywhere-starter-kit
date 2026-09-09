@@ -67,7 +67,7 @@ lets handlers be recovered after a restart when a durable store is configured.
 
 This kit ships `incident_card` and `timeline`. Use a native artifact when it makes
 the incident easier to understand. The Context Ladder is kit design guidance,
-not an announced judging rubric.
+supplemental to the [published judging rubric](https://sf.aitinkerers.org/hackathons/h_XWWQL5eKfJM).
 
 ## Managed action proposals
 

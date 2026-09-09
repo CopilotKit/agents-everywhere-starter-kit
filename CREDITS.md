@@ -2,7 +2,7 @@
 
 Record the offers and redemption instructions provided by event organizers.
 Do not assume a public plan or account signup includes hackathon credits. Check
-[the San Francisco event page](https://sf.aitinkerers.org/p/agents-everywhere-bots-channels-more-global-hackathon)
+[the official portal](https://sf.aitinkerers.org/hackathons/h_XWWQL5eKfJM)
 and the opening-session announcements; local offers may differ.
 
 | Sponsor | Build with it | Organizer offer / redemption link | Claimed |
@@ -15,6 +15,7 @@ and the opening-session announcements; local offers may differ.
 | Auth0 | [Protected action](dev-docs/sponsors.md#auth0) | | ☐ |
 | Mozilla.ai | [Agent trace](dev-docs/sponsors.md#mozillaai) | | ☐ |
 | Ambiguous AI | [Workplace follow-up](dev-docs/sponsors.md#ambiguous-ai) | | ☐ |
+| Google Cloud Run | [Deployment configuration](dev-docs/sponsors.md#google-cloud-run) | | ☐ |
 
 Use only the tools your idea needs. See [sponsor recipes](dev-docs/sponsors.md) for
 configuration and result checks; record actual usage in your submission.
