@@ -26,6 +26,10 @@ Start with the included **Slack** example. The SDK also provides a **Teams** ada
 
 **[Set up your first Channel](dev-docs/setup.md)** · [Channels SDK guide](https://copilotkit.ai/channels-guide.md) · [Build tools and native UI](dev-docs/tools-and-context.md)
 
+### Example app: OpenTag
+
+**[OpenTag](https://github.com/CopilotKit/OpenTag)** is an open-source, self-hosted Channels SDK example app for Slack and Microsoft Teams, built with AG-UI and LangGraph. Explore its thread-based research, native UI, and approval-driven tool workflows for inspiration. Follow its own setup guide; it is a separate application from this starter kit.
+
 ## The demo you can build on
 
 An on-call assistant reads an existing incident thread, researches public sources, and presents a native incident card. Add an Ambiguous AI workspace to create a real follow-up and return its record link to the thread. Or use Trigger.dev to queue approved research and retrieve its sources in that same conversation.
