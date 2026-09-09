@@ -11,12 +11,12 @@
  * with `defineChannelComponent`. Same agent, same intent, native rendering on
  * each surface — which is the whole claim this kit is making.
  *
- * The render function receives the schema output directly as props.
+ * Renderers receive streamed partial arguments before schema defaults apply.
  */
 import { useComponent, useHumanInTheLoop } from "@copilotkit/react-core/v2";
 import { z } from "zod";
 
-const toneColor = { neutral: "var(--muted)", good: "#2e7d5b", attention: "var(--accent)" } as const;
+import { IncidentCard, Timeline } from "./streamed-cards";
 
 export function GenerativeUI() {
   useComponent({
@@ -30,29 +30,7 @@ export function GenerativeUI() {
       nextSteps: z.array(z.string()).max(3).default([]),
       tone: z.enum(["neutral", "good", "attention"]).default("neutral"),
     }),
-    render: ({ headline, summary, facts, nextSteps, tone }) => (
-      <article className="ck-card" style={{ borderLeftColor: toneColor[tone] }}>
-        <h3>{headline}</h3>
-        <p>{summary}</p>
-        {facts.length > 0 && (
-          <dl className="ck-facts">
-            {facts.map((fact) => (
-              <div key={fact.label}>
-                <dt>{fact.label}</dt>
-                <dd>{fact.value}</dd>
-              </div>
-            ))}
-          </dl>
-        )}
-        {nextSteps.length > 0 && (
-          <ul className="ck-steps">
-            {nextSteps.map((step) => (
-              <li key={step}>{step}</li>
-            ))}
-          </ul>
-        )}
-      </article>
-    ),
+    render: IncidentCard,
   });
 
   useComponent({
@@ -64,31 +42,7 @@ export function GenerativeUI() {
       columns: z.array(z.string()).min(1).max(4),
       rows: z.array(z.array(z.string())),
     }),
-    render: ({ title, columns, rows }) => (
-      <article className="ck-card">
-        {title && <h3>{title}</h3>}
-        <div className="ck-scroll">
-          <table>
-            <thead>
-              <tr>
-                {columns.map((header) => (
-                  <th key={header}>{header}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((row, rowIndex) => (
-                <tr key={rowIndex}>
-                  {row.map((cell, cellIndex) => (
-                    <td key={cellIndex}>{cell}</td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </article>
-    ),
+    render: Timeline,
   });
 
   /**
