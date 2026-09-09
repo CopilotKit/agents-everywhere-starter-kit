@@ -3,7 +3,7 @@ import { makeAgent, isSearchConfigured, isWorkplaceConfigured, WORKPLACE_CONTEXT
 import { required } from "./env";
 import { IncidentCard, Timeline, welcomeMessage } from "./components";
 import { proposeAction, readThread, searchTheWeb } from "./tools";
-import { isDurableConfigured, runDeepWork } from "./durable";
+import { isDurableConfigured, runDeepWork, checkDeepWork } from "./durable";
 
 // Tools are registered only when their credential is present, so the agent is
 // never handed a tool that will fail when it calls it.
@@ -11,7 +11,7 @@ const tools = [
   readThread,
   proposeAction,
   ...(isSearchConfigured() ? [searchTheWeb] : []),
-  ...(isDurableConfigured() ? [runDeepWork] : []),
+  ...(isDurableConfigured() ? [runDeepWork, checkDeepWork] : []),
 ];
 
 export const channel = createChannel({

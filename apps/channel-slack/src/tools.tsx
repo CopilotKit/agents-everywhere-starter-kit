@@ -2,8 +2,8 @@
  * The on-call agent's tools.
  *
  * A channel tool handler receives the LIVE thread, which is what makes the
- * approval gate below possible: the tool stops mid-execution, posts a card, and
- * blocks until a human clicks.
+ * proposal below possible: it posts a card and returns. A later click reports
+ * the decision; it does not resume the agent or execute an action.
  *
  * The return value is what the *agent* reads back, not what the user sees.
  * Return raw data (it is JSON-stringified for you) or a short natural-language
@@ -19,6 +19,7 @@ import {
   Actions,
   Button,
 } from "@copilotkit/channels";
+import type { InteractionContext } from "@copilotkit/channels";
 import { searchWeb, searchWebParameters } from "agent-core";
 import { z } from "zod";
 
@@ -52,48 +53,59 @@ export const searchTheWeb = defineChannelTool({
 });
 
 /**
- * The approval gate.
- *
- * `awaitChoice` posts a picker and BLOCKS this handler until someone clicks.
- * Because the agent is mid-tool-call, it cannot proceed past a refusal — which
- * is the difference between a bot that asks permission and one that asks
- * forgiveness. An outage is exactly when people feel entitled to skip this, and
- * exactly when skipping it makes things worse.
- *
- * Managed Slack delivers button clicks, so this fires on the default path.
+ * Managed delivery cannot block on awaitChoice. Post a proposal and let a later
+ * interaction report the decision. This demo has no production executor.
+ * Inline handlers require one listener instance that stays running until click.
  */
 export const proposeAction = defineChannelTool({
   name: "propose_action",
   description:
-    "Ask for approval before anything that touches production — restarting, scaling, rolling back, failing over, clearing a queue, or paging someone. Call this FIRST and only continue if it returns approval.",
+    "Post an action proposal for human review. This returns pending immediately. Stop after posting: do not execute the action or call write tools. A later click reports a decision only; it does not execute anything or resume you.",
   parameters: z.object({
-    action: z.string().describe("What you are about to do, in one plain sentence."),
+    action: z.string().describe("The proposed action, in one plain sentence."),
     blastRadius: z
       .string()
       .describe("What this affects if it goes wrong. Be specific and pessimistic."),
     reversible: z.boolean().describe("Whether this can be undone in under a minute."),
   }),
   async handler({ action, blastRadius, reversible }, { thread }) {
-    const approved = await thread.awaitChoice<boolean>(
+    // The SDK retains inline action handlers after a message replacement. Queue
+    // clicks and settle only after a successful update, so stale/opposite clicks
+    // cannot overwrite a decision and a failed update remains retryable.
+    let settled = false;
+    let previousReport = Promise.resolve();
+    const reportDecision = (approved: boolean, ctx: InteractionContext<boolean>) => {
+      const report = async () => {
+        if (settled) return;
+        const decision = approved
+          ? "Approved proposal. No action was executed."
+          : "Held by the responder. No action was executed. Do not take the action or offer a workaround.";
+        // Use the interaction's thread, whose delivery is live now.
+        await ctx.thread.update(ctx.message.ref, `${decision}\n\nProposal: ${action}`);
+        settled = true;
+      };
+      previousReport = previousReport.then(report, report);
+      return previousReport;
+    };
+    await thread.post(
       <Message accent="#C4145F">
-        <Header>Approve before I touch production</Header>
+        <Header>Review action proposal</Header>
         <Section>
           <Markdown>{`**${action}**\n\nBlast radius: ${blastRadius}`}</Markdown>
         </Section>
         <Context>{reversible ? "Reversible in under a minute" : "NOT easily reversible"}</Context>
+        <Context>Demo proposal only. Clicking records a decision; it executes nothing.</Context>
         <Actions>
-          <Button value={true} style="primary">
+          <Button value={true} style="primary" onClick={async (ctx) => { await reportDecision(true, ctx); }}>
             Approve
           </Button>
-          <Button value={false} style="danger">
+          <Button value={false} style="danger" onClick={async (ctx) => { await reportDecision(false, ctx); }}>
             Hold
           </Button>
         </Actions>
       </Message>,
     );
 
-    return approved
-      ? "Approved. Proceed, then report exactly what you did and what changed."
-      : "Held by the responder. Do not take the action, do not offer a workaround, and say plainly that nothing was changed.";
+    return "Proposal posted; decision pending. Stop here. Do not take the action, call write tools, or offer a workaround. A later click only reports the decision; no action is executed and the agent does not automatically resume.";
   },
 });
