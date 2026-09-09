@@ -177,7 +177,7 @@ banner is not an integration.
 
 [Channels](https://github.com/CopilotKit/channels-sdk) brings any AG-UI agent into Slack, Microsoft Teams, Discord, Telegram, and WhatsApp with **native, interactive UI** — one JSX tree renders as Slack Block Kit or Teams Adaptive Cards, and a surface that cannot render a node skips it instead of failing. Intelligence manages the platform credentials and delivery; your agent, tools, and business logic stay yours.
 
-Pinned here as a tested pair: `@copilotkit/channels@0.9.2` + `@copilotkit/runtime@1.70.2`. Bump them together.
+Pinned here as a tested pair: `@copilotkit/channels@0.9.2` + `@copilotkit/runtime@1.70.3`. Bump them together.
 
 [More about Channels →](https://docs.copilotkit.ai/slack) · [CopilotKit docs →](https://docs.copilotkit.ai)
 

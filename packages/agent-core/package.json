@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "@ai-sdk/openai": "^3.0.36",
-    "@copilotkit/runtime": "1.70.2",
+    "@copilotkit/runtime": "1.70.3",
     "exa-js": "^2.19.0",
     "zod": "^4.1.0"
   }
