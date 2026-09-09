@@ -1,6 +1,6 @@
 # Sponsor recipes
 
-Choose a sponsor because its capability improves your demo. All eight are optional additions except the model provider needed by the chat quickstart. Auth0 and Mozilla are independent examples; installing them is not required for root startup.
+Choose a sponsor because its capability improves your demo. The nine sponsors listed in the [official portal](https://sf.aitinkerers.org/hackathons/h_XWWQL5eKfJM) offer capabilities you can choose from; the chat quickstart needs a model provider. Auth0 and Mozilla are independent examples; installing them is not required for root startup.
 
 Each recipe below gives a concrete result to verify. Live account access, billing and external writes are separate from `npm run verify`. Organizer offers belong in [CREDITS.md](../CREDITS.md).
 
@@ -91,3 +91,13 @@ examples/mozilla/.venv/bin/python examples/mozilla/trace_incident.py
 - **Result:** Open the returned URL and verify the actual record's title/content. If the connected MCP response does not provide a usable record link, complete that integration before treating the demo as successful.
 - **Customize:** [workplace.ts](../packages/agent-core/src/capabilities/workplace.ts) and [prompt.ts](../packages/agent-core/src/prompt.ts).
 - **Status:** Optional shared-agent MCP configuration implemented; live workspace tools and writes are unverified by offline checks. The approval prompt/card is not an enforced wrapper around every MCP tool. Use an isolated demo workspace and approve a concrete write. This path is different from the browser's session-only follow-ups.
+
+## Google Cloud Run
+
+- **Value:** Keep your agent available in its workplace surface after you close your laptop.
+- **Access:** A Google Cloud project with billing, Cloud Run deployment permissions, a container registry, and a configured Slack/Intelligence installation. Start with Google's [container deployment guide](https://cloud.google.com/run/docs/deploying).
+- **Configure:** Follow the [Cloud Run listener configuration](deploy.md#google-cloud-run-listener-configuration) for the container entrypoint, injected secrets, CPU allocation, instance limits, and deployment checks.
+- **Run:** Deploy your prepared listener image through Cloud Run's **Deploy container** flow using those settings. Stop the laptop listener for the same Intelligence project, then mention the bot in your incident thread.
+- **Result:** The deployed listener reports online and returns a context-informed card in Slack with the laptop listener stopped. Test an approval and a subsequent result retrieval in that same environment.
+- **Customize:** Your deployment image/configuration and [listener entrypoint](../apps/channel-slack/src/server.ts).
+- **Status:** Configuration recipe, not a supplied container image or a cloud-verified deployment. Prepare and test the image first. Cloud Run may replace instances; this does not make process-local approval handlers persistent. Hosting adds availability, but your project's contextual interaction supplies the theme alignment.

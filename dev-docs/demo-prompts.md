@@ -2,6 +2,8 @@
 
 The point is to show work informed by its surroundings and a result visible where the interaction began. Choose either the Slack workflow or the browser workflow, then add only the sponsor capabilities you need.
 
+These are reference interactions to learn from. Build your own project and its core functionality during the event, and distinguish that work from inherited starter code. See [build eligibility](../SUBMISSION.md#build-eligibility).
+
 ## Slack: context, sources, card, follow-up
 
 Prerequisites: [Slack setup](setup.md), your selected model provider, Exa for research, and an isolated Ambiguous AI demo workspace for the external-task step. The [sponsor recipes](sponsors.md) give the exact configuration.
@@ -77,3 +79,5 @@ Expected: `incident_card`, `timeline`, `create_followup`, and `select_incident` 
 5. Explain what the surrounding context made possible.
 
 A second surface is optional. State what is sample data, what changed locally, and what reached a real service. See [SUBMISSION.md](../SUBMISSION.md) for the event checklist.
+
+Before recording, use the [four-criterion evidence checklist](../SUBMISSION.md#evidence-for-the-judging-criteria). Show your original interaction, one verified outcome, appropriate user control, and a relevant failure or cancellation case. Sponsor usage should explain how the result became possible.
