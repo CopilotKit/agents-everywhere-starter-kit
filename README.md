@@ -6,13 +6,29 @@
 
 Build an agent that belongs where people already work, talk, and live.
 
-[Quickstart](#run-it-locally) · [Choose a surface](#choose-a-surface) · [Sponsor recipes](dev-docs/sponsors.md) · [Demo](dev-docs/demo-prompts.md) · [Submission](SUBMISSION.md)
+[Channels SDK](#build-with-the-copilotkit-channels-sdk) · [Quickstart](#run-it-locally) · [Choose a surface](#choose-a-surface) · [Sponsor recipes](dev-docs/sponsors.md) · [Demo](dev-docs/demo-prompts.md) · [Submission](SUBMISSION.md)
 
 </div>
 
 Built for **[Agents, Everywhere: Bots, Channels, & More](https://sf.aitinkerers.org/p/agents-everywhere-bots-channels-more-global-hackathon)**, the AI Tinkerers global hackathon on **September 12, 2026**. Start with a working example, connect the sponsor tools your idea needs, and make the surrounding context useful. You do not need every sponsor or every surface. See the [official portal](https://sf.aitinkerers.org/hackathons/h_XWWQL5eKfJM) for deadlines and judging, and the [handbook](https://sf.aitinkerers.org/hackathons/h_XWWQL5eKfJM/handbook) for eligibility.
 
 **Build eligibility:** This kit and its incident demo are reusable starting points. Your submitted project and its core functionality must be built during the official hackathon period. A pre-existing project cannot be resubmitted or extended and entered as a new project. Explain what you inherited and what you built during the event in [your submission](SUBMISSION.md#build-eligibility).
+
+## Build with the CopilotKit Channels SDK
+
+**[CopilotKit Channels SDK](https://copilotkit.ai/channels-guide.md) (`@copilotkit/channels`) powers this kit’s conversation-native agent.** Bring your agent into a working thread, give it the surrounding context, and let it respond with native cards, tools, and interactive decisions.
+
+- **Connect the agent:** `createChannel` brings together your agent, tools, components, and context in [channel.tsx](apps/channel-slack/src/channel.tsx).
+- **Use the conversation:** Read thread history and follow subscribed conversations so users can ask about work already happening around them.
+- **Render native UI:** Define incident cards, timelines, and approval buttons with Channels JSX, alongside the tools that drive the workflow.
+
+Start with the included **Slack** example. The SDK also provides a **Teams** adapter path; Teams needs its own setup and validation. CopilotKit Intelligence manages the connection, so the listener needs no public tunnel.
+
+**[Set up your first Channel](dev-docs/setup.md)** · [Channels SDK guide](https://copilotkit.ai/channels-guide.md) · [Build tools and native UI](dev-docs/tools-and-context.md)
+
+### Example app: OpenTag
+
+**[OpenTag](https://github.com/CopilotKit/OpenTag)** is an open-source, self-hosted Channels SDK example app for Slack and Microsoft Teams, built with AG-UI and LangGraph. Explore its thread-based research, native UI, and approval-driven tool workflows for inspiration. Follow its own setup guide; it is a separate application from this starter kit.
 
 ## The demo you can build on
 
@@ -62,7 +78,7 @@ Open the localhost URL printed by Next.js. For Slack, run `npm run channel:setup
 
 | Where your idea belongs | Start with | What the example supplies |
 |---|---|---|
-| Team conversations | `apps/channel-slack` | Thread history, incident cards, approvals, optional search and durable research |
+| Team conversations | `apps/channel-slack` · **Channels SDK** | Thread history, incident cards, approvals, optional search and durable research |
 | An application | `apps/web` | Incident context, timeline, visible local actions, native cards |
 | A quick prompt experiment | `apps/local-chat` | Terminal conversation with your chosen chat provider |
 | A spoken conversation | `apps/web` at `/voice` | Separate OpenAI Realtime agent; requires an OpenAI key and microphone |
@@ -78,7 +94,7 @@ Each [sponsor recipe](dev-docs/sponsors.md) includes access, configuration, comm
 | Sponsor | A useful first result | Recipe |
 |---|---|---|
 | OpenAI | Reason about supplied incident context | [Chat provider](dev-docs/sponsors.md#openai) |
-| CopilotKit | Read a thread or operate the incident workspace | [Context and native UI](dev-docs/sponsors.md#copilotkit) |
+| CopilotKit | Use **Channels SDK** for thread context and native UI, or CopilotKit for the web workspace | [Channels SDK](#build-with-the-copilotkit-channels-sdk) · [Recipe](dev-docs/sponsors.md#copilotkit) |
 | OpenRouter | Run the same scenario with your selected model | [Model choice](dev-docs/sponsors.md#openrouter) |
 | Exa | Research with visible source links | [Grounded search](dev-docs/sponsors.md#exa) |
 | Trigger.dev | Approve research, keep chatting, retrieve the result | [Durable research](dev-docs/sponsors.md#triggerdev) |
