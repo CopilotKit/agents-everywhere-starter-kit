@@ -11,7 +11,7 @@ Deploy it like a queue consumer.
 | Google Cloud Run *(min-instances ≥ 1, CPU always allocated)* | Netlify functions |
 | Fly.io, Render, plain Docker | any serverless request handler |
 
-`apps/web` (once you add it) is an ordinary Next.js app and deploys to Vercel
+`apps/web` is an ordinary Next.js app and deploys to Vercel
 fine. It is only the listener that needs a persistent process.
 
 ## Requirements
@@ -35,8 +35,11 @@ reconnect. Alert on `error`.
 
 ## Scaling
 
-Claim-based delivery means replicas are safe: one runtime claims each delivery.
-Run identical builds and identical Channel declarations.
+Run **one listener instance for this demo**. Proposal and research approval
+buttons use process-local inline handlers. Claim-based delivery gives each event
+to one runtime; an identical replica may claim a click but lack its handler.
+Restarting also loses pending inline handlers. Before scaling, implement shared
+persistent action bindings and reconstructible registered-component handlers.
 
 **But not across environments.** Two runtimes declaring the same Channel name in
 the same project race per delivery and the loser gets nothing, silently. Give

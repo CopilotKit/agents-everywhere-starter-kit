@@ -1,93 +1,79 @@
-# Demo prompts
+# A complete incident demo
 
-Thirty seconds from "it's running" to "that's the demo." The example agent is an
-**on-call assistant** — it lives in the channel where the incident is already
-being discussed, which is the whole reason it belongs there.
+The point is to show work informed by its surroundings and a result visible where the interaction began. Choose either the Slack workflow or the browser workflow, then add only the sponsor capabilities you need.
 
-## Set the scene first
+## Slack: context, sources, card, follow-up
 
-The demo only works if the thread has something in it, because the point is that
-the agent reads instead of asking. Paste these into a Slack thread as separate
-messages before you mention the bot:
+Prerequisites: [Slack setup](setup.md), your selected model provider, Exa for research, and an isolated Ambiguous AI demo workspace for the external-task step. The [sponsor recipes](sponsors.md) give the exact configuration.
 
-> checkout is timing out for a bunch of EU customers
-> started around 02:14, right after the web deploy went out
-> rolled web back, didn't help — still seeing 4s+ on /checkout
+### 1. Establish the surrounding context
+
+Before mentioning the bot, put these messages into a thread:
+
+> checkout is timing out for EU customers
+>
+> started around 02:14, right after the web deploy
+>
+> rolled web back, did not help — still seeing 4s+ on /checkout
+>
 > queue depth on payments-worker is climbing
 
-## Rung 1 — it's reachable
+Then ask:
 
-> @agent you around?
+> @agent catch me up on this incident. Read this thread and show an incident card.
 
-Proves Slack → Intelligence → your process end to end.
+Expected: `read_thread` followed by `incident_card`. Check that it includes the failed rollback and growing queue, without your prompt restating them. Ask for a timeline to exercise `timeline`.
 
-## Rung 2 — it's situated
+### 2. Research with visible sources
 
-> @agent catch me up
+> @agent use web search to find documented causes of payment-worker retry storms and safe investigation steps. Include source links and separate published guidance from what this thread proves.
 
-Calls `read_thread`, then `incident_card`. **The line to say out loud: nobody told
-it what the incident was.** It knows the impact, the start time, that the rollback
-failed, and that the queue is climbing — because it read the thread.
+Expected: `search_web` via Exa and inspectable URLs. Search results do not prove the cause of this sample incident. No log reader is included.
 
-Then the test that separates rung 1 from rung 2:
+### 3. Approve a concrete follow-up
 
-> @agent what changed right before this started?
+> @agent propose creating one task in our Ambiguous workspace: “Investigate payments-worker retry spike.” Include the failed rollback, rising queue depth, and useful source links. Ask for approval before creating it; do not send mail or change production.
 
-It answers "the web deploy at 02:14" from the thread. Delete the thread context
-and the same question has no answer.
+Review the proposed action and approve only the intended demo-workspace write. The managed proposal card records the decision but executes nothing and does not resume the agent. In a separate message, explicitly ask it to create that demo-workspace task and return its record URL. Production proposals remain demonstration-only.
 
-## Rung 3 — it's native
+Expected: a **real task record**, with a returned URL you can open from the thread. Verify its title and contents in the workspace. A card or “done” sentence without an actual record is not a successful task demo. MCP tools come from the live workspace; this route is not live-account-verified by the kit's offline checks.
 
-> @agent build me a timeline
+The prompt and `propose_action` guide approval behavior but do not enforce approval around every external MCP call. Use a demo workspace. For an enforced authorization example, run the standalone [Auth0 recipe](../examples/auth0/README.md).
 
-Calls `timeline` and renders real Block Kit — not an ASCII table in a code fence.
-This is the artifact handover and the postmortem are written from.
+### Alternative closing beat: approved durable research
 
-## The moment that wins it
+With Trigger.dev and Exa configured, follow [durable setup](durable-work.md):
 
-> @agent restart the payments worker
+> @agent queue background web research about payment-worker retry storms and safe investigation steps. Use run_deep_work.
 
-The agent calls `propose_action` and **stops**. You get a card naming the blast
-radius and whether it's reversible, with Approve and Hold.
+Click **Approve** while the listener is running, copy the `run_...` ID, and continue chatting. Then, in the original thread:
 
-**Click Hold, on camera.** An agent that visibly declines to touch production is a
-better demo than one that always says yes — and an outage is exactly when people
-feel entitled to skip the gate.
+> @agent check run_YOUR_ID
 
-Then, for the durable path (needs `TRIGGER_SECRET_KEY`):
+Expected: `check_deep_work` returns research sources or the run's actual status. Retrieval works after a listener restart once approval is recorded. Results are requested explicitly, not pushed. Demonstrate **Cancel** on a second run to show that declined research does not execute.
 
-> @agent go trawl the last hour of payments-worker logs
-
-Calls `run_deep_work`: creates a waitpoint, hands the job to Trigger.dev, posts an
-approval card, and **returns immediately**. The thread stays usable while a job
-that outlives the conversation waits on a human.
-
-## Grounding (needs `EXA_API_KEY`)
-
-> @agent is there a known issue with the Stripe API right now?
-
-Calls `search_web`. With `showToolStatus: true` the room watches it search.
-
-## Iterating without Slack
+## Browser: ambient context and visible local actions
 
 ```bash
-npm run dev:local
+npm run dev:web
 ```
 
-```
-› you're in an on-call channel at 2am. three engineers are arguing about whether to fail over. what do you do?
-```
+Open `http://localhost:3100` and select an incident. Try:
 
-Fastest way to tune the prompt — no Slack round trip.
+> What is happening with the selected incident? Show an incident card and a timeline.
 
-## For the two-minute video
+> Create a follow-up for this incident to investigate the retry spike.
 
-1. **Ten seconds of context.** The surface, not the tech: "this is our on-call
-   channel at 2am."
-2. **One mention, one native card.** `catch me up` → `incident_card`. No narration
-   over dead air.
-3. **The gate, declined.** `restart the payments worker` → Hold. This is the beat.
-4. **Same agent, second surface.** Ten seconds of the terminal, phone, or voice —
-   the "one agent, every surface" claim shown rather than asserted.
-5. **Say why the context matters.** The submission asks for it in writing; say it
-   out loud too: *nobody had to re-explain the outage.*
+> Select the other incident and tell me what changed.
+
+Expected: `incident_card`, `timeline`, `create_followup`, and `select_incident` as appropriate. The selected incident and follow-up list should visibly change. The context is derived from the displayed sample data; local tasks last only for this page session. `propose_action` provides approval UI but does not execute a production action. Web chat does not register Exa search; use Slack or the standalone recipes for that step.
+
+## Record a focused video
+
+1. Show the surface and existing context.
+2. Ask a question that relies on that context.
+3. Show the native assessment and one complete action or returned research result.
+4. Open the actual record or source link.
+5. Explain what the surrounding context made possible.
+
+A second surface is optional. State what is sample data, what changed locally, and what reached a real service. See [SUBMISSION.md](../SUBMISSION.md) for the event checklist.

@@ -1,78 +1,74 @@
 # Setup
 
-## Tier 0 — one credential, one process (~5 min)
+## Start with one model provider
+
+Requires Node.js 22+. From the repository root:
 
 ```bash
 npm install
-cp .env.example .env      # then paste an OPENAI_API_KEY
+cp .env.example .env
+```
+
+Edit `.env` using one provider:
+
+```dotenv
+MODEL_PROVIDER=openai
+OPENAI_API_KEY=your-key
+MODEL=gpt-5.6-sol
+```
+
+Or use OpenRouter, without an OpenAI key:
+
+```dotenv
+MODEL_PROVIDER=openrouter
+OPENROUTER_API_KEY=your-key
+MODEL=openai/gpt-5.6-sol
+```
+
+Select an available model in your provider account. Restart after changing configuration. See [model switching](model-switching.md) for precedence and legacy provider prefixes.
+
+```bash
+npm run check-env
 npm run dev
 ```
 
-With no Channel configured, `npm run dev` starts the **local surface** — the same
-agent in your terminal. Use it to iterate on the prompt and the model with a
-sub-second loop instead of a Slack round trip.
+With no Channel configured, `dev` starts terminal chat. The terminal has your selected model and prompt, but no thread-history, native-card, or Exa search tools. For the sample incident workspace, run `npm run dev:web` and open the URL printed by Next.js.
 
-```
-› recap what you can do
-```
+## Add Slack
 
-`npm run check-env` at any point prints a numbered list of what is missing.
-
-## Tier 1 — the agent lives in Slack (~15 min)
-
-No tunnel. No ngrok. No public URL of your own. Intelligence hosts the provider
-webhook and dials your process over an outbound websocket.
-
-**Fastest path — let your coding agent drive the consoles:**
+Intelligence manages platform credentials and delivers over an outbound socket. Your listener stays running; no public tunnel is needed.
 
 ```bash
-npm run channel:setup      # npx copilotkit@latest channels setup
+npm run channel:setup
 ```
 
-That installs a skill, prints a prompt, and copies it to your clipboard. Paste it
-into Claude Code or Cursor. It drives the Slack and Intelligence consoles in your
-own signed-in session; you type the secrets, it does the clicking.
+Follow the setup instructions it prints. Alternatively, create the Channel **before** the Slack app so the wizard can generate the correct manifest:
 
-**By hand:**
+```bash
+npx copilotkit@latest channels add --name my-agent \
+  --display-name "My Agent" --adapter slack --json
+```
 
-1. **Create the Channel first.** The wizard generates a Slack app manifest already
-   pointed at the correct request URL, so doing this second means creating the
-   wrong app.
+1. Complete the platform setup and installation.
+2. Copy the Channel **Code** into `CHANNEL_CODE` in root `.env`.
+3. Create a project-scoped Intelligence API key and set `INTELLIGENCE_API_KEY`.
+4. Run `npm run dev`; with the Channel configured this starts its listener.
+5. In Slack, `/invite @yourbot`, then mention it inside a thread.
 
-   ```bash
-   npx copilotkit@latest channels add --name my-agent \
-     --display-name "My Agent" --adapter slack --json
-   ```
+```bash
+npm run channel:status
+```
 
-2. Put the Channel **Code** in `CHANNEL_CODE`. It must match character for
-   character: lowercase letters and digits, single hyphens, starting with a
-   letter, 3–64 chars, never the literal `channels`.
+Use a separate Intelligence project for local and deployed listeners. Two listeners sharing a Channel can compete for deliveries. See [troubleshooting](troubleshooting.md).
 
-3. Create a project-scoped key under **API Keys** in the Intelligence sidebar →
-   `INTELLIGENCE_API_KEY`.
+## Add one useful capability
 
-4. `npm run dev` now starts the Channels listener instead of the local surface.
+[Choose a sponsor recipe](sponsors.md): Exa search, Trigger.dev research, an Ambiguous AI follow-up, a protected Auth0 action, or a Mozilla agent trace. Each has its own prerequisites; adding a key does not configure every service.
 
-5. In Slack: `/invite @yourbot` into a channel, then @-mention it. **Workspace-
-   installed is not the same as channel member** — Slack emits no `app_mention`
-   event at all for a channel the app is not in.
+## Verify offline, then prove the live path
 
-`npm run channel:status` is a real doctor command. Use it before you start
-guessing.
+```bash
+npm run verify
+```
 
-## Tier 2 — opt-in
-
-Each of these is one env var and one file. Pick two, not six.
-
-| Add | Gets you |
-|---|---|
-| `EXA_API_KEY` | grounded web search as an agent tool |
-| `OPENROUTER_API_KEY` | model failover — see [model-switching.md](model-switching.md) |
-| `AMBIGUOUS_API_KEY` | a 17-app workplace to act in (`npx ambiguous auth signup`) |
-| `TRIGGER_SECRET_KEY` | durable work + waitpoint approvals |
-
-## Requirements
-
-- **Node.js 22+.** Channels needs global `WebSocket`. `nvm use` reads `.nvmrc`.
-- A CopilotKit Intelligence project (free tier) for tier 1. There is no DIY path
-  — Intelligence owns the platform credentials and delivery.
+This needs no `.env` and makes no live sponsor calls. It checks workspace types, tests, and the MCP stdio protocol. Run `npm run check-env` separately for configured startup, then demonstrate an actual reply and the sponsor result you plan to show. [Demo prompts](demo-prompts.md)

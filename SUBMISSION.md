@@ -1,60 +1,49 @@
 # Submission checklist
 
-Five deliverables, all due by **17:00**. Demos run 15:30–16:30, so in practice
-this needs to be written *before* you demo, not after.
+Use the [event page](https://sf.aitinkerers.org/p/agents-everywhere-bots-channels-more-global-hackathon)
+and organizer announcements for the final deadline, upload instructions, and
+judging rubric. The Context Ladder in this kit is design guidance, not the rubric.
 
-## 1. Title
-<!-- A clear name. Not a pun on "agent". -->
-
-## 2. Written description
-
-The brief asks for three specific things — answer all three explicitly:
+## Title and description
 
 **What you built**
-<!-- One paragraph. -->
+<!-- Explain the complete interaction your demo shows. -->
 
 **Who it is for**
-<!-- Name a real person in a real situation, not a market segment. -->
+<!-- Name a person in a concrete situation. -->
 
 **Why the context matters**
-<!-- The scoring question. What can this agent do *because* it lives here that
-     it could not do in a separate chat window? If the answer is "nothing, it's
-     just more convenient", you are on rung 1 of the Context Ladder — go back
-     and use the surface. -->
+<!-- What did the agent know or do because it lived in this surface? -->
 
-## 3. Public GitHub repository
+**Sponsor technologies used**
+<!-- Name the tools you actually used and the visible contribution of each. -->
 
-- [ ] Public, and it actually builds from a clean clone
-- [ ] `.env` is **not** committed (`git log --all --diff-filter=A -- .env` returns nothing)
-- [ ] README says what it is and how to run it in under ten lines
-- [ ] `npm run typecheck` passes
+## Public repository
 
-## 4. Two-minute video
+- [ ] A new participant can run the quickstart from a clean clone
+- [ ] The README lists the credentials and separate processes required
+- [ ] `npm run verify` passes; optional recipe checks pass if used
+- [ ] `.env`, tokens, generated traces with sensitive data, and account secrets are excluded
+- [ ] Sample data, session-only state, and unimplemented integrations are clearly labeled
 
-- [ ] Under 2:00
-- [ ] Opens on the surface, not on your editor
-- [ ] Shows one real interaction end to end — no narrating over dead air
-- [ ] Shows the approval gate being **declined** at least once
-- [ ] Audio is audible
+## Two-minute demo video
 
-> GitHub only inline-plays video uploaded through a comment box (a
-> `user-attachments` URL). Raw repo files and release assets serve
-> `application/octet-stream` with `nosniff`, so a committed `<video>` stays dead.
-> Drag the file into a GitHub comment, copy the resulting URL, then delete the
-> comment.
+- [ ] Show the surface and existing context before the prompt
+- [ ] Demonstrate one complete interaction
+- [ ] Show a visible result: an actual record, local state change, or research source links
+- [ ] If showing an approval, distinguish the decision from execution and demonstrate the resulting behavior
+- [ ] State which sponsor technologies made the interaction possible
+- [ ] Keep the video within the event's limit and check audio
 
-## 5. Social post
+See [demo prompts](dev-docs/demo-prompts.md) for a reproducible incident workflow.
 
-- [ ] Public
-- [ ] Tags the sponsors — OpenAI, CopilotKit, OpenRouter, plus whichever infra
-      partners you actually used (Exa, Trigger.dev, Auth0, Mozilla.ai,
-      Ambiguous AI) and your city's local sponsors
-- [ ] Links the repo
-- [ ] Has the video or a screenshot of the native card — a text-only post about
-      an agent that renders UI undersells it
+## Social post and final submission
 
-## Before you submit
+- [ ] Follow the organizer's posting and sponsor-tagging instructions
+- [ ] Link the public repository and video
+- [ ] Credit the sponsors you used and applicable local partners
+- [ ] Check the live integration once more before recording or submitting
+- [ ] Inspect the repository, video and screenshots for secrets
 
-- [ ] Someone who has never seen it ran the quickstart from a clean clone
-- [ ] `npm run channel:status` is clean
-- [ ] No secrets in the repo, the video, or the screenshots
+Prepare the post and submission for a human to publish; running the starter kit
+does not publish either automatically.
