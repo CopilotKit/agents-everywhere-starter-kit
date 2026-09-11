@@ -1,22 +1,15 @@
 ---
 name: build-channels-agent
 description: >-
-  Write the code for a CopilotKit Channels agent with the Channels SDK
-  (@copilotkit/channels) — a platform-agnostic engine that puts one AG-UI agent
-  into Slack, Microsoft Teams, Discord, Telegram, and WhatsApp with native
-  interactive UI. It's the engine behind OpenTag, the open-source alternative to
-  Claude in Slack. Use this whenever the user wants to create, scaffold, or
-  extend a Channels agent; wire an agent into Slack/Teams/Discord; add a tool,
-  slash command, button, select, modal, or human-in-the-loop confirmation to a
-  chat agent; or asks about createChannel, defineChannelTool,
-  defineChannelComponent, thread.runAgent, awaitChoice, or the channels-ui JSX
-  components. Trigger even when the user says "Slack bot", "Discord bot", or
-  "chat agent" without naming the SDK, as long as the context is CopilotKit /
-  Channels. The Channels API is new and easy to get wrong from memory — always
-  ground code in this skill.
+  Use for this hackathon's Slack template in apps/channel-slack: CopilotKit
+  Channels setup, thread context, tools, and native cards. Read before editing
+  that app. This skill does not apply to the independent OpenAI Agents SDK +
+  Auth0 WhatsApp template or to the CopilotKit React web template.
 ---
 
-# Build a Channels agent
+# Build the Slack template with Channels
+
+**Hackathon scope:** apply this skill to `templates/slack.md` and `apps/channel-slack/`. Other adapters below are SDK reference material, not instructions to migrate the WhatsApp template. Preserve the repository's pinned Channels/runtime pair instead of installing the older illustrative versions below.
 
 The Channels SDK (`@copilotkit/channels`) is a **platform-agnostic engine** for
 agents that live in chat. You write the logic once — handlers, tools, and

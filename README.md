@@ -1,138 +1,114 @@
 <div align="center">
 
-# Agents, Everywhere — Starter Kit
+# Agents, Everywhere
 
-![Agents, everywhere — build an agent that belongs where people already work](assets/banner.png)
+![Agents, Everywhere hackathon — OpenAI, CopilotKit, OpenRouter, Exa, Auth0, and Ambiguous AI](assets/banner.png)
 
-Build an agent that belongs where people already work, talk, and live.
+**Build an agent that belongs where people already work, talk, and live.**
 
-[Channels SDK](#build-with-the-copilotkit-channels-sdk) · [Quickstart](#run-it-locally) · [Screenshot walkthrough](dev-docs/channels-sdk-walkthrough/README.md) · [Choose a surface](#choose-a-surface) · [Sponsor recipes](dev-docs/sponsors.md) · [Demo](dev-docs/demo-prompts.md) · [Submission](SUBMISSION.md)
+[Overview](#overview) · [Templates](#templates) · [Coding agent](#coding-agent) · [Resources](#resources)
 
 </div>
 
-Built for **[Agents, Everywhere: Bots, Channels, & More](https://sf.aitinkerers.org/p/agents-everywhere-bots-channels-more-global-hackathon)**, the AI Tinkerers global hackathon on **September 12, 2026**. Start with a working example, connect the sponsor tools your idea needs, and make the surrounding context useful. You do not need every sponsor or every surface. See the [official portal](https://sf.aitinkerers.org/hackathons/h_XWWQL5eKfJM) for deadlines and judging, and the [handbook](https://sf.aitinkerers.org/hackathons/h_XWWQL5eKfJM/handbook) for eligibility.
+## Overview
 
-**Build eligibility:** This kit and its incident demo are reusable starting points. Your submitted project and its core functionality must be built during the official hackathon period. A pre-existing project cannot be resubmitted or extended and entered as a new project. Explain what you inherited and what you built during the event in [your submission](SUBMISSION.md#build-eligibility).
+Build for **[Agents, Everywhere: Bots, Channels, & More](https://sf.aitinkerers.org/p/agents-everywhere-bots-channels-more-global-hackathon)**, the AI Tinkerers global hackathon on **September 12, 2026**. Put an agent inside a conversation, an app, a phone, or a physical environment. Make the context of that place essential to what it can do.
 
-## Build with the CopilotKit Channels SDK
+This kit gives you **templates to start from, files to hand to your coding agent, and sponsor resources** to connect the pieces. Pick a user, a problem, and one complete interaction. You can use any stack; you do not need every sponsor or every surface.
 
-**[CopilotKit Channels SDK](https://copilotkit.ai/channels-guide.md) (`@copilotkit/channels`) powers this kit’s conversation-native agent.** Bring your agent into a working thread, give it the surrounding context, and let it respond with native cards, tools, and interactive decisions.
-
-- **Connect the agent:** `createChannel` brings together your agent, tools, components, and context in [channel.tsx](apps/channel-slack/src/channel.tsx).
-- **Use the conversation:** Read thread history and follow subscribed conversations so users can ask about work already happening around them.
-- **Render native UI:** Define incident cards, timelines, and approval buttons with Channels JSX, alongside the tools that drive the workflow.
-
-Start with the included **Slack** example. The SDK also provides a **Teams** adapter path; Teams needs its own setup and validation. CopilotKit Intelligence manages the connection, so the listener needs no public tunnel.
-
-**[Set up your first Channel](dev-docs/setup.md)** · [Channels SDK guide](https://copilotkit.ai/channels-guide.md) · [Build tools and native UI](dev-docs/tools-and-context.md)
-
-**[Follow the screenshot walkthrough: account → Slack bot → native incident card](dev-docs/channels-sdk-walkthrough/README.md).** Includes Intelligence setup, the Channels SDK runtime, and a real contextual follow-up.
-
-### Example app: OpenTag
-
-**[OpenTag](https://github.com/CopilotKit/OpenTag)** is an open-source, self-hosted Channels SDK example app for Slack and Microsoft Teams, built with AG-UI and LangGraph. Explore its thread-based research, native UI, and approval-driven tool workflows for inspiration. Follow its own setup guide; it is a separate application from this starter kit.
-
-## The demo you can build on
-
-An on-call assistant reads an existing incident thread, researches public sources, and presents a native incident card. Add an Ambiguous AI workspace to create a real follow-up and return its record link to the thread. Or use Trigger.dev to queue approved research and retrieve its sources in that same conversation.
-
-Prefer a browser demo? The included incident workspace gives the agent the selected incident and timeline. Ask it to switch incidents or add a follow-up, then watch the page change. These are sample incidents and session-only tasks; refreshing resets them.
-
-Follow the exact prompts and result checks in [the demo walkthrough](dev-docs/demo-prompts.md). Approval cards alone do not execute a restart or create a task.
-
-## Run it locally
-
-Requires **Node.js 22+** (`nvm use`) and one model-provider account.
+**Start with your coding agent.** Clone the kit with Node.js 22+ installed:
 
 ```bash
 git clone https://github.com/CopilotKit/agents-everywhere-starter-kit.git
 cd agents-everywhere-starter-kit
-npm install
+npm ci
 cp .env.example .env
 ```
 
-Edit `.env` with **one** of these choices:
+Then paste this into your coding agent:
 
-| | OpenAI | OpenRouter |
-|---|---|---|
-| `MODEL_PROVIDER` | `openai` | `openrouter` |
-| Credential | `OPENAI_API_KEY` | `OPENROUTER_API_KEY` |
-| `MODEL` | `gpt-5.6-sol` | `openai/gpt-5.6-sol` or an available publisher/model slug |
-| Get access | [API keys](https://platform.openai.com/api-keys) | [API keys](https://openrouter.ai/keys) · [model catalog](https://openrouter.ai/models) |
-
-Replace the selected provider's placeholder with your key. OpenRouter chat needs no OpenAI key. Explicit selection takes precedence over other saved keys; see [model switching](dev-docs/model-switching.md).
-
-```bash
-npm run dev
+```text
+Read AGENTS.md, hackathon-overview.md, hackathon-rules.md, and
+using-sponsor-tools.md. Help me choose one template in templates/ for my idea,
+then build a new project using its infrastructure. Ask me who it is for and
+what the agent should do in that setting. Read the selected template before
+editing; for Slack also read .agents/skills/build-channels-agent/SKILL.md.
+Use only the integrations the idea needs. Verify a complete interaction and
+prepare SUBMISSION.md, distinguishing inherited code from our event work.
 ```
 
-With no Channel configured, this starts terminal chat. Try: “Here is an incident: checkout timeouts began after a deploy, rollback did not help, payment queue depth is rising. What should we investigate?” Terminal chat exercises the model and prompt; it has no Slack history or native cards.
+Your project and its core functionality must be created during the event. Existing libraries, templates, and starter code are allowed; describe what you reuse and what you build. See [the rules](hackathon-rules.md) and the [official portal](https://sf.aitinkerers.org/hackathons/h_XWWQL5eKfJM) for the current deadline and judging criteria.
 
-To open the incident workspace instead:
+## Templates
 
-```bash
-npm run dev:web
-```
+Three starting points for different kinds of context. **CopilotKit Channels** brings the Slack agent into the conversation; **CopilotKit React** connects the web agent to the app people are using.
 
-Open the localhost URL printed by Next.js. For Slack, run `npm run channel:setup`, configure `CHANNEL_CODE` and `INTELLIGENCE_API_KEY`, then run `npm run dev` and mention the invited bot. The managed listener needs no public tunnel. [Full setup](dev-docs/setup.md)
+### 1. Slack — an agent that joins the thread
 
-## Choose a surface
+**OpenAI + CopilotKit Channels + Exa**
 
-| Where your idea belongs | Start with | What the example supplies |
-|---|---|---|
-| Team conversations | `apps/channel-slack` · **Channels SDK** | Thread history, incident cards, approvals, optional search and durable research |
-| An application | `apps/web` | Incident context, timeline, visible local actions, native cards |
-| A quick prompt experiment | `apps/local-chat` | Terminal conversation with your chosen chat provider |
-| A spoken conversation | `apps/web` at `/voice` | Separate OpenAI Realtime agent; requires an OpenAI key and microphone |
-| An MCP client | `apps/mcp` | Tools and a UI resource; the host supplies the model |
-| A mobile application | `apps/mobile` | Separate Expo scaffold; not device-verified |
+An agent reads what people already said, researches with Exa, and answers in the same thread with native cards and source links. Start with a support conversation, a research discussion, or a team decision.
 
-Capabilities differ by surface. Read [the capability matrix and launch commands](dev-docs/surfaces.md) before choosing a second one. Teams uses the Channels adapter path and requires its own setup and validation.
+The included Slack app supplies thread history, subscriptions, search, and Channels UI. Configure your model, Exa, and a managed Channel, then run `npm run dev:slack`. No public tunnel is needed.
 
-## Choose the sponsors your demo needs
+**[Use the Slack template →](templates/slack.md)** · [Screenshot walkthrough](dev-docs/channels-sdk-walkthrough/README.md) · [Channels guide](https://copilotkit.ai/channels-guide.md)
 
-Each [sponsor recipe](dev-docs/sponsors.md) includes access, configuration, commands, expected output, and a file to customize.
+### 2. Web — an agent inside your app
 
-| Sponsor | A useful first result | Recipe |
-|---|---|---|
-| OpenAI | Reason about supplied incident context | [Chat provider](dev-docs/sponsors.md#openai) |
-| CopilotKit | Use **Channels SDK** for thread context and native UI, or CopilotKit for the web workspace | [Channels SDK](#build-with-the-copilotkit-channels-sdk) · [Recipe](dev-docs/sponsors.md#copilotkit) |
-| OpenRouter | Run the same scenario with your selected model | [Model choice](dev-docs/sponsors.md#openrouter) |
-| Exa | Research with visible source links | [Grounded search](dev-docs/sponsors.md#exa) |
-| Trigger.dev | Approve research, keep chatting, retrieve the result | [Durable research](dev-docs/sponsors.md#triggerdev) |
-| Auth0 | Deny an unauthenticated action, authorize a service, create a local record | [Runnable M2M example](examples/auth0/README.md) |
-| Mozilla.ai | Run an incident tool and save an inspectable agent trace | [Runnable Python example](examples/mozilla/README.md) |
-| Ambiguous AI | Create a real workspace follow-up and return its link | [Workplace actions](dev-docs/sponsors.md#ambiguous-ai) |
-| Google Cloud Run | Host your configured listener beyond your laptop | [Deployment configuration](dev-docs/sponsors.md#google-cloud-run) |
+**OpenAI + CopilotKit React + Ambiguous AI**
 
-Auth0 and Mozilla are independent examples. Auth0 demonstrates machine authorization; the separate CIBA consent extension is still unimplemented. Live sponsor calls require your own accounts and are not proven by offline checks. Record organizer-provided offers in [CREDITS.md](CREDITS.md).
+An agent sees the page you are on and turns a request into a real workplace record you can still find after a refresh. Adapt it to customer follow-ups, a project workspace, or a personal planning app.
 
-## The Context Ladder
+The included web app supplies page context, frontend tools, and agent-rendered UI. Connect an Ambiguous AI workspace for persistent records, then run `npm run dev:web`. The sample app also has local follow-ups; those reset on refresh. The template shows how to verify the external record separately.
 
-Use this **starter-kit design exercise** to sharpen your demo. The [published rubric](https://sf.aitinkerers.org/hackathons/h_XWWQL5eKfJM) scores Core Requirements & Functionality, Innovation & Theme Alignment, Technical Execution & Integration, and Usefulness & Agentic Experience from 1–5 each. The ladder supplements that rubric; use the [criterion-by-criterion demo checklist](SUBMISSION.md#evidence-for-the-judging-criteria) to prepare evidence.
+**[Use the web template →](templates/web.md)** · [CopilotKit docs](https://docs.copilotkit.ai/) · [Ambiguous AI setup](using-sponsor-tools.md#ambiguous-ai)
 
-| Level | The agent… | Try this |
-|---|---|---|
-| Reachable | Answers where people already are | Mention it in the chosen surface |
-| Situated | Uses surrounding context | Ask about the incident without pasting it into the prompt |
-| Native | Renders and acts in the surface's own idioms | Show a card and a visible follow-up or returned research result |
+### 3. WhatsApp — an agent you can text
 
-Remove the surrounding context and compare the response. Explain what the agent can do because it belongs there, then demonstrate one complete interaction.
+**OpenAI Agents SDK + Auth0**
 
-## Verify and customize
+An agent recognizes a linked user and requests approval on their phone before executing a protected action. The included app saves an approved, named request and returns a receipt in the conversation. Adapt that action to your own assistant.
 
-```bash
-npm run verify
-npm run check-env
-```
+This is an independent app with its own install and configuration. It uses OpenAI Agents SDK directly, Auth0 for identity and approval, and a WhatsApp transport. No CopilotKit account is required for this template.
 
-`verify` runs workspace typechecks, tests, and MCP protocol checks without `.env` or live credentials. `check-env` separately validates configured startup; it does not authenticate with sponsors. Optional recipe checks are documented beside their examples. Live Slack delivery, sponsor access, voice, and mobile hardware need separate validation.
+**[Use the WhatsApp template →](templates/whatsapp.md)**
 
-Start editing here:
+### The demo you can build on
 
-- [Shared agent](packages/agent-core/src/agent.ts) and [prompt](packages/agent-core/src/prompt.ts)
-- [Slack tools](apps/channel-slack/src/tools.tsx) and [native cards](apps/channel-slack/src/components.tsx)
-- [Incident workspace](apps/web/src/app/page.tsx) and [frontend actions](apps/web/src/components/app-control.tsx)
-- [Sponsor recipes](dev-docs/sponsors.md) and [developer docs](dev-docs/README.md)
+The supplied on-call assistant is an **infrastructure example**: read ambient context, call a tool, render useful UI, and return a verifiable result. **Branch out from the example app.** Choose a different user, problem, dataset, and interaction; the goal is your own project, not another version of the incident demo.
 
-The repository includes Channels coding guidance in [.agents/skills](.agents/skills/) and conventions in [AGENTS.md](AGENTS.md). Keep secrets server-side and out of your submission.
+Use the [demo prompts](dev-docs/demo-prompts.md) to learn how the pieces connect, then replace the incident scenario. Approval cards in the Slack/web reference demo record decisions; they do not execute production actions or enforce authorization around every external tool.
+
+Want another surface? The kit also includes [voice, MCP, mobile, and terminal starting points](dev-docs/surfaces.md). Four event surfaces are inspiration, not separate tracks or a requirement to build four apps.
+
+## Coding agent
+
+Give your agent these files before it starts coding:
+
+| File | What it provides |
+|---|---|
+| [hackathon-overview.md](hackathon-overview.md) | The challenge, four surfaces, and official judging criteria |
+| [hackathon-rules.md](hackathon-rules.md) | Build eligibility, inherited code, and required deliverables |
+| [using-sponsor-tools.md](using-sponsor-tools.md) | Every sponsor featured in this kit: access, authentication, configuration, and a first working call |
+| [AGENTS.md](AGENTS.md) | Repository conventions and verification commands |
+| [Channels skill](.agents/skills/build-channels-agent/SKILL.md) | Verified Channels APIs for the Slack template |
+
+The [template guides](templates/) provide launch commands, files to customize, and a concrete result to check. Start with one template and add a second surface only if it helps your user.
+
+## Resources
+
+| Need | Go here |
+|---|---|
+| Event details, deadline, and judging | [Official portal](https://sf.aitinkerers.org/hackathons/h_XWWQL5eKfJM) · [Handbook](https://sf.aitinkerers.org/hackathons/h_XWWQL5eKfJM/handbook) |
+| OpenAI credits and redemption | [Credit instructions](CREDITS.md#openai-credits) · [API keys](https://platform.openai.com/api-keys) |
+| OpenAI agent development | [Agents SDK quickstart](https://openai.github.io/openai-agents-js/guides/quickstart/) |
+| OpenRouter access and model choice | [Keys](https://openrouter.ai/keys) · [Model catalog](https://openrouter.ai/models) · [Model switching](dev-docs/model-switching.md) |
+| CopilotKit app development | [Docs](https://docs.copilotkit.ai/) · [Tools and context](dev-docs/tools-and-context.md) |
+| CopilotKit Channels | [Channels guide](https://copilotkit.ai/channels-guide.md) · [Screenshot walkthrough](dev-docs/channels-sdk-walkthrough/README.md) · [OpenTag example app](https://github.com/CopilotKit/OpenTag) |
+| Exa quickstart | [Search API guide](https://exa.ai/docs/reference/search-api-guide) · [Kit setup](using-sponsor-tools.md#exa) |
+| Auth0 quickstarts | [Node API](https://auth0.com/docs/quickstart/backend/nodejs) · [Asynchronous authorization](https://auth0.com/ai/docs/get-started/asynchronous-authorization) · [Kit setup](using-sponsor-tools.md#auth0) |
+| Ambiguous AI quickstart | [Developer guide](https://www.ambiguous.ai/llms.txt) · [Kit setup](using-sponsor-tools.md#ambiguous-ai) |
+| Rehearse and debug | [Demo prompts](dev-docs/demo-prompts.md) · [Troubleshooting](dev-docs/troubleshooting.md) |
+| Prepare your entry | [Submission checklist](SUBMISSION.md) |
+
+For the Slack/web workspaces, `npm run verify` runs typechecks, tests, and MCP checks without credentials. `npm run check-env` validates configured startup. WhatsApp has separate checks in its template. Live sponsor calls and platform delivery require your accounts. See [developer docs](dev-docs/README.md) for detailed setup and deployment.

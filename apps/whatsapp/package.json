@@ -1,0 +1,29 @@
+{
+  "name": "whatsapp-agents-auth0-template",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "start": "tsx src/index.ts",
+    "dev": "tsx watch src/index.ts",
+    "test": "tsx --test test/*.test.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@openai/agents": "0.18.0",
+    "dotenv": "17.4.2",
+    "express": "5.2.1",
+    "jose": "6.2.12",
+    "twilio": "6.1.1",
+    "zod": "4.6.2"
+  },
+  "devDependencies": {
+    "@types/express": "5.0.6",
+    "@types/node": "22.20.2",
+    "tsx": "4.23.13",
+    "typescript": "7.0.2"
+  }
+}

@@ -27,7 +27,6 @@ step "Not proven here"
 printf '  %s·%s MCP HTTP transport — this check exercises stdio only\n' "$Y" "$O"
 printf '  %s·%s Slack round trip — needs your own Intelligence project + Channel\n' "$Y" "$O"
 printf '  %s·%s Mobile — separate install, typecheck, and device run not verified\n' "$Y" "$O"
-printf '  %s·%s Trigger.dev waitpoints — needs a Trigger project\n' "$Y" "$O"
 
 if [ "$FAILED" = "0" ]; then
   printf '\n%s%s✓ everything verifiable passed%s\n\n' "$B" "$G" "$O"

@@ -143,7 +143,7 @@ Change one workflow and demonstrate why it belongs in its environment:
 - Edit the [shared prompt](../../packages/agent-core/src/prompt.ts) for your intended users.
 - Add context, handlers, or tools in the [Channel definition](../../apps/channel-slack/src/channel.tsx).
 - Adapt the [native cards](../../apps/channel-slack/src/components.tsx) and [tools](../../apps/channel-slack/src/tools.tsx) to the action your users need. Follow the [tools and context guide](../tools-and-context.md).
-- Add a [sponsor integration](../sponsors.md) when it creates a useful result: Exa for grounded research, Ambiguous AI for a workplace action, or Trigger.dev for durable work.
+- Add a [sponsor integration](../../using-sponsor-tools.md) when it creates a useful result: Exa for grounded research or Ambiguous AI for a persistent workplace action.
 
 Optional search needs its own configuration. Approval cards in this starter record a decision; they do not execute production actions by themselves. The welcome card's search and production-action wording should be adapted to the capabilities you actually implement.
 

@@ -13,8 +13,7 @@
     "apps/channel-slack",
     "apps/local-chat",
     "apps/web",
-    "apps/mcp",
-    "apps/durable"
+    "apps/mcp"
   ],
   "scripts": {
     "check-env": "bash scripts/check-env.sh",
