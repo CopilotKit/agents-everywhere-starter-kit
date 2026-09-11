@@ -6,7 +6,7 @@
 
 **Build an agent that belongs where people already work, talk, and live.**
 
-[Overview](#overview) · [Templates](#templates) · [Coding agent](#coding-agent) · [Resources](#resources)
+[Overview](#overview) · [Get started](#get-started) · [Templates](#templates) · [Coding agent](#coding-agent) · [Resources](#resources)
 
 </div>
 
@@ -16,9 +16,13 @@ Build for **[Agents, Everywhere: Bots, Channels, & More](https://sf.aitinkerers.
 
 **Main communication channel:** Use the [hackathon Discord channel](https://discord.com/channels/1122926057641742418/1548038338848489532) for announcements, questions, and team coordination.
 
-This kit gives you **templates to start from, files to hand to your coding agent, and sponsor resources** to connect the pieces. Pick a user, a problem, and one complete interaction. You can use any stack; you do not need every sponsor or every surface.
+This kit gives you three runnable templates, files to hand to your coding agent, and sponsor setup notes. Pick a user, a problem, and one complete interaction. You can use any stack; you do not need every sponsor or every surface.
 
-**Start with your coding agent.** Clone the kit with Node.js 22+ installed:
+Your project and its core functionality must be created during the event. Existing libraries, templates, and starter code are allowed; describe what you reuse and what you build. See [the rules](hackathon-rules.md) and the [official portal](https://sf.aitinkerers.org/hackathons/h_XWWQL5eKfJM) for the current deadline and judging criteria.
+
+## Get started
+
+Use Node.js 22+, then clone and install the kit:
 
 ```bash
 git clone https://github.com/CopilotKit/agents-everywhere-starter-kit.git
@@ -27,7 +31,9 @@ npm ci
 cp .env.example .env
 ```
 
-Then paste this into your coding agent:
+Choose one template and configure only the credentials it needs. Slack and web use the root install; React Native has its own install under `apps/mobile` because Expo pins its React Native stack separately.
+
+Paste this into your coding agent:
 
 ```text
 Read AGENTS.md, hackathon-overview.md, hackathon-rules.md, and
@@ -39,8 +45,6 @@ Use only the integrations the idea needs. Verify a complete interaction and
 prepare SUBMISSION.md, distinguishing inherited code from our event work.
 ```
 
-Your project and its core functionality must be created during the event. Existing libraries, templates, and starter code are allowed; describe what you reuse and what you build. See [the rules](hackathon-rules.md) and the [official portal](https://sf.aitinkerers.org/hackathons/h_XWWQL5eKfJM) for the current deadline and judging criteria.
-
 ## Templates
 
 These starting points serve different kinds of context. **CopilotKit Channels** brings the Slack agent into the conversation; **CopilotKit React** connects the web agent to the app people are using; **CopilotKit React Native** brings the same agent pattern onto a phone.
@@ -51,7 +55,11 @@ These starting points serve different kinds of context. **CopilotKit Channels** 
 
 An agent reads what people already said, researches with Exa, and answers in the same thread with native cards and source links. Start with a support conversation, a research discussion, or a team decision.
 
-The included Slack app supplies thread history, subscriptions, search, and Channels UI. Configure your model, Exa, and a managed Channel, then run `npm run dev:slack`. No public tunnel is needed.
+![Slack agent sharing incident context, Exa sources, and next steps](assets/demos/slack.gif)
+
+_Completed-thread recording, sped up for the preview._
+
+The included Slack app supplies thread history, subscriptions, search, and Channels UI. Configure your model, Exa, and a managed Channel, then run `npm run dev:slack`. No public tunnel is needed. Teams or other chat platforms can use the same Channels pattern, but this starter ships the Slack app.
 
 **[Use the Slack template →](apps/channel/)**
 
@@ -60,6 +68,10 @@ The included Slack app supplies thread history, subscriptions, search, and Chann
 **OpenAI + CopilotKit React + Ambiguous AI**
 
 An agent sees the page you are on and turns a request into a real workplace record you can still find after a refresh. Adapt it to customer follow-ups, a project workspace, or a personal planning app.
+
+![Web agent proposing a follow-up, saving it after approval, and retrieving it after reload](assets/demos/web.gif)
+
+_Preview at 3× speed; the template guide includes the full recording._
 
 The included web app supplies page context, frontend tools, agent-rendered UI, and a browser approval step. Connect an Ambiguous AI workspace, then run `npm run dev:web`; approved follow-ups are saved through the server and can be read back after refresh.
 
@@ -71,15 +83,17 @@ The included web app supplies page context, frontend tools, agent-rendered UI, a
 
 A mobile agent reads app state, renders native cards, and waits for a tap before changing local sample data. Start with a personal finance assistant, a field checklist, an inventory counter, or any workflow where phone context and approval matter.
 
+<img src="assets/demos/mobile.gif" alt="React Native agent waiting for approval before updating a sample balance" width="320" />
+
 The included Expo app supplies seeded finance state, native rendered tool UI, a human-in-the-loop expense approval, and a mobile-specific CopilotKit runtime endpoint served by the web app. Configure your model provider, start `npm run dev:web`, then run the mobile app from `apps/mobile`.
 
 **[Use the React Native template →](apps/mobile/)**
 
-### The demo you can build on
+### Make the demo yours
 
-The supplied on-call assistant is an **infrastructure example**: read ambient context, call a tool, render useful UI, and return a verifiable result. **Branch out from the example app.** Choose a different user, problem, dataset, and interaction; the goal is your own project, not another version of the incident demo.
+The supplied on-call and finance assistants are **infrastructure examples**: read ambient context, call a tool, render useful UI, and return a verifiable result. Choose a different user, problem, dataset, and interaction; the goal is your own project, not another version of the starter scenario.
 
-Use the [demo prompts](dev-docs/demo-prompts.md) to learn how the pieces connect, then replace the incident scenario. In the Slack sample incident flow, approval cards record decisions without executing production actions. In the web follow-up flow, the page approval button saves the reviewed Ambiguous task; enforce the same kind of write boundary around any external action you add.
+Use the [demo prompts](dev-docs/demo-prompts.md) to learn how the pieces connect, then replace the sample domain. In the Slack sample incident flow, approval cards record decisions without executing production actions. In the web follow-up flow, the page approval button saves the reviewed Ambiguous task. In the mobile finance flow, approval changes local in-memory sample data. Enforce the same kind of write boundary around any external action you add.
 
 Want another surface pattern? The web app also includes a voice route, and the shared agent can connect to remote MCP tools when configured. The event surfaces are inspiration, not separate tracks or a requirement to build multiple apps.
 
