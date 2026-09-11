@@ -1,19 +1,29 @@
 import { Agent, OpenAIChatCompletionsModel, OpenAIResponsesModel, Runner, assistant, system, user } from '@openai/agents';
-import OpenAI from 'openai';
+import OpenAI, { type ClientOptions } from 'openai';
 import { z } from 'zod';
 import type { Identity, State } from './store.js';
 import type { Config } from './service.js';
+
+class OpenRouterClient extends OpenAI {
+  constructor(options: ClientOptions) {
+    super(options);
+    // OpenAI 7.15 applies OPENAI_CUSTOM_HEADERS through these defaults after auth.
+    // Clear this client's inherited headers before any requests; never mutate process.env.
+    this._options.defaultHeaders = undefined;
+  }
+}
 
 export const proposalSchema = z.object({ reply: z.string().min(1).max(1200), requestLabel: z.string().nullable() });
 export type Proposal = z.infer<typeof proposalSchema>;
 export type PlannerInput = { identity: Identity; text: string; history: State['history'][string] };
 export function createPlanner(config: Pick<Config, 'modelProvider' | 'modelApiKey' | 'model'>, options: { fetch?: typeof fetch } = {}) {
   const router = config.modelProvider === 'openrouter';
-  const client = new OpenAI({
+  const Client = router ? OpenRouterClient : OpenAI;
+  const client = new Client({
     apiKey: config.modelApiKey,
     baseURL: router ? 'https://openrouter.ai/api/v1' : 'https://api.openai.com/v1',
     // A router request must not inherit OpenAI account headers or verbose SDK logs.
-    ...(router ? { organization: null, project: null } : {}),
+    ...(router ? { organization: null, project: null, adminAPIKey: null } : {}),
     fetch: options.fetch, logLevel: 'off',
   });
   const model = router

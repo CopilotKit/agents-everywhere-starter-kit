@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import type { IncomingHttpHeaders } from 'node:http';
 import { test } from 'node:test';
 import express from 'express';
 import { createPlanner, type PlannerInput } from '../src/agent.js';
@@ -16,11 +17,11 @@ type RequestBody = {
   text?: { format: Record<string, unknown> };
 };
 async function plannerFixture(options: { content?: string; status?: number } = {}) {
-  const requests: { path: string; authorization?: string; body: RequestBody }[] = [];
+  const requests: { path: string; authorization?: string; headers: IncomingHttpHeaders; body: RequestBody }[] = [];
   const endpoints: string[] = [];
   const api = express(); api.use(express.json());
   api.post(['/v1/responses', '/api/v1/chat/completions'], (req, res) => {
-    requests.push({ path: req.path, authorization: req.headers.authorization, body: req.body });
+    requests.push({ path: req.path, authorization: req.headers.authorization, headers: req.headers, body: req.body });
     if (options.status) { res.status(options.status).json({ error: { message: 'private-provider-payload local-router-key', type: 'invalid_request_error' } }); return; }
     const content = options.content ?? JSON.stringify(proposal);
     if (req.path === '/v1/responses') {
@@ -85,6 +86,49 @@ test('the actual OpenAI Agents SDK keeps direct Responses and router Chat Comple
       assert.ok(sent.includes('You have no execution tools'));
     }
   } finally { await fixture.close(); }
+});
+
+test('router requests ignore inherited OpenAI credentials and custom headers while direct requests retain them', async () => {
+  const fixture = await plannerFixture();
+  const inherited = {
+    OPENAI_API_KEY: 'private-openai-key',
+    OPENAI_ADMIN_KEY: 'private-openai-admin-key',
+    OPENAI_ORG_ID: 'private-openai-org',
+    OPENAI_PROJECT_ID: 'private-openai-project',
+    OPENAI_CUSTOM_HEADERS: [
+      'aUtHoRiZaTiOn: Bearer direct-openai-header-sentinel',
+      'OpenAI-Organization: private-org-sentinel',
+      'OpenAI-Project: private-project-sentinel',
+      'X-Private-Header: private-header-sentinel',
+    ].join('\n'),
+  };
+  const previous = Object.fromEntries(Object.keys(inherited).map((key) => [key, process.env[key]]));
+  try {
+    Object.assign(process.env, inherited);
+    const router = createPlanner({ modelProvider: 'openrouter', modelApiKey: 'local-router-key', model: 'openai/gpt-4.1-mini' }, { fetch: fixture.fetch });
+    const direct = createPlanner({ modelProvider: 'openai', modelApiKey: 'local-direct-key', model: 'gpt-4.1-mini' }, { fetch: fixture.fetch });
+    assert.deepEqual(await Promise.all([router(input), direct(input)]), [proposal, proposal]);
+    const routerRequest = fixture.requests.find((request) => request.path === '/api/v1/chat/completions');
+    assert.ok(routerRequest);
+    assert.equal(routerRequest.authorization, 'Bearer local-router-key');
+    assert.equal(routerRequest.headers['openai-organization'], undefined);
+    assert.equal(routerRequest.headers['openai-project'], undefined);
+    assert.equal(routerRequest.headers['x-private-header'], undefined);
+    assert.ok(!JSON.stringify(routerRequest.headers).includes('private-'));
+    const directRequest = fixture.requests.find((request) => request.path === '/v1/responses');
+    assert.ok(directRequest);
+    assert.equal(directRequest.authorization, 'Bearer direct-openai-header-sentinel');
+    assert.equal(directRequest.headers['openai-organization'], 'private-org-sentinel');
+    assert.equal(directRequest.headers['openai-project'], 'private-project-sentinel');
+    assert.equal(directRequest.headers['x-private-header'], 'private-header-sentinel');
+    for (const [key, value] of Object.entries(inherited)) assert.equal(process.env[key], value);
+  } finally {
+    for (const [key, value] of Object.entries(previous)) {
+      if (value === undefined) delete process.env[key];
+      else process.env[key] = value;
+    }
+    await fixture.close();
+  }
 });
 
 test('a router conversation may return a validated reply without proposing an action', async () => {
