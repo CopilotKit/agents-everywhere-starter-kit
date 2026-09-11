@@ -6,7 +6,8 @@
   "description": "The one agent every surface points at. Model, prompt, and surface-agnostic capabilities.",
   "exports": {
     ".": "./src/index.ts",
-    "./shared": "./src/shared.ts"
+    "./shared": "./src/shared.ts",
+    "./mobile-finance-prompt": "./src/mobile-finance-prompt.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit"

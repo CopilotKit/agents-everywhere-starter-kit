@@ -2,11 +2,13 @@
  * The runtime endpoint.
  *
  * `localhost` on a phone means the PHONE, not your laptop. Options:
- *   - iOS Simulator      → http://localhost:3100 works
- *   - Android emulator   → http://10.0.2.2:3100
- *   - Physical device    → your laptop's LAN IP, e.g. http://192.168.1.20:3100
+ *   - iOS Simulator      → http://localhost:3100/api/mobile-copilotkit
+ *   - Android emulator   → http://10.0.2.2:3100/api/mobile-copilotkit
+ *   - Physical device    → http://<your-laptop-LAN-IP>:3100/api/mobile-copilotkit,
+ *                          using the LAN URL printed by `npm run dev:web`, or after deploying the runtime
  *
  * Set EXPO_PUBLIC_RUNTIME_URL in apps/mobile/.env to override.
  */
 export const RUNTIME_URL =
-  process.env.EXPO_PUBLIC_RUNTIME_URL ?? "http://localhost:3100/api/copilotkit";
+  process.env.EXPO_PUBLIC_RUNTIME_URL ??
+  "http://localhost:3100/api/mobile-copilotkit";

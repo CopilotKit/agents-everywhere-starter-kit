@@ -27,10 +27,12 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useAgent, useRenderToolCall } from "@copilotkit/react-native/headless";
 import { Tools } from "@/tools";
 import { styles } from "@/styles";
+import { formatMoney, initialFinance } from "@/finance";
 
 export function ChatScreen() {
   const { agent } = useAgent({ agentId: "default" });
   const renderToolCall = useRenderToolCall();
+  const [finance, setFinance] = useState(initialFinance);
   const [draft, setDraft] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string>();
@@ -64,11 +66,19 @@ export function ChatScreen() {
 
   return (
     <SafeAreaView style={styles.safe} edges={["top", "bottom"]}>
-      <Tools />
+      <Tools finance={finance} setFinance={setFinance} />
 
       <View style={styles.header}>
-        <Text style={styles.eyebrow}>In your pocket</Text>
-        <Text style={styles.title}>The same agent, on your phone.</Text>
+        <Text style={styles.eyebrow}>Template 3 · React Native</Text>
+        <Text style={styles.title}>Personal finance copilot</Text>
+        <View style={styles.snapshot}>
+          {finance.accounts.map((account) => (
+            <View key={account.id} style={styles.pill}>
+              <Text style={styles.pillLabel}>{account.name}</Text>
+              <Text style={styles.pillValue}>{formatMoney(account.balance, account.currency)}</Text>
+            </View>
+          ))}
+        </View>
       </View>
 
       <FlatList
@@ -77,8 +87,9 @@ export function ChatScreen() {
         keyExtractor={(message) => message.id}
         ListEmptyComponent={
           <Text style={styles.empty}>
-            Ask it something. It runs the same prompt and the same tools as the Slack, web and
-            voice surfaces — approvals happen right here with one tap.
+            Try "Show my balances", "How am I doing on budgets?", or "Add a $9
+            lunch on my Rewards Card." Reads render native cards. Writes wait for
+            your approval tap before changing local sample data.
           </Text>
         }
         renderItem={({ item: message }) => {
@@ -119,9 +130,7 @@ export function ChatScreen() {
         <View style={styles.gate}>
           <Text style={styles.gateTitle}>Could not reach the agent</Text>
           <Text style={styles.gateBody}>{error}</Text>
-          <Text style={styles.gateBody}>
-            On a device, localhost is the device. See src/config.ts.
-          </Text>
+          <Text style={styles.gateBody}>Start npm run dev:web and check src/config.ts.</Text>
         </View>
       ) : null}
 
@@ -131,7 +140,7 @@ export function ChatScreen() {
             style={styles.input}
             value={draft}
             onChangeText={setDraft}
-            placeholder="Ask it something"
+            placeholder="Ask about your money"
             placeholderTextColor="#6e6779"
             onSubmitEditing={() => void send()}
             returnKeyType="send"

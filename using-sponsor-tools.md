@@ -2,13 +2,13 @@
 
 One setup reference for the six sponsors featured in this kit. Choose the tools your workflow needs. **OpenAI** is the marquee sponsor; **CopilotKit and OpenRouter** share the next tier; **Exa, Auth0, and Ambiguous AI** provide additional capabilities. This is the kit's selected lineup; the [event portal](https://sf.aitinkerers.org/hackathons/h_XWWQL5eKfJM) maintains the full event roster.
 
-Use Node.js 22+. For Slack/web, run the homepage's clone/install steps and keep credentials in root `.env`. Never put keys in frontend code or a submission. `npm run verify` covers offline behavior, not live account access.
+Use Node.js 22+. For Slack/web/mobile, run the homepage's clone/install steps and keep credentials in root `.env`. Never put keys in frontend code or a submission. `npm run verify` covers offline behavior, not live account access.
 
 | Sponsor | Used by | First result |
 |---|---|---|
 | [OpenAI](#openai) | Slack, web, mobile | A model response to supplied context |
-| [CopilotKit](#copilotkit) | Slack and web | A contextual answer and native UI |
-| [OpenRouter](#openrouter) | Optional Slack/web model gateway | A response from your chosen catalog model |
+| [CopilotKit](#copilotkit) | Slack, web, mobile | A contextual answer and native UI |
+| [OpenRouter](#openrouter) | Optional Slack/web/mobile model gateway | A response from your chosen catalog model |
 | [Exa](#exa) | Slack template | Research with inspectable sources |
 | [Auth0](#auth0) | Standalone protected-API example | Verified service identity and scope before a protected action |
 | [Ambiguous AI](#ambiguous-ai) | Web template; optional Slack integration | A real workplace record that survives refresh |
@@ -17,7 +17,7 @@ Use Node.js 22+. For Slack/web, run the homepage's clone/install steps and keep 
 
 **Access and authentication.** Follow [OpenAI credit instructions](CREDITS.md#openai-credits), then create a server-side [API key](https://platform.openai.com/api-keys) in the funded organization/project. Credit redemption and key creation are separate steps.
 
-**Configure Slack/web** in root `.env`:
+**Configure Slack/web/mobile** in root `.env`:
 
 ```dotenv
 MODEL_PROVIDER=openai
@@ -52,11 +52,11 @@ console.log(answer);
 JS
 ```
 
-**Check:** the response accounts for the failed rollback; confirm usage in the correct API project. Then run `npm run dev:local`, `npm run dev:slack`, or `npm run dev:web`. These use the [shared model adapter](packages/agent-core/src/model.ts). [Agents SDK quickstart](https://openai.github.io/openai-agents-js/guides/quickstart/)
+**Check:** the response accounts for the failed rollback; confirm usage in the correct API project. Then run `npm run dev:local`, `npm run dev:slack`, `npm run dev:web`, or the React Native template runtime plus Expo app. These use the [shared model adapter](packages/agent-core/src/model.ts). [Agents SDK quickstart](https://openai.github.io/openai-agents-js/guides/quickstart/)
 
 ## CopilotKit
 
-**Access and authentication.** The React web template needs only your model-provider account. The Slack template additionally uses [CopilotKit Intelligence](https://intelligence.copilotkit.ai/) to manage the Channel and Slack installation. Create a Channel with `npm run channel:setup`; follow [setup](dev-docs/setup.md) or the [illustrated walkthrough](dev-docs/channels-sdk-walkthrough/README.md).
+**Access and authentication.** The React web and React Native templates need only your model-provider account. The Slack template additionally uses [CopilotKit Intelligence](https://intelligence.copilotkit.ai/) to manage the Channel and Slack installation. Create a Channel with `npm run channel:setup`; follow [setup](dev-docs/setup.md) or the [illustrated walkthrough](dev-docs/channels-sdk-walkthrough/README.md).
 
 **Configure Slack** in root `.env`, alongside the model settings:
 
@@ -77,7 +77,9 @@ npm run dev:slack
 
 Invite the bot and add a few facts to a thread before asking: “Read this thread and show an incident card.” **Check:** `read_thread` uses earlier messages and `incident_card` renders in Slack. Customize [the Channel](apps/channel-slack/src/channel.tsx), [tools](apps/channel-slack/src/tools.tsx), and [components](apps/channel-slack/src/components.tsx).
 
-**First call, React:** run `npm run dev:web`, open `http://localhost:3100`, select an incident, then ask: “What is happening with the selected incident? Show a card.” **Check:** the answer matches the current page without pasting its contents. [AppControl](apps/web/src/components/app-control.tsx) registers page context and frontend tools; [GenerativeUI](apps/web/src/components/generative-ui.tsx) registers React components.
+**First call, React web:** run `npm run dev:web`, open `http://localhost:3100`, select an incident, then ask: “What is happening with the selected incident? Show a card.” **Check:** the answer matches the current page without pasting its contents. [AppControl](apps/web/src/components/app-control.tsx) registers page context and frontend tools; [GenerativeUI](apps/web/src/components/generative-ui.tsx) registers React components.
+
+**First call, React Native:** run `npm run dev:web`, then `npm ci --prefix apps/mobile` and `npm start --prefix apps/mobile`. Ask “Show my balances.” **Check:** the app uses its local finance state and renders the native account card. The sample expense write waits for an approval tap and changes in-memory data only.
 
 Keep the tested Channels/runtime versions and the `@ag-ui/client` override. Before editing the Slack template, read the [Channels skill](.agents/skills/build-channels-agent/SKILL.md). [CopilotKit docs](https://docs.copilotkit.ai/) · [Channels guide](https://copilotkit.ai/channels-guide.md)
 
