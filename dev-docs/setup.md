@@ -32,7 +32,7 @@ npm run check-env
 npm run dev
 ```
 
-With no Channel configured, `dev` starts terminal chat. The terminal has your selected model and prompt, but no thread-history, native-card, or Exa search tools. For the sample incident workspace, run `npm run dev:web` and open the URL printed by Next.js.
+With no Channel configured, `dev` starts terminal chat. The terminal has your selected model and prompt, but no thread-history, native-card, or Exa search tools. For the sample incident workspace, run `npm run dev:web` and open the URL printed by Next.js. For the React Native template, the same command starts the mobile runtime endpoint; run the Expo app separately from `apps/mobile`.
 
 ## Add Slack
 

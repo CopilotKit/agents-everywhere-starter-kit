@@ -9,3 +9,4 @@ dist/
 .next/
 next-env.d.ts
 assets/fonts/
+apps/mobile/.expo/

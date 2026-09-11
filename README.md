@@ -41,7 +41,7 @@ Your project and its core functionality must be created during the event. Existi
 
 ## Templates
 
-These starting points serve different kinds of context. **CopilotKit Channels** brings the Slack agent into the conversation; **CopilotKit React** connects the web agent to the app people are using.
+These starting points serve different kinds of context. **CopilotKit Channels** brings the Slack agent into the conversation; **CopilotKit React** connects the web agent to the app people are using; **CopilotKit React Native** brings the same agent pattern onto a phone.
 
 ### 1. Slack — an agent that joins the thread
 
@@ -63,13 +63,23 @@ The included web app supplies page context, frontend tools, and agent-rendered U
 
 **[Use the web template →](templates/web.md)** · [CopilotKit docs](https://docs.copilotkit.ai/) · [Ambiguous AI setup](using-sponsor-tools.md#ambiguous-ai)
 
+### 3. React Native — an agent in your pocket
+
+**OpenAI or OpenRouter + CopilotKit React Native**
+
+A mobile agent reads app state, renders native cards, and waits for a tap before changing local sample data. Start with a personal finance assistant, a field checklist, an inventory counter, or any workflow where phone context and approval matter.
+
+The included Expo app supplies seeded finance state, native rendered tool UI, a human-in-the-loop expense approval, and a mobile-specific CopilotKit runtime endpoint served by the web app. Configure your model provider, start `npm run dev:web`, then run the mobile app from `apps/mobile`.
+
+**[Use the React Native template →](templates/react-native.md)** · [Mobile app README](apps/mobile/README.md)
+
 ### The demo you can build on
 
 The supplied on-call assistant is an **infrastructure example**: read ambient context, call a tool, render useful UI, and return a verifiable result. **Branch out from the example app.** Choose a different user, problem, dataset, and interaction; the goal is your own project, not another version of the incident demo.
 
 Use the [demo prompts](dev-docs/demo-prompts.md) to learn how the pieces connect, then replace the incident scenario. Approval cards in the Slack/web reference demo record decisions; they do not execute production actions or enforce authorization around every external tool.
 
-Want another surface? The kit also includes [voice, MCP, mobile, and terminal starting points](dev-docs/surfaces.md). Four event surfaces are inspiration, not separate tracks or a requirement to build four apps.
+Want another surface? The kit also includes [voice, MCP, and terminal starting points](dev-docs/surfaces.md). The event surfaces are inspiration, not separate tracks or a requirement to build multiple apps.
 
 ## Coding agent
 
@@ -101,4 +111,4 @@ The [template guides](templates/) provide launch commands, files to customize, a
 | Rehearse and debug | [Demo prompts](dev-docs/demo-prompts.md) · [Troubleshooting](dev-docs/troubleshooting.md) |
 | Prepare your entry | [Submission checklist](SUBMISSION.md) |
 
-For the Slack/web workspaces, `npm run verify` runs typechecks, tests, and MCP checks without credentials. `npm run check-env` validates configured startup. Live sponsor calls and platform delivery require your accounts. See [developer docs](dev-docs/README.md) for detailed setup and deployment.
+For the Slack/web workspaces, `npm run verify` runs typechecks, tests, and MCP checks without credentials. The mobile app has its own install, tests, typecheck, and Metro export checks under `apps/mobile`. `npm run check-env` validates configured startup. Live sponsor calls and platform delivery require your accounts. See [developer docs](dev-docs/README.md) for detailed setup and deployment.

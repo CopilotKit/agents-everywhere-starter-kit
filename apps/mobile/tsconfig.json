@@ -3,8 +3,9 @@
   "compilerOptions": {
     "strict": true,
     "jsx": "react-jsx",
+    "allowImportingTsExtensions": true,
     "moduleResolution": "bundler",
     "paths": { "@/*": ["./src/*"] }
   },
-  "include": ["index.js", "App.tsx", "src", "*.d.ts"]
+  "include": ["index.js", "App.tsx", "src", "test", "*.d.ts"]
 }

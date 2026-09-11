@@ -1,12 +1,13 @@
 import { StyleSheet } from "react-native";
 
 export const C = {
-  ground: "#131019",
-  surface: "#1b1724",
-  border: "#2e2739",
+  ground: "#111417",
+  surface: "#1b2226",
+  border: "#314047",
   text: "#eeebf2",
-  muted: "#948ca1",
-  accent: "#ff5c9b",
+  muted: "#9ba8ad",
+  accent: "#2fbf8f",
+  amber: "#f6b44b",
 };
 
 export const styles = StyleSheet.create({
@@ -15,11 +16,22 @@ export const styles = StyleSheet.create({
   eyebrow: {
     color: C.accent,
     fontSize: 10,
-    letterSpacing: 1.6,
+    letterSpacing: 0,
     textTransform: "uppercase",
     marginBottom: 4,
   },
-  title: { color: C.text, fontSize: 20, fontWeight: "700", letterSpacing: -0.4 },
+  title: { color: C.text, fontSize: 22, fontWeight: "700", letterSpacing: 0 },
+  snapshot: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 12 },
+  pill: {
+    borderWidth: 1,
+    borderColor: C.border,
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    backgroundColor: C.surface,
+  },
+  pillLabel: { color: C.muted, fontSize: 11, marginBottom: 2 },
+  pillValue: { color: C.text, fontSize: 14, fontWeight: "700" },
   list: { flex: 1, paddingHorizontal: 16 },
   empty: { color: C.muted, paddingVertical: 24, fontSize: 14, lineHeight: 21 },
 
@@ -48,6 +60,33 @@ export const styles = StyleSheet.create({
   gateBody: { color: C.muted, fontSize: 13, lineHeight: 19 },
   gateDone: { color: C.muted, fontSize: 13, fontStyle: "italic" },
   gateRow: { flexDirection: "row", gap: 8, marginTop: 12 },
+  card: {
+    backgroundColor: C.surface,
+    borderWidth: 1,
+    borderColor: C.border,
+    borderRadius: 8,
+    padding: 12,
+    marginVertical: 6,
+  },
+  cardTitle: { color: C.text, fontSize: 15, fontWeight: "700", marginBottom: 8 },
+  row: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    gap: 12,
+    paddingVertical: 6,
+  },
+  rowStack: { flex: 1 },
+  rowLabel: { color: C.text, fontSize: 14, flexShrink: 1 },
+  rowMeta: { color: C.muted, fontSize: 12, marginTop: 2 },
+  rowValue: { color: C.text, fontSize: 14, fontWeight: "700" },
+  budgetRow: { marginBottom: 8 },
+  meter: {
+    height: 6,
+    borderRadius: 6,
+    backgroundColor: "#253037",
+    overflow: "hidden",
+  },
+  meterFill: { height: 6, borderRadius: 6, backgroundColor: C.amber },
 
   btn: {
     paddingVertical: 8,
@@ -59,6 +98,8 @@ export const styles = StyleSheet.create({
   btnText: { color: C.text, fontSize: 14 },
   btnPrimary: { backgroundColor: C.accent, borderColor: C.accent },
   btnPrimaryText: { color: "#fff", fontSize: 14, fontWeight: "600" },
+  btnDisabled: { opacity: 0.45 },
+  btnDisabledText: { color: C.muted },
 
   composer: {
     flexDirection: "row",

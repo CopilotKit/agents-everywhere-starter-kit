@@ -18,10 +18,17 @@ import { workplaceMcpServers } from "./capabilities/workplace";
  *
  * Nothing else in the kit changes. That is the point of AG-UI.
  */
-export function makeAgent(threadId: string) {
+export type AgentFactoryOptions = {
+  /** Disable workplace MCP for surfaces that should only see local app tools. */
+  workplace?: boolean;
+  /** Override the default incident prompt for a surface-specific starter. */
+  prompt?: string;
+};
+
+export function makeAgent(threadId: string, options: AgentFactoryOptions = {}) {
   const agent = new BuiltInAgent({
     model: resolveModel(),
-    prompt: SYSTEM_PROMPT,
+    prompt: options.prompt ?? SYSTEM_PROMPT,
 
     // NOT optional in practice. maxSteps defaults to 1, which means the agent
     // can call one tool and then stops — before it ever sees the result. Any
@@ -32,7 +39,7 @@ export function makeAgent(threadId: string) {
     // agent is never handed tools that would 401. Add your own MCP servers here
     // the same way — note HTTP transport takes `options` (with a wrapped
     // `options.fetch` for auth), not `headers`.
-    mcpServers: [...workplaceMcpServers()],
+    mcpServers: options.workplace === false ? [] : [...workplaceMcpServers()],
   });
   agent.threadId = threadId;
   return agent;
