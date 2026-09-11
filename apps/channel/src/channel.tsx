@@ -1,5 +1,6 @@
 import { createChannel } from "@copilotkit/channels";
-import { makeAgent, isSearchConfigured, isWorkplaceConfigured, WORKPLACE_CONTEXT } from "agent-core";
+import { isSearchConfigured, isWorkplaceConfigured, WORKPLACE_CONTEXT } from "agent-core";
+import { makeChannelAgent } from "./agent";
 import { required } from "./env";
 import { IncidentCard, Timeline, welcomeMessage } from "./components";
 import { proposeAction, readThread, searchTheWeb } from "./tools";
@@ -23,7 +24,7 @@ export const channel = createChannel({
   // web requests and must be absent on a Channels-only runtime.
   identifyUser: "platform",
 
-  agent: makeAgent,
+  agent: makeChannelAgent,
   tools,
   components: [IncidentCard, Timeline],
 
