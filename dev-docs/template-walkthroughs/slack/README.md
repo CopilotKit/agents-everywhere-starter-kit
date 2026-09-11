@@ -2,7 +2,7 @@
 
 [Template](../../../templates/slack.md) · [All walkthroughs](../README.md) · [Full account setup with screenshots](../../channels-sdk-walkthrough/README.md)
 
-This guide combines genuine September 10, 2026 Channels screenshots with a signed-in Exa setup capture from September 11. The earlier run verifies Channels setup, native card delivery, and contextual follow-up. The new captures verify Exa onboarding, dashboard access, and authenticated search. The current Slack research journey remains pending.
+This guide uses real September 10, 2026 captures for Channels account setup and real September 11 captures for Exa and Slack. The current trial verified authenticated Exa search, earlier thread context, and native card delivery. Source-link delivery in the Slack research reply remains pending.
 
 ## 1. Create the managed Slack Channel
 
@@ -38,13 +38,15 @@ Check **Online**, **Setup complete**, and **Runtime: Connected** in Intelligence
 
 Use a dedicated demo channel and invite the bot. Post a synthetic incident, then add earlier replies with two facts: rollback did not improve latency, and connection pool wait time increased. Only then mention the bot inside that existing thread:
 
-> Read this thread before suggesting next steps. Show a native incident card. Treat the scenario as synthetic and do not change production.
+> Read the whole thread, including the earlier updates, and show a native incident card with the known facts and the next useful check. Distinguish observations from possible causes.
 
-Verify `read_thread` used the earlier replies. The existing capture below demonstrates native card rendering in the earlier tutorial scenario; it is not a capture of the new two-fact test above.
+Verify `read_thread` used the earlier replies. In the approved live test channel, the earlier messages recorded a failed rollback, connection-pool wait increasing from 20 ms to 1.6 s, application retries at about 3× baseline, and steady database CPU.
 
-![Earlier live model-generated native incident card](../../channels-sdk-walkthrough/images/15-live-incident-card.png)
+![Actual earlier thread updates before the bot mention and its thread-reading tools](images/05-slack-thread-context.jpg)
 
-**Capture pending:** the new thread's earlier facts and the card that accounts for both.
+**Live result:** the bot called `read_thread`, `incident_card`, and `timeline`. Its native card included all those observations and kept causality unconfirmed.
+
+![Actual native incident card incorporating the failed rollback, pool wait, and retry observations](images/06-slack-native-incident-card.jpg)
 
 ## 4. Research with Exa and inspect the sources
 
@@ -60,22 +62,32 @@ site:aws.amazon.com builders library timeouts retries backoff jitter connection 
 
 ![Authenticated Exa results with titles, source URLs, and highlights](images/04-exa-search-results.jpg)
 
+Open a returned page and compare its guidance with the question. This actual browser capture records the AWS timeout documentation returned by the independent Exa search.
+
+![Opened AWS timeout documentation from the independent Exa search](images/08-opened-aws-source.jpg)
+
 To use that research inside Slack, reply in the same thread:
 
-> Research documented causes of connection-pool saturation and retry storms with Exa. Include source links and distinguish published evidence from facts in our thread. Account for the failed rollback.
+> Research documented causes of connection-pool saturation and retry storms with Exa. Include source links, distinguish published guidance from observations in this thread, and account for the failed rollback. Keep the answer concise and update the native card with the next useful check.
 
 Inspect `search_web` in the runtime and open the returned URLs. Confirm the cited pages support the explanation. Public search does not read incident logs or prove a root cause.
 
-**Capture pending:** the Slack-delivered Exa-backed answer and visible source links. The screenshots above verify authenticated Exa search independently; they do not establish Slack delivery.
+**Live result:** the research reply, sent without another mention, triggered `read_thread` and three `search_web` calls. The bot delivered an updated native card with checks for pool usage, transaction age, and retry timing, but omitted the requested source URLs.
+
+![Actual Slack thread-reading, Exa search calls, and updated native card](images/07-slack-exa-tool-calls.jpg)
+
+**Capture pending:** visible source links in the Slack research answer. The request in the next step had not produced those links by the end of the trial.
 
 ## 5. Ask a contextual follow-up without another mention
 
 Reply:
 
-> Given the earlier failed rollback and the sources you found, what should we check next? Keep the answer here and update the card.
+> Which sources support those checks? Show three links in a native card and briefly explain how each applies to the pool waits or retries we observed.
 
-Confirm it stays in the same thread and uses both the conversation and source evidence. This earlier real capture demonstrates subscribed-thread follow-up and native timeline/card rendering, without Exa:
+The research reply from step 4 already demonstrated subscribed-thread follow-up: it arrived without another mention and delivered an updated native card that preserved the failed rollback and earlier observations. The screenshot below shows that expanded card and the subsequent request for source links.
 
-![Earlier contextual follow-up and native timeline](../../channels-sdk-walkthrough/images/16-contextual-follow-up.png)
+![Actual research follow-up card and the subsequent unmentioned request for source links](images/09-slack-research-followup.jpg)
 
-**Capture pending:** the full current context → Exa → card → follow-up journey. The older run also logged delivery lifecycle errors; see [its observed limitation](../../channels-sdk-walkthrough/README.md#observed-limitation-and-troubleshooting).
+**Capture pending:** the requested source links. The later request triggered tools but had not delivered URLs by the end of the trial. Context reuse, Exa invocation, and native follow-up delivery passed; the full sourced-answer journey remains incomplete.
+
+**Observed limitation:** the current Slack trial continued to show **hackathon-helper is working…** after native card delivery, although the observed runtime info output reported no errors. Treat that indicator separately from delivered-card evidence. The older run logged delivery lifecycle errors; see [its observed limitation](../../channels-sdk-walkthrough/README.md#observed-limitation-and-troubleshooting).
