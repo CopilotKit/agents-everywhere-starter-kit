@@ -53,7 +53,7 @@ An agent reads what people already said, researches with Exa, and answers in the
 
 The included Slack app supplies thread history, subscriptions, search, and Channels UI. Configure your model, Exa, and a managed Channel, then run `npm run dev:slack`. No public tunnel is needed.
 
-**[Use the Slack template →](apps/channel/README.md)** · [Screenshot walkthrough](dev-docs/channels-sdk-walkthrough/README.md) · [Channels guide](https://copilotkit.ai/channels-guide.md)
+**[Use the Slack template →](apps/channel/)**
 
 ### 2. Web — an agent inside your app
 
@@ -63,7 +63,7 @@ An agent sees the page you are on and turns a request into a real workplace reco
 
 The included web app supplies page context, frontend tools, agent-rendered UI, and a browser approval step. Connect an Ambiguous AI workspace, then run `npm run dev:web`; approved follow-ups are saved through the server and can be read back after refresh.
 
-**[Use the web template →](apps/web/README.md)** · [CopilotKit docs](https://docs.copilotkit.ai/) · [Ambiguous AI setup](using-sponsor-tools.md#ambiguous-ai)
+**[Use the web template →](apps/web/)**
 
 ### 3. React Native — an agent in your pocket
 
@@ -73,7 +73,7 @@ A mobile agent reads app state, renders native cards, and waits for a tap before
 
 The included Expo app supplies seeded finance state, native rendered tool UI, a human-in-the-loop expense approval, and a mobile-specific CopilotKit runtime endpoint served by the web app. Configure your model provider, start `npm run dev:web`, then run the mobile app from `apps/mobile`.
 
-**[Use the React Native template →](apps/mobile/README.md)**
+**[Use the React Native template →](apps/mobile/)**
 
 ### The demo you can build on
 

@@ -1,7 +1,7 @@
 ---
 name: build-channels-agent
 description: >-
-  Use for this hackathon's Slack template in apps/channel-slack: CopilotKit
+  Use for this hackathon's channel template in apps/channel: CopilotKit
   Channels setup, thread context, tools, and native cards. Read before editing
   that app. This skill does not apply to the CopilotKit React web template
   or the React Native mobile app.
@@ -9,7 +9,7 @@ description: >-
 
 # Build the Slack template with Channels
 
-**Hackathon scope:** apply this skill to `templates/slack.md` and `apps/channel-slack/`. Other adapters below are SDK reference material. Preserve the repository's pinned Channels/runtime pair instead of installing the older illustrative versions below.
+**Hackathon scope:** apply this skill to `apps/channel/README.md` and `apps/channel/`. Other adapters below are SDK reference material. Preserve the repository's pinned Channels/runtime pair instead of installing the older illustrative versions below.
 
 The Channels SDK (`@copilotkit/channels`) is a **platform-agnostic engine** for
 agents that live in chat. You write the logic once — handlers, tools, and
