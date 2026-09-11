@@ -120,7 +120,14 @@ JS
 
 ## Exa
 
-**Access and authentication.** Create an [Exa API key](https://dashboard.exa.ai/api-keys). Exa supplies public web evidence; it does not read your private incident logs.
+**Access and authentication.** Sign into your existing [Exa dashboard](https://dashboard.exa.ai/). The following onboarding flow was checked in a signed-in account on September 11, 2026:
+
+1. If **Create your setup prompt** appears, select **Codex**, **JavaScript**, and **Web search tool**. Select **Generate Code**, then **Go to Dashboard**. If your account already opens the dashboard, continue there.
+2. Find **Get your API Key** on the home page, or open **Management → API Keys**. A default key was already available in the verified account; reuse a suitable existing key.
+3. Copy the key privately into root `.env` as `EXA_API_KEY`. Keep it masked in screenshots and out of generated code that you share. The starter already includes the Exa integration.
+4. Run the first-call example below, inspect its returned source URLs, and restart the Slack listener after changing its environment.
+
+The [Slack screenshot guide](dev-docs/template-walkthroughs/slack/README.md#2-configure-and-start-the-template) shows the actual onboarding form and dashboard with the key masked. Those screens verify account setup; the authenticated search and Slack delivery checks are separate. Exa supplies public web evidence; it does not read your private incident logs.
 
 **Configure** root `.env`:
 

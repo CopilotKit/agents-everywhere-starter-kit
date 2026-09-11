@@ -2,7 +2,7 @@
 
 [Template](../../../templates/slack.md) · [All walkthroughs](../README.md) · [Full account setup with screenshots](../../channels-sdk-walkthrough/README.md)
 
-This guide reuses genuine September 10, 2026 screenshots where the screens match. They prove the earlier Channels setup, native card delivery, and contextual follow-up. They do **not** prove the current Exa research journey; those capture steps are explicitly pending.
+This guide combines genuine September 10, 2026 Channels screenshots with a signed-in Exa setup capture from September 11. The earlier run verifies Channels setup, native card delivery, and contextual follow-up. The new captures verify Exa onboarding and dashboard access; the current Slack research journey remains pending.
 
 ## 1. Create the managed Slack Channel
 
@@ -11,6 +11,16 @@ Follow steps 1–4 of the [account setup guide](../../channels-sdk-walkthrough/R
 ![Real Channel naming and Slack selection](../../channels-sdk-walkthrough/images/06-channel-name-slack.png)
 
 ## 2. Configure and start the template
+
+Sign into your existing [Exa account](https://dashboard.exa.ai/). If the **Create your setup prompt** screen appears, choose **Codex → JavaScript → Web search tool**, then select **Generate Code → Go to Dashboard**. These were the selections used in the live setup trial:
+
+![Actual Exa onboarding selections for Codex, JavaScript, and a web search tool](images/01-exa-onboarding.jpg)
+
+On the dashboard, use **Get your API Key**, or open **Management → API Keys**. The verified account already had a default key. Copy a suitable existing key privately into root `.env` as `EXA_API_KEY`; keep it masked in screenshots. See the [full Exa setup](../../../using-sponsor-tools.md#exa) for the first authenticated search command.
+
+![Signed-in Exa dashboard with the existing API key masked](images/02-exa-dashboard-key-hidden.jpg)
+
+These captures verify account access and configuration choices. A successful Exa search and its delivery through Slack still need separate checks below.
 
 Put your provider, `CHANNEL_CODE`, `INTELLIGENCE_API_KEY`, and `EXA_API_KEY` settings in root `.env` using the [sponsor guide](../../../using-sponsor-tools.md). The CLI-provisioned `CPK_INTELLIGENCE_API_KEY` must also be copied privately to the `INTELLIGENCE_API_KEY` name this starter reads.
 

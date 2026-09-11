@@ -26,7 +26,9 @@ Checked September 11, 2026. This page separates implemented boundaries, local te
 
 **Current local verification:** 11 Slack tests and its workspace typecheck passed in root `npm run verify`. The tested `@copilotkit/channels` 0.9.2 / `@copilotkit/runtime` 1.70.3 pair is preserved; `@ag-ui/client` 0.0.59 remains deduplicated. No Slack source changes were needed for this follow-up.
 
-**Pending:** an Exa credential and an explicitly authorized Slack test destination for earlier thread facts → `read_thread` → Exa source links → native Channels card → contextual follow-up. The [Slack walkthrough](template-walkthroughs/slack/README.md) identifies precisely which screenshots still need capturing. No new Slack messages were sent during this verification.
+**Signed-in Exa setup check:** completed **Codex → JavaScript → Web search tool → Generate Code → Go to Dashboard** in an existing account. The existing default key was available for the runtime; no duplicate key was created. [Actual setup screenshots](template-walkthroughs/slack/README.md#2-configure-and-start-the-template) show onboarding and the dashboard with the key masked. These captures verify setup only.
+
+**Pending:** authenticated Exa search and an explicitly authorized Slack test destination for earlier thread facts → `read_thread` → Exa source links → native Channels card → contextual follow-up. The [Slack walkthrough](template-walkthroughs/slack/README.md) identifies precisely which screenshots still need capturing. No new Slack messages were sent during this verification.
 
 ## WhatsApp
 
