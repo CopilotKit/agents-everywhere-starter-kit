@@ -1,31 +1,20 @@
-# apps/mobile — React Native template
+# Template 3: React Native agent
 
-An Expo app for Template 3: a mobile finance copilot that reads app state, renders native cards in chat, and waits for a tap before changing local sample data.
+**OpenAI or OpenRouter + CopilotKit React Native**
 
-The app is deliberately not an npm workspace member. React Native pins its own `react`, `react-native`, and Expo versions, and hoisting those into the root workspace can break the web app.
+Build a phone-native agent that reads app state, renders native cards in chat, and waits for a tap before changing data. The included Expo app is a mobile finance copilot with local sample accounts, budgets, and expense approval. Replace the finance data and tools with your own workflow.
 
-## Status
+<a href="../../assets/demos/mobile.mp4"><img src="../../assets/demos/mobile.gif" alt="React Native mobile agent demo" width="320" /></a>
 
-| Check | Status |
-| --- | --- |
-| Dependency install | verified with `npm ci --prefix apps/mobile` |
-| Offline tests | verified with `npm test --prefix apps/mobile` for the mobile regression suite |
-| TypeScript | verified with `npm run typecheck --prefix apps/mobile` |
-| Metro exports | verified for iOS and Android with `npm run bundle:ios --prefix apps/mobile` and `npm run bundle:android --prefix apps/mobile` |
-| iOS Expo Go smoke | verified clean Expo Go startup in the iOS Simulator |
-| Live OpenAI chat | verified on iOS Simulator with Expo Go and `gpt-5.6-sol` for balances, formatted Markdown/link output, an approved expense, and a canceled expense |
-| Approval UI end-to-end | verified on iOS Simulator: the $9 Souvla proposal left Rewards Card at -$612.40 until **Add expense**, then changed it to -$621.40; canceling a $5 coffee at Blue Bottle left -$621.40 unchanged |
-| OpenRouter live run / physical phone / OCR verification | not claimed in this PR |
+_Edited iOS Simulator recording: read balances, approve an expense, and cancel a second request. Changes stay in local sample data. Click the preview for the full MP4._
 
-## Run it
+This app is deliberately not an npm workspace member. React Native pins its own `react`, `react-native`, and Expo versions, and hoisting those into the root workspace can break the web app.
 
-Start the runtime first from the repository root:
+## Get started
 
-```bash
-npm run dev:web
-```
+Complete the [root clone/install steps](../../README.md#get-started), then choose one model provider in the root `.env`.
 
-The runtime uses the root model configuration. OpenAI and OpenRouter both work through the shared model resolver:
+For OpenAI:
 
 ```dotenv
 MODEL_PROVIDER=openai
@@ -33,20 +22,25 @@ OPENAI_API_KEY=your-key
 MODEL=gpt-5.6-sol
 ```
 
+For OpenRouter, choose an available model with tool support:
+
 ```dotenv
 MODEL_PROVIDER=openrouter
 OPENROUTER_API_KEY=your-key
 MODEL=openai/gpt-5.6-sol
 ```
 
-Then run the mobile app:
+Start the runtime from the repository root:
+
+```bash
+npm run dev:web
+```
+
+In a second terminal, run the mobile app:
 
 ```bash
 cd apps/mobile
 npm ci
-npm run typecheck
-npm run bundle:ios
-npm run bundle:android
 npm start
 ```
 
@@ -64,9 +58,9 @@ The default endpoint is `http://localhost:3100/api/mobile-copilotkit`, served by
 
 Put the override in `apps/mobile/.env`. The default `npm run dev:web` binds Next.js to loopback for the web approval demo, so a physical device will need an explicitly exposed host, a tunnel/deployment, or a separate runtime start command with the security boundary you intend.
 
-## What to try
+## Try the flow
 
-The [React Native walkthrough](../../dev-docs/template-walkthroughs/mobile/README.md) shows the verified iOS Simulator evidence for startup, balances, approval, cancellation, and formatted assistant output.
+The [React Native walkthrough](../../dev-docs/template-walkthroughs/mobile/README.md) shows iOS Simulator evidence for startup, balances, approval, cancellation, and formatted assistant output.
 
 Ask:
 
@@ -92,7 +86,7 @@ Add a $9 lunch at Souvla to my Rewards Card.
 
 Expected: `add_mobile_expense` renders an approval card. Tapping **Add expense** updates the local in-memory account balance and returns a local transaction ID. Tapping **Cancel** changes nothing.
 
-## How it is wired
+## Customize these files
 
 | Piece | File |
 | --- | --- |
@@ -108,13 +102,9 @@ Imports come from `@copilotkit/react-native/headless` so the template avoids opt
 
 `metro.config.js` routes the transitive `jose` dependency through its browser export for native bundles. This is intentionally narrow: it does not stub Node built-ins or mask missing native functionality.
 
-## Limits
-
-This template changes local sample state only. It does not connect to bank accounts, cards, payment services, external storage, messaging providers, or the OpenAI Realtime voice route. Use it as the phone-native approval and app-context pattern, then replace the sample finance data and tools with your hackathon workflow.
-
 ## Make it yours
 
-Change the sample data and tool contracts to match your workflow. Good mobile fits include field checklists, travel plans, patient intake preparation, fitness logs, inventory counts, and expense capture. Keep the pattern: app context first, native rendered result, explicit approval before a local or external write, and a visible result after the tap.
+Good mobile fits include field checklists, travel plans, patient intake preparation, fitness logs, inventory counts, and expense capture. Keep the pattern: app context first, native rendered result, explicit approval before a local or external write, and a visible result after the tap.
 
 ## Give this to your coding agent
 
@@ -129,6 +119,12 @@ npm run typecheck --prefix apps/mobile, and the relevant root checks. Record
 OpenRouter, physical-phone, and OCR evidence separately if your submission
 depends on those paths.
 ```
+
+## Verify and limits
+
+Run `npm test`, `npm run typecheck`, `npm run bundle:ios`, and `npm run bundle:android` from `apps/mobile` before recording. The Expo app changes local sample state only. It does not connect to bank accounts, cards, payment services, external storage, messaging providers, or the OpenAI Realtime voice route.
+
+OpenRouter chat follows the shared root model settings. OCR, physical-device networking, and OpenAI Realtime voice are separate capabilities and need their own evidence if your submission depends on them.
 
 ## Upstream source
 
