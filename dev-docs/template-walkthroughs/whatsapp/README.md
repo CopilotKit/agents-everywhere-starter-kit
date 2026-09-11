@@ -2,7 +2,7 @@
 
 [Template](../../../templates/whatsapp.md) · [All walkthroughs](../README.md) · [Account setup](../../../using-sponsor-tools.md#whatsapp-identity-and-phone-approval)
 
-This app uses **OpenAI Agents SDK + CopilotKit Channels + Auth0**, with direct Meta WhatsApp delivery. Auth0 and Meta setup screenshots below come from real development accounts. The Meta message, Guardian approval, saved receipt, and restart journey remain pending; account configuration alone does not prove the phone flow.
+This app uses **OpenAI Agents SDK + CopilotKit Channels + Auth0**, with direct Meta WhatsApp delivery. Auth0 and Meta setup screenshots below come from real development accounts. Meta confirmed delivery of an outbound Hello World test message. An inbound conversation through this app, Auth0 linking, Guardian approval, saved receipt, and restart journey remain unverified.
 
 ![Auth0 setup screenshot walkthrough; live WhatsApp phone approval remains pending](images/auth0-setup-walkthrough.gif)
 
@@ -58,11 +58,21 @@ This 12-second GIF walks through the three Meta screenshots below. It shows app 
 ![Meta test phone number provisioned, with no access token generated in the capture](images/08-meta-test-number.jpg)
 
 5. Select **Generate token** and keep the result private as `WHATSAPP_ACCESS_TOKEN`. Copy the **Phone Number ID**, rather than the displayed phone number, into `WHATSAPP_PHONE_NUMBER_ID`. Open **App settings → Basic → Show** to retrieve the app secret for `WHATSAPP_APP_SECRET`; Meta may require password re-entry. Never include access tokens or app secrets in screenshots or commits.
-6. Add your own WhatsApp number as a test recipient and complete its verification. This step is still pending in the recorded demo. A provisioned sender number alone does not establish that messages can reach your phone.
+6. Add your own WhatsApp number as a test recipient and complete its verification. The live setup has completed this step; the earlier GIF predates it. A provisioned sender number alone does not establish that messages can reach your phone.
 
-Start the app and set Meta’s callback to `https://YOUR-PUBLIC-ORIGIN/webhooks/whatsapp`. Supply the matching verify token and subscribe to messages. Use the same public origin for the Auth0 callback. Keep the tunnel running; expose port 3003 and keep the SDK listener on port 3004 private.
+7. Start the app and set Meta’s callback to `https://YOUR-PUBLIC-ORIGIN/webhooks/whatsapp`. Supply the matching verify token and subscribe to the **messages** field. Use the same public origin for the Auth0 callback. Keep the tunnel running; expose port 3003 and keep the SDK listener on port 3004 private.
 
-**Capture pending:** verified Meta recipient, successful webhook verification, and messages subscription. Exclude access tokens, application secrets, verify tokens, and unrelated phone numbers.
+![Meta webhook messages field is subscribed; account-level app subscription is a separate step](images/09-meta-webhook-verified.jpg)
+
+This screenshot shows the **messages field subscription only**. It does not show the callback verification result or prove that this app is subscribed to the WABA.
+
+8. Subscribe the intended app to the **WhatsApp Business Account (WABA)**. Using a token issued by that app with `whatsapp_business_management` permission, send `POST https://graph.facebook.com/<API-VERSION>/<WABA-ID>/subscribed_apps`. Then send `GET` to the same URL and confirm `data[].whatsapp_business_api_data.id` includes your app ID. Use the WABA ID, not the Phone Number ID. Follow the [app README's request examples](../../../apps/whatsapp/README.md#subscribe-the-app-to-the-waba) and Meta's [subscription reference](https://www.postman.com/meta/whatsapp-business-platform/request/tl2wk2j/get-all-subscriptions-for-a-waba).
+
+**Live setup evidence:** the recipient is verified, Meta accepted the callback challenge, the messages field is subscribed, and a GET after the account-subscription POST confirms the intended app. Initially, the account listed only Meta's test webhook viewer app; that entry did not subscribe this demo app.
+
+The dashboard warns that unpublished apps receive dashboard test webhooks, while production data requires publication, including data from app-role users. This is an observed account constraint; it has not been established as a cause of any test-number delivery failure.
+
+The Hello World API request returned HTTP 200 with `message_status: accepted`. Meta's test webhook viewer subsequently reported `status: delivered` for the same message ID, confirming outbound delivery. The app's inbound store still has no greeting; this outbound test does not verify Channels replies or the approval journey. Keep tokens, app secrets, verify tokens, recipient numbers, and raw delivery payloads out of public captures.
 
 ## 3. Install and start the app
 
@@ -76,7 +86,7 @@ npm start --prefix apps/whatsapp
 
 Edit `apps/whatsapp/.env` privately using the [complete environment reference](../../../apps/whatsapp/.env.example). This app listens on port 3003 and has its own install/lockfile. Use one process with persistent disk. Check the [app README](../../../apps/whatsapp/README.md) for health and operational details.
 
-**Capture pending:** healthy app startup and tunnel routing. Local tests exercise adapters; they do not establish real signed Meta delivery.
+**Live setup evidence:** the runtime is running and both local and public health checks succeed. Meta also verified the public callback. These checks establish startup and callback routing; an inbound phone message through the app remains unverified.
 
 ## 4. Link the original WhatsApp sender
 

@@ -26,11 +26,29 @@ Expose port **3003** through one HTTPS tunnel, for example `ngrok http 3003`. Se
 
 1. **Model provider:** set `MODEL_PROVIDER=openai` with `OPENAI_API_KEY`, or `MODEL_PROVIDER=openrouter` with `OPENROUTER_API_KEY`. Set `MODEL` as shown below. Only the selected provider's nonblank key is required; a missing or rejected key never switches to the other provider. The model remains the OpenAI Agents SDK planner and never gets a tool that can bypass approval.
 2. **Meta:** add WhatsApp to a Meta developer app. In WhatsApp API Setup, select the business/test number and an allowed test recipient. Copy the access token into `WHATSAPP_ACCESS_TOKEN` and the **Phone Number ID** into `WHATSAPP_PHONE_NUMBER_ID`. Copy the app secret from app settings into `WHATSAPP_APP_SECRET`. Temporary test access tokens expire; replace them before the demo when necessary.
-3. **Meta webhook:** choose a random `WHATSAPP_VERIFY_TOKEN`. Configure callback `https://YOUR-PUBLIC-ORIGIN/webhooks/whatsapp`, enter the same verification token, verify, and subscribe to **messages**. The token is for the GET challenge; POST authenticity is the Meta `X-Hub-Signature-256` HMAC using the app secret. The API version defaults to `v23.0` and can be changed with `WHATSAPP_API_VERSION`.
+3. **Meta webhook:** choose a random `WHATSAPP_VERIFY_TOKEN`. Configure callback `https://YOUR-PUBLIC-ORIGIN/webhooks/whatsapp`, enter the same verification token, verify, and subscribe to the **messages** field. Then [subscribe this app to the WhatsApp Business Account (WABA)](#subscribe-the-app-to-the-waba); callback verification and the field toggle alone do not establish that account-level subscription. The token is for the GET challenge; POST authenticity is the Meta `X-Hub-Signature-256` HMAC using the app secret. The API version defaults to `v23.0` and can be changed with `WHATSAPP_API_VERSION`.
 4. **CopilotKit Intelligence:** set a project API key (`cpk-<project ID>_...`) as `INTELLIGENCE_API_KEY`. Set `WHATSAPP_CHANNEL_NAME=whatsapp-demo`, unique on this runtime. The real `CopilotRuntime` and `createCopilotNodeListener` own the Channels lifecycle. Direct Meta traffic goes between this app and Meta; it does not use the managed Slack/Teams delivery gateway. The Intelligence control connection is still required.
 5. **Auth0:** create a confidential Regular Web Application using **Client Secret (Post)**, enable **Authorization Code** and **Client Initiated Backchannel Authentication**, and allow callback `https://YOUR-PUBLIC-ORIGIN/auth/callback`. Configure the issuer, client ID, client secret and API audience in `.env`. Create an RS256 custom API with `create:requests`, authorize the app/user appropriately, and grant the permission to the test user. Enable **Guardian push only** for CIBA and enroll the user in Guardian. CIBA availability depends on tenant entitlement.
 
 The [sponsor setup guide](../../using-sponsor-tools.md#whatsapp-identity-and-phone-approval) covers Auth0 settings, and the [phone walkthrough](../../dev-docs/template-walkthroughs/whatsapp/README.md) tracks account setup and real evidence. SDK API reference: [direct adapters](https://docs.copilotkit.ai/reference/channels/sdk/direct-adapters).
+
+### Subscribe the app to the WABA
+
+Use the **WhatsApp Business Account ID**, not the Phone Number ID, and an access token issued by the intended Meta app with `whatsapp_business_management` permission. In Meta's Postman collection or your API client, send these requests with private values substituted:
+
+```http
+POST https://graph.facebook.com/<API-VERSION>/<WABA-ID>/subscribed_apps
+Authorization: Bearer <ACCESS-TOKEN-ISSUED-BY-YOUR-APP>
+```
+
+After a successful response, inspect the account's subscriptions:
+
+```http
+GET https://graph.facebook.com/<API-VERSION>/<WABA-ID>/subscribed_apps
+Authorization: Bearer <ACCESS-TOKEN-ISSUED-BY-YOUR-APP>
+```
+
+Confirm that `data[].whatsapp_business_api_data.id` contains **your app ID**. An entry for Meta's test webhook viewer or another app does not confirm your app is subscribed. If yours is absent, check which app issued the token before repeating the POST. Keep tokens and raw account responses out of screenshots and commits. See Meta's [Subscribe to your WABA](https://www.postman.com/meta/whatsapp-business-platform/documentation/wlk6lh4/whatsapp-cloud-api) and [Get All Subscriptions for a WABA](https://www.postman.com/meta/whatsapp-business-platform/request/tl2wk2j/get-all-subscriptions-for-a-waba).
 
 ### OpenAI or OpenRouter
 
