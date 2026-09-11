@@ -3,7 +3,7 @@ import type { BaseEvent, RunAgentInput } from "@ag-ui/core";
 import { makeAgent } from "agent-core";
 import { Observable, type Subscription } from "rxjs";
 
-type ChannelAgentFactory = typeof makeAgent;
+type ChannelAgentFactory = (threadId: string) => AbstractAgent;
 
 /**
  * Channel-only facade that keeps AG-UI transcript/state on the outer agent while

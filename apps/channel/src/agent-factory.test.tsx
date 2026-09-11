@@ -182,17 +182,14 @@ describe("ChannelRunAgent", () => {
 
   it("aborts the completed inner run when the outer subscription finalizes", async () => {
     let inner: ControlledInnerAgent | undefined;
-    const agent = new ChannelRunAgent(
-      ((threadId: string) => {
-        inner = new ControlledInnerAgent(threadId);
-        return inner;
-      }) as never,
-      "thread_cleanup",
-    );
+    const agent = new ChannelRunAgent((threadId: string) => {
+      inner = new ControlledInnerAgent(threadId);
+      return inner;
+    }, "thread_cleanup");
 
     await agent.runAgent({ tools: [], context: [] });
 
-    assert.equal(inner?.aborted, true);
+    assert.equal(inner?.abortCalls, 1);
   });
 });
 
@@ -227,7 +224,7 @@ function makeLongRunningAbortableModel(
 }
 
 class ControlledInnerAgent extends AbstractAgent {
-  aborted = false;
+  abortCalls = 0;
 
   constructor(threadId: string) {
     super({ threadId });
@@ -247,14 +244,12 @@ class ControlledInnerAgent extends AbstractAgent {
       });
       subscriber.complete();
 
-      return () => {
-        this.abortRun();
-      };
+      return () => {};
     });
   }
 
   override abortRun() {
-    this.aborted = true;
+    this.abortCalls += 1;
     super.abortRun();
   }
 }
