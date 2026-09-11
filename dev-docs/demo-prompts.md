@@ -60,7 +60,7 @@ Expected: `incident_card`, `timeline`, `propose_followup`, `retrieve_followup`, 
 
 ### Add a persistent workplace record
 
-With Ambiguous AI configured, follow [the web template](../apps/web/README.md#prove-a-record-survives-refresh): propose an exact task in your demo workspace, approve it with the page button, and open the returned record link if Ambiguous provides one. Refresh the page and retrieve the same ID.
+With Ambiguous AI configured, follow [the web template](../apps/web/README.md#try-the-flow): propose an exact task in your demo workspace, approve it with the page button, and open the returned record link if Ambiguous provides one. Refresh the page and retrieve the same ID.
 
 ## Record a focused video
 

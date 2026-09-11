@@ -6,15 +6,15 @@ cost somebody real time.
 ## OpenRouter-only setup asks for an OpenAI key
 
 Set `MODEL_PROVIDER=openrouter` and `OPENROUTER_API_KEY` in root `.env`, choose an
-available `MODEL` slug, and restart. `npm run check-env` validates the selected
-chat provider. `/voice` separately needs OpenAI Realtime credentials. See
+available `MODEL` slug, and restart. The app reports missing selected
+chat-provider configuration when the agent is used. `/voice` separately needs OpenAI Realtime credentials. See
 [model switching](model-switching.md).
 
 ## Verification versus configured startup
 
-`npm run verify` needs no `.env` or live credentials. `npm run check-env` does:
-it validates your selected provider and configured surfaces, without authenticating
-against remote services. A successful offline check does not prove live access.
+`npm run verify` needs no `.env` or live credentials. The relevant app path
+reports missing selected-provider or surface configuration when used, without
+authenticating against remote services. A successful offline check does not prove live access.
 
 ## It boots, reports online, and answers nothing
 
@@ -148,7 +148,6 @@ If you genuinely need vitest, `--legacy-peer-deps` gets you past it — put it i
 ## Still stuck
 
 - `npm run verify` — retained workspace typechecks and offline tests
-- `npm run check-env` — numbered list of what is missing
 - `npm run channel:status` — real doctor command for the Channel
 - `.agents/skills/build-channels-agent/SKILL.md` — the verified API surface plus
   a "common mistakes" list
@@ -160,4 +159,4 @@ If you genuinely need vitest, `--legacy-peer-deps` gets you past it — put it i
 
 ## A web follow-up does not appear after refresh
 
-Only approved Ambiguous records should survive refresh. First confirm `AMBIGUOUS_API_KEY` is set, restart `npm run dev:web`, prepare a proposal, and click **Approve & save to Ambiguous** on the page. Then refresh and use the returned record ID or **Refresh from Ambiguous**. If the provider returns no retrievable record, the persistence check has not passed. See [the web template](../apps/web/README.md#prove-a-record-survives-refresh).
+Only approved Ambiguous records should survive refresh. First confirm `AMBIGUOUS_API_KEY` is set, restart `npm run dev:web`, prepare a proposal, and click **Approve & save to Ambiguous** on the page. Then refresh and use the returned record ID or **Refresh from Ambiguous**. If the provider returns no retrievable record, the persistence check has not passed. See [the web template](../apps/web/README.md#try-the-flow).

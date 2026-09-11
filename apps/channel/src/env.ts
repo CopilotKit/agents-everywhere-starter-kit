@@ -5,8 +5,8 @@ export function required(name: string): string {
       [
         `Missing required environment variable: ${name}.`,
         "",
-        "  Run `npm run check-env` from the repo root to see everything that's missing,",
-        "  `npm run channel:setup` to configure Slack or Teams,",
+        "  Add the missing value to the root `.env` file,",
+        "  run `npm run channel:setup` to configure Slack or Teams,",
         "  or `npm run dev:web` to try the browser template instead.",
       ].join("\n"),
     );

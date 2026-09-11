@@ -39,7 +39,7 @@ export function resolveModel() {
   }
   const apiKey = process.env[keyName];
   if (!apiKey || apiKey === "stub-replace-me") {
-    throw new Error(`${keyName} is required for ${provider}. Run npm run check-env.`);
+    throw new Error(`${keyName} is required for ${provider}.`);
   }
 
   if (provider === "openrouter") {

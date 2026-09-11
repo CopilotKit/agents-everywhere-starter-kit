@@ -6,7 +6,7 @@ Read this before choosing a template or writing a project plan. Read [hackathon-
 
 Build an agent for a place people already work, talk, or live. The surrounding context should make the agent more useful: it can read the conversation, see the current page, recognize the authenticated user, or understand something happening in the room. Demonstrate one complete interaction with a visible result.
 
-Agents, Everywhere is an AI Tinkerers global hackathon on September 12, 2026. Check your local event schedule and the [official portal](https://sf.aitinkerers.org/hackathons/h_XWWQL5eKfJM) for the authoritative submission deadline. This kit is a starting point for a new project.
+Agents, Everywhere is an AI Tinkerers global hackathon on September 12–13, 2026. Choose your city on the [global event page](https://aitinkerers.org/hackathons/global/agents-everywhere), then check its local schedule and participant portal for the submission deadline. This kit is a starting point for a new project.
 
 ## Four surfaces
 
@@ -21,7 +21,7 @@ These are examples, not competition tracks. One surface is enough.
 
 ## Judging criteria
 
-The [published rubric](https://sf.aitinkerers.org/hackathons/h_XWWQL5eKfJM) evaluates projects globally, scoring each of these four criteria from 1–5. Use these criteria throughout planning and demo preparation; do not invent another scoring system.
+The published rubric, referenced from the [San Francisco participant portal](https://sf.aitinkerers.org/hackathons/h_XWWQL5eKfJM), scores each of these four criteria from 1–5. Use these criteria throughout planning and demo preparation; do not invent another scoring system. Check your own city's portal for organizer updates.
 
 | Official criterion | Evidence to build and demonstrate |
 |---|---|
@@ -49,4 +49,4 @@ The incident app is a reference for wiring infrastructure. Change the user, prob
 5. Verify an actual outcome, including a relevant failure or denied action. Distinguish sample data, local state, and external writes.
 6. Prepare the deliverables in [hackathon-rules.md](hackathon-rules.md). Ask the team to confirm factual claims about when work was built.
 
-Event guidance checked against the official portal and handbook on September 11, 2026. Organizer updates take precedence.
+Event guidance checked against the global event page and San Francisco portal and handbook on September 11, 2026. Your local organizer's updates take precedence.
