@@ -1,6 +1,7 @@
+/* Calm defaults shared by the web example, voice page, and agent cards. */
 :root {
-  --ground: #dedee9;
-  --surface: rgba(255, 255, 255, 0.5);
+  --ground: #ededf5;
+  --surface: #fff;
   --border: #dbdbe5;
   --text: #010507;
   --muted: #57575b;
@@ -19,16 +20,20 @@ body {
   line-height: 1.6;
 }
 button,
-input {
+input,
+select {
   font: inherit;
 }
-button {
+button,
+summary,
+select {
   cursor: pointer;
 }
 button:focus-visible,
 input:focus-visible,
+select:focus-visible,
 summary:focus-visible {
-  outline: 2px solid #010507;
+  outline: 2px solid var(--accent);
   outline-offset: 3px;
 }
 code,
@@ -43,226 +48,117 @@ p {
   margin-top: 0;
 }
 .ck-workspace {
-  min-height: 100vh;
-  position: relative;
-  overflow: hidden;
-  padding: 8px 8px 80px;
-}
-.ck-atmosphere {
-  pointer-events: none;
-}
-.ck-atmosphere i {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(103px);
-  z-index: 0;
-  width: 446px;
-  height: 446px;
-  background: rgba(255, 172, 77, 0.2);
-}
-.ck-atmosphere i:nth-child(1) {
-  left: 1040px;
-  top: 11px;
-}
-.ck-atmosphere i:nth-child(2) {
-  left: 1339px;
-  top: 625px;
-  width: 609px;
-  height: 609px;
-  background: #c9c9da;
-}
-.ck-atmosphere i:nth-child(3) {
-  left: 670px;
-  top: -365px;
-  width: 609px;
-  height: 609px;
-  background: #c9c9da;
-}
-.ck-atmosphere i:nth-child(4) {
-  left: 508px;
-  top: 702px;
-  width: 609px;
-  height: 609px;
-  background: #f3f3fc;
-}
-.ck-atmosphere i:nth-child(5) {
-  left: 128px;
-  top: 331px;
-  background: rgba(255, 243, 136, 0.3);
-}
-.ck-atmosphere i:nth-child(6) {
-  left: -205px;
-  top: 803px;
+  max-width: 1160px;
+  margin: auto;
+  padding: 48px 32px;
 }
 .ck-workspace-header {
-  position: relative;
-  z-index: 1;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
-  max-width: 1440px;
-  margin: auto;
-  padding: 24px 16px 32px;
+  gap: 24px;
+  margin-bottom: 32px;
 }
 .ck-eyebrow {
   font-size: 12px;
   color: var(--muted);
-  margin-bottom: 8px;
+  margin-bottom: 12px;
 }
 .ck-workspace h1 {
   font-size: 32px;
-  line-height: 36px;
-  font-weight: 300;
+  line-height: 1.2;
+  font-weight: 500;
+  letter-spacing: -0.04em;
   margin: 0;
 }
+.ck-intro {
+  color: var(--muted);
+  margin: 12px 0 0;
+}
+.ck-tag {
+  flex-shrink: 0;
+  font-size: 12px;
+  padding: 4px 10px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--muted);
+  white-space: nowrap;
+}
 .ck-workspace-grid {
-  position: relative;
-  z-index: 1;
   display: grid;
-  grid-template-columns: 240px minmax(0, 1fr) 280px;
-  gap: 8px;
-  max-width: 1440px;
-  margin: auto;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 24px;
   align-items: start;
 }
 .ck-panel {
-  position: relative;
-  z-index: 1;
-  background: rgba(255, 255, 255, 0.5);
-  border: 2px solid #fff;
-  border-radius: 8px;
-  padding: 24px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 28px;
   min-width: 0;
 }
-.ck-incident-list {
-  padding: 16px;
-}
-.ck-section-label {
+.ck-incident-picker {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font:
-    400 10px "Spline Sans Mono",
-    monospace;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--muted);
-  margin: 0 0 16px;
+  gap: 16px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--border);
 }
-.ck-section-label > span:not(.ck-tag) {
+.ck-incident-picker label {
+  font-size: 12px;
+  color: var(--muted);
+}
+.ck-incident-picker select {
   flex: 1;
-  height: 1px;
-  background: var(--border);
-}
-.ck-muted {
-  color: var(--muted);
-  font-size: 12px;
-}
-.ck-incident {
-  text-align: left;
-  width: 100%;
-  background: transparent;
-  border: 0;
-  border-radius: 4px;
-  padding: 12px;
-  margin-bottom: 4px;
-  color: var(--text);
-}
-.ck-incident:hover {
-  background: rgba(255, 255, 255, 0.5);
-}
-.ck-incident[aria-pressed="true"] {
-  background: rgba(255, 255, 255, 0.7);
-}
-.ck-incident strong {
-  display: block;
-  font-weight: 500;
-  font-size: 14px;
-  line-height: 1.25;
-  margin: 12px 0 8px;
-}
-.ck-incident-meta {
-  display: flex;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
-  font-size: 12px;
-  color: var(--muted);
-}
-.ck-tag {
-  display: inline-block;
-  font-size: 12px;
-  font-weight: 400;
-  line-height: 1.4;
-  padding: 2px 6px;
-  border-radius: 9999px;
-  background: rgba(255, 255, 255, 0.65);
-  color: var(--text);
-  white-space: nowrap;
-}
-.ck-incident[aria-pressed="true"] .ck-tag {
-  background: #010507;
-  color: white;
-}
-.ck-context-note {
-  margin-top: 32px;
-  font-size: 12px;
-  border-top: 1px solid var(--border);
-  padding-top: 16px;
-}
-.ck-context-note p {
-  margin: 8px 0 0;
-  color: var(--muted);
-}
-.ck-dot {
-  display: inline-block;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #189370;
-  margin-right: 4px;
-}
-.ck-incident-body {
-  display: grid;
-  gap: 8px;
   min-width: 0;
+  max-width: 100%;
+  color: var(--text);
+  background: #f7f7f9;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px;
+}
+.ck-detail {
+  padding: 24px 0;
+}
+.ck-status-label {
+  display: inline-block;
+  color: var(--muted);
+  font-size: 12px;
+  margin-bottom: 12px;
 }
 .ck-detail h2 {
-  margin: 24px 0 12px;
   font-size: 24px;
   font-weight: 500;
-  line-height: 28px;
+  line-height: 1.35;
+  letter-spacing: -0.025em;
+  margin-bottom: 12px;
 }
-.ck-detail > p {
+.ck-detail p {
   color: var(--muted);
+  margin-bottom: 16px;
+}
+.ck-more summary {
+  font-size: 12px;
+  padding: 8px 0;
+}
+.ck-more h3 {
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 8px;
 }
 .ck-detail-facts {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 16px;
-  margin: 24px 0;
+  margin: 16px 0 24px;
+  font-size: 12px;
 }
 .ck-detail-facts dt {
   color: var(--muted);
-  font-size: 12px;
 }
 .ck-detail-facts dd {
   margin: 4px 0 0;
-}
-.ck-impact {
-  border-top: 1px solid var(--border);
-  padding-top: 16px;
-}
-.ck-impact h3 {
-  font-size: 12px;
-  font-weight: 600;
-  margin-bottom: 4px;
-}
-.ck-impact p {
-  margin: 0;
-  font-size: 14px;
 }
 .ck-timeline {
   padding: 0;
@@ -271,46 +167,54 @@ p {
 }
 .ck-timeline li {
   display: grid;
-  grid-template-columns: 88px minmax(0, 1fr);
-  gap: 16px;
-  padding-bottom: 20px;
-}
-.ck-timeline li:last-child {
-  padding-bottom: 0;
+  grid-template-columns: 80px minmax(0, 1fr);
+  gap: 12px;
+  padding-top: 12px;
+  font-size: 12px;
 }
 .ck-timeline time {
   color: var(--muted);
+  font-size: 10px;
   padding-top: 2px;
 }
 .ck-timeline strong {
-  font-size: 12px;
-  font-weight: 600;
+  font-weight: 500;
 }
 .ck-timeline p {
   margin: 4px 0 0;
-  color: var(--muted);
+}
+.ck-followups {
+  padding-top: 24px;
+  border-top: 1px solid var(--border);
+}
+.ck-followups h2,
+.ck-assistant-header h2 {
+  font-size: 16px;
+  line-height: 1.4;
+  font-weight: 600;
+  margin: 0 0 8px;
 }
 .ck-task-list {
   list-style: none;
   padding: 0;
+  margin: 16px 0;
 }
 .ck-task-list li {
   display: flex;
+  align-items: baseline;
   gap: 12px;
-  padding: 12px 0;
-  border-bottom: 1px solid var(--border);
+  padding: 10px 0;
   overflow-wrap: anywhere;
 }
+.ck-task-list li + li {
+  border-top: 1px solid var(--border);
+}
 .ck-empty {
-  padding: 16px 0;
   color: var(--muted);
-}
-.ck-task-form label {
-  display: block;
   font-size: 12px;
-  margin-bottom: 8px;
+  margin-bottom: 16px;
 }
-.ck-task-form > div {
+.ck-task-form {
   display: flex;
   gap: 8px;
 }
@@ -318,68 +222,57 @@ p {
   width: 100%;
   min-width: 0;
   border: 1px solid var(--border);
-  background: rgba(255, 255, 255, 0.7);
-  border-radius: 4px;
-  padding: 8px 12px;
+  background: var(--surface);
+  border-radius: 8px;
+  padding: 10px 12px;
   color: var(--text);
 }
-.ck-task-form button {
-  white-space: nowrap;
+.ck-task-form .ck-btn {
+  padding: 10px 16px;
+  border-radius: 8px;
 }
+.ck-local-note,
 .ck-notice {
-  min-height: 16px;
   font-size: 12px;
-  margin: 8px 0 0;
+  margin: 10px 0 0;
   color: var(--muted);
 }
-.ck-guide h3 {
-  font-size: 20px;
-  line-height: 24px;
-  font-weight: 500;
+.ck-notice:empty {
+  margin: 0;
 }
-.ck-guide ol {
+.ck-assistant {
+  display: flex;
+  flex-direction: column;
+  height: 600px;
+  height: min(680px, max(510px, calc(100dvh - 230px)));
   padding: 0;
-  list-style: none;
-  counter-reset: prompts;
+  overflow: hidden;
 }
-.ck-guide li {
-  padding: 16px 0;
+.ck-assistant-header {
+  padding: 24px 28px;
   border-bottom: 1px solid var(--border);
-  counter-increment: prompts;
 }
-.ck-guide li strong {
-  font-weight: 500;
-}
-.ck-guide li strong::before {
-  content: "0" counter(prompts) " / ";
-  font:
-    12px "Spline Sans Mono",
-    monospace;
+.ck-assistant-header p {
+  font-size: 12px;
+  margin: 0;
   color: var(--muted);
 }
-.ck-guide li p {
-  margin: 8px 0;
-  font-size: 12px;
+.ck-chat {
+  flex: 1;
+  min-height: 0;
 }
-.ck-guide li code {
-  color: var(--muted);
-  font-size: 10px;
+.ck-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
 }
-.ck-guide details {
-  font-size: 12px;
-}
-.ck-guide summary {
-  cursor: pointer;
-}
-.ck-guide details p {
-  margin: 12px 0;
-}
-.ck-guide-footer {
-  color: var(--muted);
-  font-size: 12px;
-  margin: 24px 0 0;
-}
-/* Shared voice surface and agent cards. */
+/* The optional voice example uses the same basic page frame. */
 .ck-page {
   max-width: 46rem;
   margin: auto;
@@ -388,48 +281,45 @@ p {
 .ck-dek {
   color: var(--muted);
 }
-@media (max-width: 1100px) {
-  .ck-workspace-grid {
-    grid-template-columns: 220px minmax(0, 1fr);
-  }
-  .ck-guide {
-    grid-column: 1 / -1;
-  }
-  .ck-guide ol {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0 24px;
-  }
-}
-@media (max-width: 640px) {
-  .ck-workspace-header {
-    padding: 24px 8px;
+@media (max-width: 800px) {
+  .ck-workspace {
+    padding: 32px 20px;
   }
   .ck-workspace-grid {
     grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+  }
+  .ck-assistant {
+    height: 560px;
+  }
+}
+@media (max-width: 480px) {
+  .ck-workspace {
+    padding: 24px 16px;
+  }
+  .ck-workspace-header {
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .ck-workspace h1 {
+    font-size: 28px;
   }
   .ck-panel {
-    padding: 16px;
+    padding: 20px;
   }
-  .ck-incident-list .ck-context-note {
-    margin-top: 16px;
+  .ck-detail h2 {
+    font-size: 22px;
   }
   .ck-detail-facts {
-    grid-template-columns: 1fr;
-    gap: 12px;
+    grid-template-columns: 1fr 1fr;
   }
-  .ck-guide ol {
-    display: block;
+  .ck-assistant {
+    padding: 0;
   }
-  .ck-timeline li {
-    grid-template-columns: 72px minmax(0, 1fr);
-    gap: 12px;
-  }
-  .ck-timeline time {
-    font-size: 10px;
-  }
-  .ck-task-form > div {
-    flex-wrap: wrap;
+  .ck-assistant-header {
+    padding: 20px;
   }
 }
 

@@ -4,9 +4,8 @@ import "@copilotkit/react-core/v2/styles.css";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Agents, Everywhere — web surface",
-  description:
-    "An incident workspace with shared context, native agent UI, and local follow-ups.",
+  title: "Incident assistant — Agents, Everywhere",
+  description: "Pick an incident, ask your assistant, and add a follow-up.",
 };
 
 export default function RootLayout({
