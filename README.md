@@ -41,7 +41,7 @@ Your project and its core functionality must be created during the event. Existi
 
 ## Templates
 
-Three starting points for different kinds of context. **CopilotKit Channels** brings the Slack agent into the conversation; **CopilotKit React** connects the web agent to the app people are using.
+These starting points serve different kinds of context. **CopilotKit Channels** brings the Slack agent into the conversation; **CopilotKit React** connects the web agent to the app people are using.
 
 ### 1. Slack — an agent that joins the thread
 
@@ -62,16 +62,6 @@ An agent sees the page you are on and turns a request into a real workplace reco
 The included web app supplies page context, frontend tools, and agent-rendered UI. Connect an Ambiguous AI workspace for persistent records, then run `npm run dev:web`. The sample app also has local follow-ups; those reset on refresh. The template shows how to verify the external record separately.
 
 **[Use the web template →](templates/web.md)** · [CopilotKit docs](https://docs.copilotkit.ai/) · [Ambiguous AI setup](using-sponsor-tools.md#ambiguous-ai)
-
-### 3. WhatsApp — an agent you can text
-
-**OpenAI Agents SDK + Auth0**
-
-An agent recognizes a linked user and requests approval on their phone before executing a protected action. The included app saves an approved, named request and returns a receipt in the conversation. Adapt that action to your own assistant.
-
-This is an independent app with its own install and configuration. It uses OpenAI Agents SDK directly, Auth0 for identity and approval, and a WhatsApp transport. No CopilotKit account is required for this template.
-
-**[Use the WhatsApp template →](templates/whatsapp.md)**
 
 ### The demo you can build on
 
@@ -106,9 +96,9 @@ The [template guides](templates/) provide launch commands, files to customize, a
 | CopilotKit app development | [Docs](https://docs.copilotkit.ai/) · [Tools and context](dev-docs/tools-and-context.md) |
 | CopilotKit Channels | [Channels guide](https://copilotkit.ai/channels-guide.md) · [Screenshot walkthrough](dev-docs/channels-sdk-walkthrough/README.md) · [OpenTag example app](https://github.com/CopilotKit/OpenTag) |
 | Exa quickstart | [Search API guide](https://exa.ai/docs/reference/search-api-guide) · [Kit setup](using-sponsor-tools.md#exa) |
-| Auth0 quickstarts | [Node API](https://auth0.com/docs/quickstart/backend/nodejs) · [Asynchronous authorization](https://auth0.com/ai/docs/get-started/asynchronous-authorization) · [Kit setup](using-sponsor-tools.md#auth0) |
+| Auth0 API authorization | [Node API](https://auth0.com/docs/quickstart/backend/nodejs) · [Kit setup](using-sponsor-tools.md#auth0) |
 | Ambiguous AI quickstart | [Developer guide](https://www.ambiguous.ai/llms.txt) · [Kit setup](using-sponsor-tools.md#ambiguous-ai) |
 | Rehearse and debug | [Demo prompts](dev-docs/demo-prompts.md) · [Troubleshooting](dev-docs/troubleshooting.md) |
 | Prepare your entry | [Submission checklist](SUBMISSION.md) |
 
-For the Slack/web workspaces, `npm run verify` runs typechecks, tests, and MCP checks without credentials. `npm run check-env` validates configured startup. WhatsApp has separate checks in its template. Live sponsor calls and platform delivery require your accounts. See [developer docs](dev-docs/README.md) for detailed setup and deployment.
+For the Slack/web workspaces, `npm run verify` runs typechecks, tests, and MCP checks without credentials. `npm run check-env` validates configured startup. Live sponsor calls and platform delivery require your accounts. See [developer docs](dev-docs/README.md) for detailed setup and deployment.

@@ -2,15 +2,15 @@
 
 One setup reference for the six sponsors featured in this kit. Choose the tools your workflow needs. **OpenAI** is the marquee sponsor; **CopilotKit and OpenRouter** share the next tier; **Exa, Auth0, and Ambiguous AI** provide additional capabilities. This is the kit's selected lineup; the [event portal](https://sf.aitinkerers.org/hackathons/h_XWWQL5eKfJM) maintains the full event roster.
 
-Use Node.js 22+. For Slack/web, run the homepage's clone/install steps and keep credentials in root `.env`. WhatsApp has its own `apps/whatsapp/.env`. Never put keys in frontend code or a submission. `npm run verify` covers offline behavior, not live account access.
+Use Node.js 22+. For Slack/web, run the homepage's clone/install steps and keep credentials in root `.env`. Never put keys in frontend code or a submission. `npm run verify` covers offline behavior, not live account access.
 
 | Sponsor | Used by | First result |
 |---|---|---|
-| [OpenAI](#openai) | Slack, web, WhatsApp | A model response to supplied context |
+| [OpenAI](#openai) | Slack, web, mobile | A model response to supplied context |
 | [CopilotKit](#copilotkit) | Slack and web | A contextual answer and native UI |
 | [OpenRouter](#openrouter) | Optional Slack/web model gateway | A response from your chosen catalog model |
 | [Exa](#exa) | Slack template | Research with inspectable sources |
-| [Auth0](#auth0) | WhatsApp; standalone protected-API example | Verified identity and approval before a protected action |
+| [Auth0](#auth0) | Standalone protected-API example | Verified service identity and scope before a protected action |
 | [Ambiguous AI](#ambiguous-ai) | Web template; optional Slack integration | A real workplace record that survives refresh |
 
 ## OpenAI
@@ -25,7 +25,7 @@ OPENAI_API_KEY=your-key
 MODEL=gpt-5.6-sol
 ```
 
-`MODEL` is the kit's configured model; choose one available to your API account. For WhatsApp, use `OPENAI_API_KEY` and `OPENAI_MODEL` in its separate environment file.
+`MODEL` is the kit's configured model; choose one available to your API account.
 
 **First call.** From root, make a small Responses API request using the configured key and model:
 
@@ -52,7 +52,7 @@ console.log(answer);
 JS
 ```
 
-**Check:** the response accounts for the failed rollback; confirm usage in the correct API project. Then run `npm run dev:local`, `npm run dev:slack`, or `npm run dev:web`. These use the [shared model adapter](packages/agent-core/src/model.ts). The [WhatsApp app](apps/whatsapp/README.md) uses OpenAI Agents SDK directly. [Agents SDK quickstart](https://openai.github.io/openai-agents-js/guides/quickstart/)
+**Check:** the response accounts for the failed rollback; confirm usage in the correct API project. Then run `npm run dev:local`, `npm run dev:slack`, or `npm run dev:web`. These use the [shared model adapter](packages/agent-core/src/model.ts). [Agents SDK quickstart](https://openai.github.io/openai-agents-js/guides/quickstart/)
 
 ## CopilotKit
 
@@ -148,78 +148,9 @@ JS
 
 ## Auth0
 
-### WhatsApp identity and phone approval
-
-You need an OpenAI API key, a Twilio account with WhatsApp testing enabled, and an Auth0 tenant entitled to **CIBA**. Auth0 documents an Enterprise plan or appropriate add-on requirement; an ordinary free tenant is not sufficient for the phone approval flow. Enable Guardian push and enroll your test user before testing approvals. See [Auth0 CIBA configuration](https://auth0.com/docs/get-started/applications/configure-client-initiated-backchannel-authentication) and [Guardian enrollment](https://auth0.com/docs/secure/multi-factor-authentication/auth0-guardian).
-
-#### Auth0 application and user
-
-1. In **Applications → Applications**, create a first-party, OIDC-conformant **Regular Web Application**. Open its **Credentials → Authentication Methods** and select **Client Secret (Post)** (`client_secret_post`). In **Grant Types**, enable **Authorization Code** and **Client Initiated Backchannel Authentication**, then save. Use this same confidential client for login and CIBA. See [application credentials](https://auth0.com/docs/get-started/applications/credentials).
-2. Set the Allowed Callback URL to `https://YOUR-PUBLIC-ORIGIN/auth/callback`. Set `AUTH0_ISSUER_BASE_URL`, `AUTH0_CLIENT_ID`, and `AUTH0_CLIENT_SECRET` in `apps/whatsapp/.env`. The issuer must be the exact tenant/custom domain used for login and token issuance.
-3. Create a custom API with identifier `https://whatsapp-demo.example` (or your own value), **RS256** signing, and permission **`create:requests`**. Set `AUTH0_AUDIENCE` to its identifier. Enable API RBAC and grant this permission to your test user through a role. The app checks the access token’s `scope`; it does not treat authentication alone as permission.
-4. In the app’s settings, open **Client Initiated Backchannel Authentication (CIBA)** and enable **Guardian push only**. Disable the email notification channel so an unenrolled user cannot fall back to email approval. In **Security → Multi-factor Auth → Push Notification using Auth0 Guardian**, enable the factor, set **Push Notification App** to **Auth0 Guardian**, and save. Require MFA for the test login to prompt enrollment. Check the test user under **User Management → Users** and confirm Guardian enrollment before trying CIBA. This app requests up to 300 seconds for the push approval.
-
-The login uses authorization code + PKCE, state, browser cookie, and validated ID token nonce. It never trusts a user-supplied Auth0 subject. After login, the browser displays a confirmation code that must be sent from the original WhatsApp sender before linking takes effect. See [Auth0 authorization code with PKCE](https://auth0.com/docs/get-started/authentication-and-authorization-flow/authorization-code-flow-with-pkce/call-your-api-using-the-authorization-code-flow-with-pkce).
-
-CIBA calls `POST /bc-authorize` using an `iss_sub` login hint for the linked subject, your API audience, `openid create:requests`, and the exact action’s binding message. The worker polls `POST /oauth/token` with the returned `auth_req_id`, respecting `interval` and `slow_down`. Approval requires a valid RS256 access token for the expected issuer, audience, client, subject, expiry, and permission. Access tokens are used for that exchange only and are not stored or accepted from WhatsApp. See [Auth0 CIBA push flow](https://auth0.com/docs/get-started/authentication-and-authorization-flow/client-initiated-backchannel-authentication-flow/mobile-push-notifications-with-ciba) and [access token validation](https://auth0.com/docs/secure/tokens/access-tokens/validate-access-tokens).
-
-#### WhatsApp transport setup (Twilio)
-
-1. Activate Twilio’s WhatsApp testing environment / Sandbox and join it from your phone using its displayed join instructions.
-2. Copy the **Account SID**, **Auth Token**, and exact WhatsApp sender to `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, and `TWILIO_WHATSAPP_FROM`. Use the Account Auth Token required for webhook signature validation.
-3. Set **When a message comes in** to `https://YOUR-PUBLIC-ORIGIN/webhooks/whatsapp`, method **POST**. Use the exact URL, with no query or trailing slash.
-4. Keep your public tunnel and this app running. Incoming form bodies are verified with Twilio’s official signature validator using the configured public URL; account and destination are checked too.
-
-The app acknowledges the webhook immediately and sends replies through Twilio’s Messages REST API. Sandbox participants must join, usage may be billed, and free-form replies require an open 24-hour customer service window. See [Twilio WhatsApp Sandbox](https://www.twilio.com/docs/whatsapp/sandbox), [WhatsApp quickstart](https://www.twilio.com/docs/whatsapp/quickstart), and [webhook security](https://www.twilio.com/docs/usage/webhooks/webhooks-security).
-
-#### OpenAI Agents SDK
-
-Set `OPENAI_API_KEY`. `OPENAI_MODEL` defaults to `gpt-4.1-mini`; choose a model available to your project that supports structured output. [agent.ts](apps/whatsapp/src/agent.ts) uses the actual `@openai/agents` `Agent` and `run()` APIs. It receives the authenticated display name and recent conversation and returns a validated proposal. The model has no privileged execution tool. See the [Agents SDK quickstart](https://openai.github.io/openai-agents-js/guides/quickstart/) and [structured output guide](https://openai.github.io/openai-agents-js/guides/agents/).
-
-#### Environment and first working call
-
-This app has its own dependencies and environment; it uses no CopilotKit account. From the repository root:
-
-```bash
-npm ci --prefix apps/whatsapp
-cp apps/whatsapp/.env.example apps/whatsapp/.env
-npm run typecheck --prefix apps/whatsapp
-npm test --prefix apps/whatsapp
-```
-
-Fill in `apps/whatsapp/.env` with the values from the steps above:
-
-```dotenv
-OPENAI_API_KEY=your-openai-key
-OPENAI_MODEL=gpt-4.1-mini
-PUBLIC_BASE_URL=https://your-public-origin.example
-AUTH0_ISSUER_BASE_URL=https://your-tenant.us.auth0.com
-AUTH0_CLIENT_ID=your-regular-web-app-client-id
-AUTH0_CLIENT_SECRET=your-regular-web-app-client-secret
-AUTH0_AUDIENCE=https://whatsapp-demo.example
-TWILIO_ACCOUNT_SID=your-account-sid
-TWILIO_AUTH_TOKEN=your-account-auth-token
-TWILIO_WHATSAPP_FROM=whatsapp:+your-sandbox-sender-number
-PORT=3003
-```
-
-Use the exact WhatsApp sender provided by your own Twilio Sandbox. The default record store is `apps/whatsapp/.data/state.json`; optionally set `DATA_FILE` to an absolute persistent path. Run one process against that file.
-
-```bash
-npm start --prefix apps/whatsapp
-```
-
-Expose port 3003 through a public HTTPS tunnel or deploy the app with a persistent disk. Set `PUBLIC_BASE_URL` to that origin and use it for the Auth0 callback and Twilio webhook. For a local tunnel, `ngrok http 3003` is one option. Restart after editing the environment. `GET http://localhost:3003/health` verifies the process, not external account access.
-
-**First successful call:** text `hello` to the joined WhatsApp Sandbox, open the returned link, select **Continue with Auth0**, and sign in. Send the browser's `LINK <code>` from the original WhatsApp conversation. Then text `Save a request called team-lunch`. Match its label and request ID to the Guardian push on your phone and approve. The reply contains the saved local record ID. Text `STATUS` after restarting to retrieve the same outcome.
-
-**Permission check:** after one minute, request a different label and deny the push. No record should be created. An expired request must also leave no record. A text saying “approved” is not an Auth0 approval. Labels are limited to 1–24 ASCII letters, digits, hyphens, or underscores so the entire action fits in the consent message.
-
-This is a persistent **local demo request**, not an external booking, purchase, or scheduled notification. The server owns the protected write and verifies the scoped token from the exact CIBA request. Offline tests exercise local HTTP adapters; live Twilio delivery, OpenAI access, and Auth0 Guardian approval require your accounts. See the [WhatsApp app](apps/whatsapp/README.md) for operational limits and restart behavior.
-
 ### Standalone protected API call
 
-Use this smaller example to learn Auth0 API authorization independently. It is machine-to-machine authorization, not the WhatsApp human-approval flow.
+Use this example to learn Auth0 machine-to-machine API authorization. The server verifies the service identity and required scope before creating a record.
 
 **Access and configure:** in Auth0, create an RS256 API with identifier `https://agents-everywhere.example/api`, add permission `create:followups`, and grant it to a Machine to Machine application. The identifier is an audience string and does not need a hosted URL. Add these values to root `.env`:
 

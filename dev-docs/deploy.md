@@ -51,7 +51,3 @@ Server-side only. Never log credentials, provider tokens, or raw payloads. Log
 startup status, status transitions, the Channel code, tool errors with
 idempotency ids, and event/turn/delivery ids for correlation — never message
 bodies or files.
-
-## WhatsApp
-
-The independent [WhatsApp app](../apps/whatsapp/README.md) needs a public HTTPS callback/webhook URL and its own environment. Follow its deployment notes, including single-process storage and phone-approval requirements.

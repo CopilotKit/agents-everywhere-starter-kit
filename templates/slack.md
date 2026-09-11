@@ -37,7 +37,7 @@ Invite the bot to a Slack channel and mention it in a populated thread. CopilotK
 | Native cards | [Components](../apps/channel-slack/src/components.tsx): incident card and timeline via Channels JSX |
 | Prompt | [Shared prompt](../packages/agent-core/src/prompt.ts) |
 
-This template uses OpenAI through CopilotKit's runtime. It does not claim that the built-in agent is OpenAI Agents SDK; the [WhatsApp template](whatsapp.md) demonstrates that SDK directly. [OpenRouter](../using-sponsor-tools.md#openrouter) is an optional model gateway for Slack and web.
+This template uses CopilotKit's built-in agent with OpenAI. [OpenRouter](../using-sponsor-tools.md#openrouter) is an optional model gateway for Slack and web.
 
 ## Prove the interaction
 

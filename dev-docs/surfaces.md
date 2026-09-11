@@ -28,10 +28,6 @@ Run these from the repository root after [setup](setup.md):
 
 MCP protocol checks are part of `npm run verify`, independent of a live host or its widget rendering. Mobile is not an npm workspace member because React Native uses its own dependency versions.
 
-## WhatsApp
-
-The [WhatsApp template](../templates/whatsapp.md) is a separate application using OpenAI Agents SDK and Auth0. It links the sender to an authenticated user and enforces phone approval before its protected action. It does not use the shared CopilotKit runtime or managed Channels. Follow its own install, setup, and verification instructions.
-
 ## Slack to Teams
 
 Create a separate Channel with the Teams adapter:

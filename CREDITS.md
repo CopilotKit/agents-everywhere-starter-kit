@@ -21,7 +21,7 @@ Creating an API key does not redeem credits. Do not substitute ChatGPT credits f
 | CopilotKit | [Docs](https://docs.copilotkit.ai/) · [Intelligence](https://intelligence.copilotkit.ai/) · [Channels guide](https://copilotkit.ai/channels-guide.md) | Check organizer instructions for any event-specific allocation. Web setup does not require a managed Channel. |
 | OpenRouter | [Keys](https://openrouter.ai/keys) · [Model catalog](https://openrouter.ai/models) | Obtain an organizer offer if available, then verify account balance and model access. |
 | Exa | [API keys](https://dashboard.exa.ai/api-keys) · [Quickstart](https://exa.ai/docs/reference/search-api-guide) | Check the organizer's offer and confirm search access. |
-| Auth0 | [Signup](https://auth0.com/signup) · [Phone approval quickstart](https://auth0.com/ai/docs/get-started/asynchronous-authorization) | Check CIBA availability and Guardian setup with Auth0 before the phone demo. |
+| Auth0 | [Signup](https://auth0.com/signup) · [Node API quickstart](https://auth0.com/docs/quickstart/backend/nodejs) | Check organizer instructions for access; use the standalone protected-API example to verify authorization. |
 | Ambiguous AI | [Workspace](https://app.ambiguous.ai/) · [Authentication](https://www.ambiguous.ai/auth.md) | Follow the organizer's workspace/access instructions if supplied. |
 
 Keep private redemption codes, API keys, and personal claim links out of this public file. [using-sponsor-tools.md](using-sponsor-tools.md) has authentication, configuration, and a first call for each sponsor.

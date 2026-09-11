@@ -4,7 +4,7 @@ This independent example shows a missing credential denied with `401`, followed 
 
 **[Authentication, configuration, and the first working call →](../../using-sponsor-tools.md#standalone-protected-api-call)**
 
-For a real authenticated user and phone consent, use the [WhatsApp template](../../templates/whatsapp.md). This smaller example demonstrates machine-to-machine authorization only.
+This example demonstrates machine-to-machine authorization. The server checks the service identity and scope before creating a record.
 
 ## Source and verification
 
