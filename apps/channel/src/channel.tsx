@@ -46,9 +46,6 @@ export const channel = createChannel({
     },
   ],
 
-  // Managed Slack hides tool-call progress by default. Turning it on is worth it
-  // in a demo — the audience watches the agent search and think.
-  showToolStatus: true,
 });
 
 // A mention subscribes the conversation, so the agent then follows along instead
