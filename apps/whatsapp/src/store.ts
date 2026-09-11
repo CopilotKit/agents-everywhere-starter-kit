@@ -1,10 +1,12 @@
 import { closeSync, existsSync, fsyncSync, mkdirSync, openSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { z } from 'zod';
+import { DiagnosticError } from './diagnostics.js';
 
 const identity = z.object({ sub: z.string(), name: z.string() });
 const stateSchema = z.object({
-  version: z.literal(1),
+  version: z.literal(2),
+  transport: z.object({ provider: z.literal('meta'), phoneNumberId: z.string() }),
   identities: z.record(z.string(), identity),
   links: z.record(z.string(), z.object({
     from: z.string(), expiresAt: z.number(), state: z.string().optional(), nonce: z.string().optional(),
@@ -31,10 +33,18 @@ export type Approval = State['approvals'][string];
 /** Single-process demo storage. No shared volume, replicas, or untrusted local writers. */
 export class Store {
   data: State;
-  constructor(private readonly file: string) {
-    this.data = existsSync(file) ? stateSchema.parse(JSON.parse(readFileSync(file, 'utf8'))) : {
-      version: 1, identities: {}, links: {}, inbox: {}, history: {}, approvals: {}, records: {}, outbox: {},
-    };
+  constructor(private readonly file: string, phoneNumberId: string) {
+    const loaded: unknown = existsSync(file) ? JSON.parse(readFileSync(file, 'utf8')) : undefined;
+    if (loaded && typeof loaded === 'object' && 'version' in loaded && loaded.version === 1) {
+      // Provider-prefixed Twilio keys, in-flight bindings and duplicate IDs cannot
+      // be safely reinterpreted as Meta wa_ids. Leave the entire old file untouched.
+      throw new DiagnosticError('LEGACY_STATE_REQUIRES_MIGRATION');
+    }
+    this.data = loaded === undefined ? {
+      version: 2, transport: { provider: 'meta', phoneNumberId },
+      identities: {}, links: {}, inbox: {}, history: {}, approvals: {}, records: {}, outbox: {},
+    } : stateSchema.parse(loaded);
+    if (this.data.transport.phoneNumberId !== phoneNumberId) throw new DiagnosticError('STATE_DESTINATION_MISMATCH');
     // An interrupted external call has an uncertain outcome. Never repeat it automatically.
     for (const item of Object.values(this.data.inbox)) if (item.status === 'processing') item.status = 'failed';
     for (const item of Object.values(this.data.approvals)) if (item.status === 'initiating') item.status = 'failed';

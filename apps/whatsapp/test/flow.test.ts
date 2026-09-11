@@ -3,31 +3,22 @@ import { afterEach, mock, test } from 'node:test';
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { createServer, type Server } from 'node:http';
+import { createHmac } from 'node:crypto';
 import express from 'express';
-import twilio from 'twilio';
 import { exportJWK, generateKeyPair, SignJWT } from 'jose';
-import { createService, type Config, type Proposal } from '../src/service.js';
+import { type Config, type Proposal } from '../src/service.js';
+import { createWhatsAppApp } from '../src/runtime.js';
+import { listen, stop, intelligenceGateway, eventually } from './support.js';
 
 const cleanups: (() => Promise<void>)[] = [];
 afterEach(async () => { for (const fn of cleanups.splice(0)) await fn(); mock.restoreAll(); });
-async function listen(app: express.Express) {
-  const server = createServer(app);
-  await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
-  const address = server.address();
-  assert.ok(address && typeof address !== 'string');
-  return { server, url: `http://127.0.0.1:${address.port}` };
-}
-async function stop(server: Server) {
-  server.closeAllConnections();
-  await new Promise<void>((resolve, reject) => server.close((error) => error ? reject(error) : resolve()));
-}
 async function fixture(defaultLogger = false) {
   const directory = mkdtempSync(join(tmpdir(), 'whatsapp-test-'));
   const { privateKey, publicKey } = await generateKeyPair('RS256');
   const jwk = { ...await exportJWK(publicKey), kid: 'test-key', alg: 'RS256', use: 'sig' };
   const mock = express();
   mock.use(express.urlencoded({ extended: false }));
+  mock.use(express.json());
   const calls: { path: string; body: Record<string, string> }[] = [];
   const messages: string[] = [];
   let nonce = '';
@@ -47,6 +38,7 @@ async function fixture(defaultLogger = false) {
     res.json({ auth_req_id: `request-${calls.length}`, expires_in: 300, interval: 5 });
   });
   const provider = await listen(mock);
+  const gateway = intelligenceGateway(provider.server, provider.url);
   const sign = (payload: Record<string, unknown>, audience: string) => new SignJWT(payload)
     .setProtectedHeader({ alg: 'RS256', kid: 'test-key' }).setIssuer(`${provider.url}/`)
     .setAudience(audience).setIssuedAt().setExpirationTime('1h').sign(privateKey);
@@ -65,31 +57,43 @@ async function fixture(defaultLogger = false) {
     if (corruptSignature) { const parts = accessToken.split('.'); parts[2] = (parts[2][0] === 'A' ? 'B' : 'A') + parts[2].slice(1); accessToken = parts.join('.'); }
     res.json({ token_type: 'Bearer', access_token: accessToken });
   });
-  mock.post('/2010-04-01/Accounts/:sid/Messages.json', (req, res) => {
-    messages.push(req.body.Body);
-    if (sendFailure) { res.status(503).json({ message: 'temporary test failure' }); return; }
-    res.status(201).json({ sid: `SM${messages.length}` });
+  mock.post('/v23.0/:phone/messages', (req, res) => {
+    assert.equal(req.params.phone, '123456789');
+    assert.equal(req.headers.authorization, 'Bearer test-meta-token');
+    if (req.body.status === 'read') { res.json({ success: true }); return; }
+    assert.equal(req.body.messaging_product, 'whatsapp');
+    assert.equal(req.body.type, 'text');
+    messages.push(req.body.text.body);
+    if (sendFailure) { res.status(503).json({ message: 'sensitive-provider-token identity@private.example' }); return; }
+    res.json({ messages: [{ id: `wamid.reply${messages.length}` }] });
   });
   const config: Config = {
     publicBaseUrl: 'https://demo.example', issuer: `${provider.url}/`, clientId: 'client-id',
     clientSecret: 'test-client-secret', audience: tokenAudience,
-    twilioAccountSid: `AC${'1'.repeat(32)}`, twilioAuthToken: 'test-auth-token',
-    whatsappFrom: 'whatsapp:+14155238886', dataFile: join(directory, 'state.json'), model: 'gpt-4.1-mini', port: 3003,
+    whatsappAccessToken: 'test-meta-token', whatsappPhoneNumberId: '123456789',
+    whatsappAppSecret: 'test-app-secret', whatsappVerifyToken: 'test-verify-token',
+    whatsappWebhookPort: 0, whatsappApiVersion: 'v23.0', channelName: 'whatsapp-demo', intelligenceApiKey: 'cpk-1_test',
+    dataFile: join(directory, 'state.json'), model: 'gpt-4.1-mini', port: 3003,
   };
   let proposal: Proposal = { reply: 'I can save that request.', requestLabel: 'team-lunch' };
   let plannerCalls = 0;
   const errors: string[] = [];
-  const options = { reportError: defaultLogger ? undefined : (operation: string) => { errors.push(operation); }, now: () => now, twilioApiBaseUrl: provider.url, planner: async () => { plannerCalls++; if (plannerFailure) throw plannerFailure; return proposal; } };
-  let service = createService(config, options);
-  const appServer = await listen(service.app);
+  const options = { reportError: defaultLogger ? undefined : (operation: string) => { errors.push(operation); }, now: () => now, graphBaseUrl: provider.url, intelligenceUrls: gateway.urls, planner: async () => { plannerCalls++; if (plannerFailure) throw plannerFailure; return proposal; } };
+  let service = await createWhatsAppApp(config, options);
+  let appServer = await listen(service.app);
   let serial = 0;
-  async function send(body: string, from = 'whatsapp:+15550000001', sid = `SM${String(++serial).padStart(32, '0')}`, signed = true) {
-    const params = { Body: body, From: from, To: config.whatsappFrom, MessageSid: sid, AccountSid: config.twilioAccountSid };
-    return fetch(`${appServer.url}/webhooks/whatsapp`, {
-      method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded',
-        'x-twilio-signature': signed ? twilio.getExpectedTwilioSignature(config.twilioAuthToken, `${config.publicBaseUrl}/webhooks/whatsapp`, params) : 'forged' },
-      body: new URLSearchParams(params),
+  async function send(body: string, from = '15550000001', id = `wamid.message${++serial}`, signed = true, phoneNumberId = config.whatsappPhoneNumberId) {
+    const raw = JSON.stringify({ object: 'whatsapp_business_account', entry: [{ id: 'business-account', changes: [{ value: {
+      messaging_product: 'whatsapp', metadata: { phone_number_id: phoneNumberId },
+      messages: [{ id, from, type: 'text', text: { body } }],
+    } }] }] });
+    const response = await fetch(`${appServer.url}/webhooks/whatsapp`, {
+      method: 'POST', headers: { 'content-type': 'application/json',
+        'x-hub-signature-256': signed ? `sha256=${createHmac('sha256', config.whatsappAppSecret).update(raw).digest('hex')}` : 'forged' },
+      body: raw,
     });
+    if (response.ok) await eventually(() => !!service.store.data.inbox[id]);
+    return response;
   }
   async function login() {
     await send('hello');
@@ -117,24 +121,24 @@ async function fixture(defaultLogger = false) {
     assert.ok(code);
     await send(`LINK ${code}`);
     await service.tick();
-    assert.equal(service.store.data.identities['whatsapp:+15550000001']?.sub, 'auth0|alice');
+    assert.equal(service.store.data.identities['15550000001']?.sub, 'auth0|alice');
   }
-  cleanups.push(async () => { await stop(appServer.server); await stop(provider.server); rmSync(directory, { recursive: true, force: true }); });
+  cleanups.push(async () => { await service.stop(); await stop(appServer.server); await gateway.close(); await stop(provider.server); rmSync(directory, { recursive: true, force: true }); });
   return {
-    config, calls, messages, errors, send, login, link, sign, failSends: () => { sendFailure = true; }, failCiba: () => { cibaFailure = true; }, failPlanner: (error: Error) => { plannerFailure = error; }, corruptSignature: () => { corruptSignature = true; }, appUrl: appServer.url,
+    config, calls, messages, errors, send, login, link, sign, failSends: () => { sendFailure = true; }, failCiba: () => { cibaFailure = true; }, failPlanner: (error: Error) => { plannerFailure = error; }, corruptSignature: () => { corruptSignature = true; }, get appUrl() { return appServer.url; },
     get service() { return service; }, get plannerCalls() { return plannerCalls; },
     advance: (seconds: number) => { now += seconds * 1000; },
     approve: (value: typeof approval) => { approval = value; },
     changeToken: (sub: string, scope = tokenScope, audience = tokenAudience) => { tokenSub = sub; tokenScope = scope; tokenAudience = audience; },
     changeNonce: () => { nonce = 'attacker-nonce'; },
     changeProposal: (value: Proposal) => { proposal = value; },
-    restart: () => { service = createService(config, options); },
+    restart: async () => { await service.stop(); await stop(appServer.server); service = await createWhatsAppApp(config, options); appServer = await listen(service.app); },
   };
 }
 
 test('unsigned webhook cannot link, invoke the model, or send a message', async () => {
   const f = await fixture();
-  assert.equal((await f.send('save request', undefined, undefined, false)).status, 403);
+  assert.equal((await f.send('save request', undefined, undefined, false)).status, 401);
   await f.service.tick();
   assert.equal(f.plannerCalls, 0);
   assert.deepEqual(f.messages, []);
@@ -150,13 +154,13 @@ test('account linking requires OAuth browser state and a confirmation from the o
   const code = (await response.text()).match(/LINK ([A-F0-9]{16})/)?.[1];
   assert.ok(code);
   assert.equal((await fetch(callback, { headers: { cookie } })).status, 400);
-  await f.send(`LINK ${code}`, 'whatsapp:+15550000002');
+  await f.send(`LINK ${code}`, '15550000002');
   await f.service.tick();
   assert.deepEqual(f.service.store.data.identities, {});
   await f.send(`LINK ${code}`);
   await f.service.tick();
-  assert.equal(f.service.store.data.identities['whatsapp:+15550000001']?.sub, 'auth0|alice');
-  assert.equal(f.service.store.data.identities['whatsapp:+15550000002'], undefined);
+  assert.equal(f.service.store.data.identities['15550000001']?.sub, 'auth0|alice');
+  assert.equal(f.service.store.data.identities['15550000002'], undefined);
 });
 
 test('ID token with an incorrect nonce cannot establish an identity', async () => {
@@ -170,7 +174,7 @@ test('ID token with an incorrect nonce cannot establish an identity', async () =
 test('only approved, subject-bound, scoped CIBA tokens execute the exact request once, across duplicate delivery and restart', async () => {
   const f = await fixture();
   await f.link();
-  const sid = `SM${'9'.repeat(32)}`;
+  const sid = `wamid.${'9'.repeat(32)}`;
   await f.send('Save a request called team-lunch', undefined, sid);
   await f.service.tick();
   assert.equal(Object.keys(f.service.store.data.records).length, 0);
@@ -189,7 +193,7 @@ test('only approved, subject-bound, scoped CIBA tokens execute the exact request
   assert.equal(Object.values(f.service.store.data.records)[0].label, 'team-lunch');
   await f.send('Save a request called team-lunch', undefined, sid);
   await f.service.tick();
-  f.restart();
+  await f.restart();
   await f.service.tick();
   assert.equal(Object.keys(f.service.store.data.records).length, 1);
   assert.equal(f.calls.filter((call) => call.path === '/bc-authorize').length, 1);
@@ -224,7 +228,7 @@ test('slow_down interval is respected and local expiry prevents execution after 
   const before = f.calls.filter((call) => call.body.auth_req_id).length;
   f.advance(5); await f.service.tick();
   assert.equal(f.calls.filter((call) => call.body.auth_req_id).length, before);
-  f.advance(300); f.approve('approved'); f.restart(); await f.service.tick();
+  f.advance(300); f.approve('approved'); await f.restart(); await f.service.tick();
   assert.equal(Object.keys(f.service.store.data.records).length, 0);
   assert.equal(Object.values(f.service.store.data.approvals)[0].status, 'expired');
 });
@@ -259,7 +263,7 @@ test('outbound failure preserves the approved record without replaying action or
   assert.equal(Object.keys(f.service.store.data.records).length, 1);
   assert.ok(Object.values(f.service.store.data.outbox).some((item) => item.status === 'failed'));
   const count = f.messages.length;
-  f.restart(); await f.service.tick();
+  await f.restart(); await f.service.tick();
   assert.equal(Object.keys(f.service.store.data.records).length, 1);
   assert.equal(f.messages.length, count);
   assert.ok(f.errors.some((error) => error.includes('WhatsApp reply failed')));
@@ -286,12 +290,12 @@ test('failed Auth0 setup emits a useful safe diagnostic without the upstream bod
   for (const privateValue of ['sensitive-provider-token', 'identity@private.example', 'test-client-secret', 'auth0|alice', 'team-lunch']) assert.ok(!output.includes(privateValue));
 });
 
-test('Twilio HTTP failure reports its stable code and status without logging message content', async () => {
+test('Meta HTTP failure reports its stable code and status without logging message content', async () => {
   const logger = mock.method(console, 'error', () => {});
   const f = await fixture(true); f.failSends(); await f.send('private message contents'); await f.service.tick();
   const output = logger.mock.calls.map((call) => call.arguments.join(' ')).join('\n');
-  assert.ok(output.includes('TWILIO_SEND_FAILED')); assert.ok(output.includes('"httpStatus":503'));
-  assert.ok(!output.includes('private message contents')); assert.ok(!output.includes('test-auth-token'));
+  assert.ok(output.includes('META_SEND_FAILED')); assert.ok(output.includes('"httpStatus":503'));
+  assert.ok(!output.includes('private message contents')); assert.ok(!output.includes('test-meta-token'));
 });
 
 test('unknown failures redact arbitrary error strings and unrecognized error codes', async () => {
@@ -311,4 +315,88 @@ test('JWT validation logs only the whitelisted jose code', async () => {
   const output = logger.mock.calls.map((call) => call.arguments.join(' ')).join('\n');
   assert.ok(output.includes('ERR_JWS_SIGNATURE_VERIFICATION_FAILED'));
   assert.ok(!output.includes('auth0|alice'));
+});
+
+test('signed traffic for another business phone cannot link, invoke the model, or reply', async () => {
+  const f = await fixture();
+  assert.equal((await f.send('hello', undefined, undefined, true, '987654321')).status, 403);
+  await f.service.tick();
+  assert.deepEqual(f.service.store.data.inbox, {});
+  assert.deepEqual(f.messages, []);
+  assert.equal(f.plannerCalls, 0);
+});
+
+test('Meta status notifications are acknowledged without creating user messages', async () => {
+  const f = await fixture();
+  const raw = JSON.stringify({ object: 'whatsapp_business_account', entry: [{ changes: [{ value: {
+    messaging_product: 'whatsapp', metadata: { phone_number_id: f.config.whatsappPhoneNumberId },
+    statuses: [{ id: 'wamid.receipt', status: 'delivered', recipient_id: '15550000001' }],
+  } }] }] });
+  const response = await fetch(`${f.appUrl}/webhooks/whatsapp`, { method: 'POST', body: raw, headers: {
+    'content-type': 'application/json',
+    'x-hub-signature-256': `sha256=${createHmac('sha256', f.config.whatsappAppSecret).update(raw).digest('hex')}`,
+  } });
+  assert.equal(response.status, 200);
+  await f.service.tick();
+  assert.deepEqual(f.service.store.data.inbox, {});
+  assert.deepEqual(f.messages, []);
+  assert.equal(f.plannerCalls, 0);
+});
+
+test('duplicate Meta deliveries invoke the planner and request approval only once', async () => {
+  const f = await fixture(); await f.link();
+  await Promise.all([f.send('save', undefined, 'wamid.duplicate'), f.send('save', undefined, 'wamid.duplicate')]);
+  await f.service.tick();
+  assert.equal(f.plannerCalls, 1);
+  assert.equal(f.calls.filter((call) => call.path === '/bc-authorize').length, 1);
+});
+
+test('pending approvals, identity and persisted planning history survive restart; STATUS reports the saved result', async () => {
+  const f = await fixture(); await f.link(); await f.send('save'); await f.service.tick();
+  const history = structuredClone(f.service.store.data.history['15550000001']);
+  await f.restart();
+  assert.deepEqual(f.service.store.data.history['15550000001'], history);
+  assert.equal(f.service.store.data.identities['15550000001'].sub, 'auth0|alice');
+  f.approve('approved'); f.advance(5); await f.service.tick();
+  await f.send('STATUS'); await f.service.tick();
+  assert.match(f.messages.at(-1)!, /team-lunch — saved/);
+  assert.equal(f.calls.filter((call) => call.path === '/bc-authorize').length, 1);
+  assert.equal(Object.keys(f.service.store.data.records).length, 1);
+});
+
+test('one-minute cooldown persists after denial and restart', async () => {
+  const f = await fixture(); await f.link(); await f.send('save'); await f.service.tick();
+  f.approve('denied'); f.advance(5); await f.service.tick(); await f.restart();
+  await f.send('save another'); await f.service.tick();
+  assert.match(f.messages.at(-1)!, /wait one minute/);
+  assert.equal(f.calls.filter((call) => call.path === '/bc-authorize').length, 1);
+  f.advance(60); await f.send('save another'); await f.service.tick();
+  assert.equal(f.calls.filter((call) => call.path === '/bc-authorize').length, 2);
+});
+
+test('a closed 24-hour reply window prevents automatic sends and STATUS reopens it', async () => {
+  const f = await fixture(); await f.link(); await f.send('save'); await f.service.tick();
+  const before = f.messages.length;
+  f.advance(86401); await f.service.tick();
+  assert.equal(f.messages.length, before);
+  assert.ok(f.errors.includes('WhatsApp reply skipped'));
+  await f.restart();
+  assert.ok(Object.values(f.service.store.data.outbox).every((message) => message.status !== 'queued'));
+  await f.send('STATUS'); await f.service.tick();
+  assert.match(f.messages.at(-1)!, /expired/);
+});
+
+test('the proxy preserves signed raw JSON whitespace and Unicode bytes for actual SDK verification', async () => {
+  const f = await fixture();
+  const raw = JSON.stringify({ object: 'whatsapp_business_account', entry: [{ changes: [{ value: {
+    messaging_product: 'whatsapp', metadata: { phone_number_id: f.config.whatsappPhoneNumberId },
+    messages: [{ id: 'wamid.rawbytes', from: '15550000001', type: 'text', text: { body: 'hello café ☕' } }],
+  } }] }] }, null, 2);
+  const signedHeaders = { 'content-type': 'application/json', 'x-hub-signature-256': `sha256=${createHmac('sha256', f.config.whatsappAppSecret).update(raw).digest('hex')}` };
+  const response = await fetch(`${f.appUrl}/webhooks/whatsapp`, { method: 'POST', body: raw, headers: signedHeaders });
+  assert.equal(response.status, 200);
+  await eventually(() => !!f.service.store.data.inbox['wamid.rawbytes']);
+  assert.equal(f.service.store.data.inbox['wamid.rawbytes'].body, 'hello café ☕');
+  assert.equal((await fetch(`${f.appUrl}/webhooks/whatsapp`, { method: 'POST', body: raw.replace('café', 'changed'), headers: signedHeaders })).status, 401);
+  assert.equal((await fetch(`${f.appUrl}/webhooks/whatsapp`, { method: 'POST', body: raw, headers: { 'content-type': 'application/json' } })).status, 401);
 });

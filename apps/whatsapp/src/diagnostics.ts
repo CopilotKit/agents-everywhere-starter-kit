@@ -5,7 +5,7 @@ type ErrorCode =
   | 'AUTH0_CODE_EXCHANGE_FAILED' | 'AUTH0_CIBA_INITIATION_FAILED' | 'AUTH0_CIBA_TOKEN_EXCHANGE_FAILED'
   | 'AUTH0_INVALID_RESPONSE' | 'AUTH0_TRANSPORT_FAILED' | 'LOGIN_BINDING_MISMATCH' | 'LOGIN_EXPIRED'
   | 'APPROVAL_IDENTITY_MISMATCH' | 'APPROVAL_PERMISSION_MISSING' | 'APPROVAL_BINDING_MISMATCH'
-  | 'UNEXPECTED_TOKEN_TYPE' | 'TWILIO_SEND_FAILED' | 'CUSTOMER_SERVICE_WINDOW_CLOSED';
+  | 'UNEXPECTED_TOKEN_TYPE' | 'META_SEND_FAILED' | 'META_TRANSPORT_FAILED' | 'META_INVALID_RESPONSE' | 'WEBHOOK_PROXY_FAILED' | 'CHANNELS_START_FAILED' | 'LISTENER_PORT_UNAVAILABLE' | 'LEGACY_STATE_REQUIRES_MIGRATION' | 'STATE_DESTINATION_MISMATCH' | 'CUSTOMER_SERVICE_WINDOW_CLOSED';
 
 /** Internal codes only: never attach upstream text, tokens, or user data. */
 export class DiagnosticError extends Error {
@@ -14,17 +14,25 @@ export class DiagnosticError extends Error {
     this.name = 'DiagnosticError';
   }
 }
+/** Config schema paths only, never field values or untrusted provider details. */
+export class ConfigurationError extends Error {
+  constructor(readonly fields: string[], reason = 'missing or invalid value') {
+    super(`Invalid configuration: ${fields.join(', ')}: ${reason}`);
+    this.name = 'ConfigurationError';
+  }
+}
 const safeJoseCodes = new Set([
   'ERR_JWT_EXPIRED', 'ERR_JWT_CLAIM_VALIDATION_FAILED', 'ERR_JWS_SIGNATURE_VERIFICATION_FAILED',
   'ERR_JOSE_ALG_NOT_ALLOWED', 'ERR_JWKS_NO_MATCHING_KEY', 'ERR_JWKS_TIMEOUT', 'ERR_JWS_INVALID', 'ERR_JWT_INVALID',
 ]);
 export function reportError(operation: string, error: unknown) {
-  const code = error instanceof DiagnosticError ? error.code
+  const code = error instanceof ConfigurationError ? 'INVALID_CONFIGURATION'
+    : error instanceof DiagnosticError ? error.code
     : error instanceof joseErrors.JOSEError && safeJoseCodes.has(error.code) ? error.code
       : error instanceof ZodError ? 'VALIDATION_FAILED' : 'UNKNOWN_ERROR';
   const httpStatus = error instanceof DiagnosticError ? error.httpStatus : undefined;
   console.error(JSON.stringify({
     timestamp: new Date().toISOString(), error: code,
-    context: { operation, ...(httpStatus === undefined ? {} : { httpStatus }) },
+    context: { operation, ...(httpStatus === undefined ? {} : { httpStatus }), ...(error instanceof ConfigurationError ? { fields: error.fields } : {}) },
   }));
 }

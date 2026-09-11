@@ -2,6 +2,7 @@ import { fileURLToPath } from 'node:url';
 import { resolve } from 'node:path';
 import { z } from 'zod';
 import type { Config } from './service.js';
+import { ConfigurationError } from './diagnostics.js';
 
 const origin = z.url().refine((value) => {
   const url = new URL(value);
@@ -12,16 +13,24 @@ export function readConfig(env: NodeJS.ProcessEnv): Config {
     OPENAI_API_KEY: z.string().min(1), OPENAI_MODEL: z.string().min(1).default('gpt-4.1-mini'),
     PUBLIC_BASE_URL: origin, AUTH0_ISSUER_BASE_URL: origin,
     AUTH0_CLIENT_ID: z.string().min(1), AUTH0_CLIENT_SECRET: z.string().min(1), AUTH0_AUDIENCE: z.string().min(1),
-    TWILIO_ACCOUNT_SID: z.string().regex(/^AC[0-9a-fA-F]{32}$/), TWILIO_AUTH_TOKEN: z.string().min(1),
-    TWILIO_WHATSAPP_FROM: z.string().regex(/^whatsapp:\+[1-9][0-9]{7,14}$/),
+    WHATSAPP_ACCESS_TOKEN: z.string().min(1), WHATSAPP_PHONE_NUMBER_ID: z.string().regex(/^[0-9]+$/),
+    WHATSAPP_APP_SECRET: z.string().min(1), WHATSAPP_VERIFY_TOKEN: z.string().min(1),
+    WHATSAPP_CHANNEL_NAME: z.string().min(3).max(64).regex(/^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/).refine((value) => value !== 'channels', 'Reserved Channel name').default('whatsapp-demo'),
+    WHATSAPP_API_VERSION: z.string().regex(/^v[0-9]+\.0$/).default('v23.0'),
+    WHATSAPP_WEBHOOK_PORT: z.coerce.number().int().min(1).max(65535).default(3004),
+    INTELLIGENCE_API_KEY: z.string().regex(/^cpk-[1-9][0-9]*_.+$/),
     PORT: z.coerce.number().int().min(1).max(65535).default(3003), DATA_FILE: z.string().min(1).optional(),
   }).safeParse(env);
-  if (!parsed.success) throw new Error(`Invalid configuration: ${parsed.error.issues.map((issue) => `${issue.path.join('.')}: ${issue.message}`).join('; ')}`);
+  if (!parsed.success) throw new ConfigurationError([...new Set(parsed.error.issues.map((issue) => issue.path.join('.')))]);
   const value = parsed.data;
+  if (value.PORT === value.WHATSAPP_WEBHOOK_PORT) throw new ConfigurationError(['PORT', 'WHATSAPP_WEBHOOK_PORT'], 'must be different');
   return {
     publicBaseUrl: new URL(value.PUBLIC_BASE_URL).origin, issuer: `${new URL(value.AUTH0_ISSUER_BASE_URL).origin}/`,
     clientId: value.AUTH0_CLIENT_ID, clientSecret: value.AUTH0_CLIENT_SECRET, audience: value.AUTH0_AUDIENCE,
-    twilioAccountSid: value.TWILIO_ACCOUNT_SID, twilioAuthToken: value.TWILIO_AUTH_TOKEN, whatsappFrom: value.TWILIO_WHATSAPP_FROM,
+    whatsappAccessToken: value.WHATSAPP_ACCESS_TOKEN, whatsappPhoneNumberId: value.WHATSAPP_PHONE_NUMBER_ID,
+    whatsappAppSecret: value.WHATSAPP_APP_SECRET, whatsappVerifyToken: value.WHATSAPP_VERIFY_TOKEN,
+    whatsappWebhookPort: value.WHATSAPP_WEBHOOK_PORT, whatsappApiVersion: value.WHATSAPP_API_VERSION,
+    channelName: value.WHATSAPP_CHANNEL_NAME, intelligenceApiKey: value.INTELLIGENCE_API_KEY,
     dataFile: value.DATA_FILE ? resolve(value.DATA_FILE) : fileURLToPath(new URL('../.data/state.json', import.meta.url)),
     model: value.OPENAI_MODEL, port: value.PORT,
   };
