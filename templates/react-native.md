@@ -4,7 +4,7 @@
 
 Build a mobile agent that reads app state, renders native cards, and waits for a tap before changing local data. The included app is a personal-finance starter with accounts, budgets, recent transactions, spending summaries, and an approved expense write. Replace the sample finance domain with the workflow your team is building.
 
-[Mobile app README](../apps/mobile/README.md)
+[Mobile app README](../apps/mobile/README.md) · [iOS Simulator walkthrough](../dev-docs/template-walkthroughs/mobile/README.md)
 
 ## Start it
 
@@ -66,7 +66,7 @@ This template uses CopilotKit React Native's headless APIs so the app stays smal
 5. Confirm the card resolves with a local transaction ID and that the account balance pill changes.
 6. Repeat with a second expense and tap **Cancel**. Confirm the answer says nothing changed and the balance remains the same.
 
-Offline checks cover dependency resolution, 11 mobile regression tests, and TypeScript. Native smoke has also verified iOS and Android Metro exports, an iOS Expo Go clean first render, and mobile runtime metadata `/info` HTTP 200 with a placeholder process key. This does not claim live model chat, approval UI end-to-end, physical phone networking, or OCR verification. Capture your own screen recording for the hackathon submission.
+Offline checks cover dependency resolution, the mobile regression suite, and TypeScript. Native smoke has also verified iOS and Android Metro exports and a clean Expo Go startup in the iOS Simulator. A live iOS Simulator run with Expo Go and OpenAI `gpt-5.6-sol` verified the balances card, formatted Markdown/link output, a $9 Souvla approval that changed Rewards Card from -$612.40 to -$621.40 only after the tap, and a $5 coffee at Blue Bottle cancellation that left the balance unchanged. This does not claim an OpenRouter live run, physical phone networking, or OCR verification. Capture your own screen recording for the hackathon submission.
 
 ## Make it yours
 
@@ -82,7 +82,8 @@ and human-in-the-loop approval. Keep the runtime URL/device networking notes.
 Replace sample finance state and tools with our own app state and one complete
 approved action. Run npm ci --prefix apps/mobile, npm test --prefix apps/mobile,
 npm run typecheck --prefix apps/mobile, and the relevant root checks. Record
-live-model, approval UI end-to-end, physical-phone, and OCR evidence separately.
+OpenRouter, physical-phone, and OCR evidence separately if your submission
+depends on those paths.
 ```
 
 ## Upstream source

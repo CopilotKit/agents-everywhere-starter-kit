@@ -12,10 +12,10 @@ The app is deliberately not an npm workspace member. React Native pins its own `
 | Offline tests | verified with `npm test --prefix apps/mobile` for the mobile regression suite |
 | TypeScript | verified with `npm run typecheck --prefix apps/mobile` |
 | Metro exports | verified for iOS and Android with `npm run bundle:ios --prefix apps/mobile` and `npm run bundle:android --prefix apps/mobile` |
-| iOS Expo Go smoke | verified clean first render and mobile runtime metadata `/info` HTTP 200 with a placeholder process key |
-| Live model chat | not claimed in this PR |
-| Approval UI end-to-end | not claimed in this PR |
-| Physical phone / OCR verification | not claimed in this PR |
+| iOS Expo Go smoke | verified clean Expo Go startup in the iOS Simulator |
+| Live OpenAI chat | verified on iOS Simulator with Expo Go and `gpt-5.6-sol` for balances, formatted Markdown/link output, an approved expense, and a canceled expense |
+| Approval UI end-to-end | verified on iOS Simulator: the $9 Souvla proposal left Rewards Card at -$612.40 until **Add expense**, then changed it to -$621.40; canceling a $5 coffee at Blue Bottle left -$621.40 unchanged |
+| OpenRouter live run / physical phone / OCR verification | not claimed in this PR |
 
 ## Run it
 
@@ -65,6 +65,8 @@ The default endpoint is `http://localhost:3100/api/mobile-copilotkit`, served by
 Put the override in `apps/mobile/.env`. Current main runs Next.js without a forced host binding. For a physical device, use the LAN URL printed by `npm run dev:web`, or deploy the runtime first.
 
 ## What to try
+
+The [React Native walkthrough](../../dev-docs/template-walkthroughs/mobile/README.md) shows the verified iOS Simulator evidence for startup, balances, approval, cancellation, and formatted assistant output.
 
 Ask:
 
