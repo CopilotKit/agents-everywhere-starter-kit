@@ -68,6 +68,7 @@ async function fixture(defaultLogger = false) {
     res.json({ messages: [{ id: `wamid.reply${messages.length}` }] });
   });
   const config: Config = {
+    modelProvider: 'openai', modelApiKey: 'local-test-key',
     publicBaseUrl: 'https://demo.example', issuer: `${provider.url}/`, clientId: 'client-id',
     clientSecret: 'test-client-secret', audience: tokenAudience,
     whatsappAccessToken: 'test-meta-token', whatsappPhoneNumberId: '123456789',

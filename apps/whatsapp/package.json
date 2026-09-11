@@ -19,6 +19,7 @@
     "dotenv": "17.4.2",
     "express": "5.2.1",
     "jose": "6.2.12",
+    "openai": "7.15.0",
     "zod": "4.6.2"
   },
   "devDependencies": {

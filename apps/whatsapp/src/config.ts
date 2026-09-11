@@ -8,9 +8,27 @@ const origin = z.url().refine((value) => {
   const url = new URL(value);
   return url.protocol === 'https:' && !url.username && !url.password && !url.search && !url.hash && (url.pathname === '/' || url.pathname === '');
 }, 'Use an HTTPS origin without a path, query, or credentials');
+function readPlannerConfig(env: NodeJS.ProcessEnv): Pick<Config, 'modelProvider' | 'modelApiKey' | 'model'> {
+  const selected = z.enum(['openai', 'openrouter']).default('openai').safeParse(env.MODEL_PROVIDER?.trim());
+  if (!selected.success) throw new ConfigurationError(['MODEL_PROVIDER']);
+  const modelProvider = selected.data;
+  const keyField = modelProvider === 'openrouter' ? 'OPENROUTER_API_KEY' : 'OPENAI_API_KEY';
+  const modelApiKey = env[keyField]?.trim();
+  if (!modelApiKey) throw new ConfigurationError([keyField]);
+  const modelField = env.MODEL !== undefined ? 'MODEL' : 'OPENAI_MODEL';
+  let model = (env.MODEL ?? env.OPENAI_MODEL ?? 'gpt-4.1-mini').trim();
+  if (modelProvider === 'openai') {
+    model = model.replace(/^openai[/:]/, '');
+    if (!/^[A-Za-z0-9][A-Za-z0-9._-]*$/.test(model)) throw new ConfigurationError([modelField]);
+  } else {
+    if (!model.includes('/')) model = `openai/${model}`;
+    if (!/^[A-Za-z0-9][A-Za-z0-9._-]*\/[A-Za-z0-9][A-Za-z0-9._-]*(?::[A-Za-z0-9][A-Za-z0-9._-]*)?$/.test(model)) throw new ConfigurationError([modelField]);
+  }
+  return { modelProvider, modelApiKey, model };
+}
 export function readConfig(env: NodeJS.ProcessEnv): Config {
+  const planner = readPlannerConfig(env);
   const parsed = z.object({
-    OPENAI_API_KEY: z.string().min(1), OPENAI_MODEL: z.string().min(1).default('gpt-4.1-mini'),
     PUBLIC_BASE_URL: origin, AUTH0_ISSUER_BASE_URL: origin,
     AUTH0_CLIENT_ID: z.string().min(1), AUTH0_CLIENT_SECRET: z.string().min(1), AUTH0_AUDIENCE: z.string().min(1),
     WHATSAPP_ACCESS_TOKEN: z.string().min(1), WHATSAPP_PHONE_NUMBER_ID: z.string().regex(/^[0-9]+$/),
@@ -32,6 +50,6 @@ export function readConfig(env: NodeJS.ProcessEnv): Config {
     whatsappWebhookPort: value.WHATSAPP_WEBHOOK_PORT, whatsappApiVersion: value.WHATSAPP_API_VERSION,
     channelName: value.WHATSAPP_CHANNEL_NAME, intelligenceApiKey: value.INTELLIGENCE_API_KEY,
     dataFile: value.DATA_FILE ? resolve(value.DATA_FILE) : fileURLToPath(new URL('../.data/state.json', import.meta.url)),
-    model: value.OPENAI_MODEL, port: value.PORT,
+    ...planner, port: value.PORT,
   };
 }

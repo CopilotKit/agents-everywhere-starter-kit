@@ -12,6 +12,7 @@ import { listen, stop, intelligenceGateway } from './support.js';
 test('public WhatsApp route forwards the Meta verification challenge', async () => {
   const directory = mkdtempSync(join(tmpdir(), 'meta-transport-'));
   const config: Config = {
+    modelProvider: 'openai', modelApiKey: 'local-test-key',
     publicBaseUrl: 'https://demo.example', issuer: 'https://tenant.auth0.com/', clientId: 'test', clientSecret: 'test', audience: 'test',
     whatsappAccessToken: 'test', whatsappPhoneNumberId: '123', whatsappAppSecret: 'test', whatsappVerifyToken: 'verify-me',
     whatsappWebhookPort: 3004, whatsappApiVersion: 'v23.0', channelName: 'whatsapp-demo', intelligenceApiKey: 'cpk-1_test',

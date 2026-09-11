@@ -36,3 +36,49 @@ test('startup diagnostics identify invalid environment fields without echoing cr
   assert.match(output, /INTELLIGENCE_API_KEY/);
   assert.ok(!output.includes('private-invalid-credential'));
 });
+
+test('the planner defaults to direct OpenAI and supports MODEL before the legacy OPENAI_MODEL', () => {
+  const config = readConfig({ ...env, OPENAI_API_KEY: ' direct-key ' });
+  assert.equal(config.modelProvider, 'openai');
+  assert.equal(config.modelApiKey, 'direct-key');
+  assert.equal(config.model, 'gpt-4.1-mini');
+  assert.equal(readConfig({ ...env, OPENAI_MODEL: 'gpt-4.1' }).model, 'gpt-4.1');
+  for (const model of ['gpt-4.1', 'openai/gpt-4.1', 'openai:gpt-4.1']) {
+    assert.equal(readConfig({ ...env, MODEL_PROVIDER: 'openai', MODEL: ` ${model} `, OPENAI_MODEL: 'legacy-unused' }).model, 'gpt-4.1');
+  }
+});
+
+test('OpenRouter needs only its own key and preserves publisher slugs and routing suffixes', () => {
+  const router = { ...env, MODEL_PROVIDER: 'openrouter', OPENAI_API_KEY: undefined, OPENROUTER_API_KEY: ' router-key ' };
+  const config = readConfig(router);
+  assert.equal(config.modelProvider, 'openrouter');
+  assert.equal(config.modelApiKey, 'router-key');
+  assert.equal(config.model, 'openai/gpt-4.1-mini');
+  for (const model of ['anthropic/claude-sonnet-4', 'meta-llama/llama-3.3-70b-instruct:free', 'openai/gpt-4.1']) {
+    assert.equal(readConfig({ ...router, MODEL: model }).model, model);
+  }
+  assert.equal(readConfig({ ...router, MODEL: 'gpt-4.1' }).model, 'openai/gpt-4.1');
+  assert.equal(readConfig({ ...router, OPENAI_MODEL: 'gpt-4.1' }).model, 'openai/gpt-4.1');
+  assert.equal(readConfig({ ...router, OPENAI_API_KEY: 'unused-direct', MODEL: 'gpt-4.1' }).modelApiKey, 'router-key');
+});
+
+test('a missing or blank selected key cannot fall back to the other provider', () => {
+  for (const key of [undefined, '', ' \t ']) {
+    assert.throws(() => readConfig({ ...env, MODEL_PROVIDER: 'openai', OPENAI_API_KEY: key, OPENROUTER_API_KEY: 'router-key' }), /OPENAI_API_KEY/);
+    assert.throws(() => readConfig({ ...env, MODEL_PROVIDER: 'openrouter', OPENROUTER_API_KEY: key }), /OPENROUTER_API_KEY/);
+  }
+});
+
+test('invalid provider and model settings fail with field names, without echoing values', () => {
+  assert.throws(() => readConfig({ ...env, MODEL_PROVIDER: 'private-unknown-provider' }), (error: Error) => {
+    assert.match(error.message, /MODEL_PROVIDER/);
+    assert.ok(!error.message.includes('private-unknown-provider'));
+    return true;
+  });
+  for (const model of ['anthropic/claude-sonnet-4', 'anthropic:claude-sonnet-4', '', '  ', 'openai/', 'openai:', 'gpt 4.1', 'https://private.example/model']) {
+    assert.throws(() => readConfig({ ...env, MODEL: model }), /MODEL/);
+  }
+  for (const model of ['', ' ', 'openai/', '/gpt-4.1', 'openai/gpt-4.1/extra', 'https://private.example/model']) {
+    assert.throws(() => readConfig({ ...env, MODEL_PROVIDER: 'openrouter', OPENROUTER_API_KEY: 'router-key', MODEL: model }), /MODEL/);
+  }
+});

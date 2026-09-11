@@ -11,7 +11,7 @@ export type Config = {
   publicBaseUrl: string; issuer: string; clientId: string; clientSecret: string; audience: string;
   whatsappAccessToken: string; whatsappPhoneNumberId: string; whatsappAppSecret: string; whatsappVerifyToken: string;
   whatsappWebhookPort: number; whatsappApiVersion: string; channelName: string; intelligenceApiKey: string;
-  dataFile: string; model: string; port: number;
+  dataFile: string; model: string; modelProvider: 'openai' | 'openrouter'; modelApiKey: string; port: number;
 };
 const random = () => randomBytes(32).toString('base64url');
 const hash = (value: string) => createHash('sha256').update(value).digest('hex');
@@ -34,7 +34,7 @@ export function createService(config: Config, options: {
   app.disable('x-powered-by');
   const store = new Store(config.dataFile, config.whatsappPhoneNumberId);
   const auth = new Auth0(config);
-  const plan = options.planner ?? createPlanner(config.model);
+  const plan = options.planner ?? createPlanner(config);
   const now = options.now ?? Date.now;
   const report = options.reportError ?? reportError;
   let ticking = false;

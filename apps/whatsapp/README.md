@@ -1,6 +1,6 @@
 # WhatsApp agent with phone approval
 
-An independent **CopilotKit Channels + Meta WhatsApp Cloud API + OpenAI Agents SDK + Auth0** app. Channels receives signed Meta messages and renders replies. OpenAI proposes a named request; Auth0 Guardian CIBA authorizes that exact request before the server saves it locally. No Twilio account or dependency is used.
+An independent **CopilotKit Channels + Meta WhatsApp Cloud API + OpenAI Agents SDK + Auth0** app. Channels receives signed Meta messages and renders replies. A model from OpenAI or OpenRouter proposes a named request; Auth0 Guardian CIBA authorizes that exact request before the server saves it locally. No Twilio account or dependency is used.
 
 For example, text `Save a request called team-lunch`. WhatsApp and Guardian display the same `Save:team-lunch:#<request ID>` binding. Approval saves only that local demo record. It does not place an order, transfer money, or make a booking.
 
@@ -24,13 +24,26 @@ Expose port **3003** through one HTTPS tunnel, for example `ngrok http 3003`. Se
 
 ## Accounts and configuration
 
-1. **OpenAI:** put a server-side key in `OPENAI_API_KEY` and select an available `OPENAI_MODEL` (default `gpt-4.1-mini`). The model remains the OpenAI Agents SDK planner and never gets a tool that can bypass approval.
+1. **Model provider:** set `MODEL_PROVIDER=openai` with `OPENAI_API_KEY`, or `MODEL_PROVIDER=openrouter` with `OPENROUTER_API_KEY`. Set `MODEL` as shown below. Only the selected provider's nonblank key is required; a missing or rejected key never switches to the other provider. The model remains the OpenAI Agents SDK planner and never gets a tool that can bypass approval.
 2. **Meta:** add WhatsApp to a Meta developer app. In WhatsApp API Setup, select the business/test number and an allowed test recipient. Copy the access token into `WHATSAPP_ACCESS_TOKEN` and the **Phone Number ID** into `WHATSAPP_PHONE_NUMBER_ID`. Copy the app secret from app settings into `WHATSAPP_APP_SECRET`. Temporary test access tokens expire; replace them before the demo when necessary.
 3. **Meta webhook:** choose a random `WHATSAPP_VERIFY_TOKEN`. Configure callback `https://YOUR-PUBLIC-ORIGIN/webhooks/whatsapp`, enter the same verification token, verify, and subscribe to **messages**. The token is for the GET challenge; POST authenticity is the Meta `X-Hub-Signature-256` HMAC using the app secret. The API version defaults to `v23.0` and can be changed with `WHATSAPP_API_VERSION`.
 4. **CopilotKit Intelligence:** set a project API key (`cpk-<project ID>_...`) as `INTELLIGENCE_API_KEY`. Set `WHATSAPP_CHANNEL_NAME=whatsapp-demo`, unique on this runtime. The real `CopilotRuntime` and `createCopilotNodeListener` own the Channels lifecycle. Direct Meta traffic goes between this app and Meta; it does not use the managed Slack/Teams delivery gateway. The Intelligence control connection is still required.
 5. **Auth0:** create a confidential Regular Web Application using **Client Secret (Post)**, enable **Authorization Code** and **Client Initiated Backchannel Authentication**, and allow callback `https://YOUR-PUBLIC-ORIGIN/auth/callback`. Configure the issuer, client ID, client secret and API audience in `.env`. Create an RS256 custom API with `create:requests`, authorize the app/user appropriately, and grant the permission to the test user. Enable **Guardian push only** for CIBA and enroll the user in Guardian. CIBA availability depends on tenant entitlement.
 
 The [sponsor setup guide](../../using-sponsor-tools.md#whatsapp-identity-and-phone-approval) covers Auth0 settings, and the [phone walkthrough](../../dev-docs/template-walkthroughs/whatsapp/README.md) tracks account setup and real evidence. SDK API reference: [direct adapters](https://docs.copilotkit.ai/reference/channels/sdk/direct-adapters).
+
+### OpenAI or OpenRouter
+
+| Provider | Environment | Model API |
+| --- | --- | --- |
+| OpenAI | `MODEL_PROVIDER=openai`, `MODEL=gpt-4.1-mini`, `OPENAI_API_KEY=...` | OpenAI Responses |
+| OpenRouter | `MODEL_PROVIDER=openrouter`, `MODEL=openai/gpt-4.1-mini`, `OPENROUTER_API_KEY=...` | Chat Completions at `https://openrouter.ai/api/v1` |
+
+Choose the provider explicitly in `.env`. If `MODEL_PROVIDER` is absent, this app keeps its original direct OpenAI default. `MODEL` takes precedence over the legacy `OPENAI_MODEL`; if both are absent, the model defaults to `gpt-4.1-mini` on OpenAI or `openai/gpt-4.1-mini` on OpenRouter. Keys and model names are trimmed; blank selected values fail configuration validation.
+
+Direct OpenAI accepts bare model names or a matching `openai/` or `openai:` prefix and rejects another publisher's prefix. OpenRouter accepts `publisher/model` slugs and preserves suffixes such as `:free`; a bare model name becomes `openai/<name>`. A syntactically valid slug is not a guarantee of availability, free access or structured-output support.
+
+OpenRouter requires an endpoint that supports the planner's strict JSON schema. The app sends `response_format.type=json_schema`, `strict=true` and `provider.require_parameters=true`, then validates the returned proposal locally. Unsupported endpoints, invalid output and provider errors fail planning; they never grant approval or save a record. Endpoint support and schema enforcement vary, so check the model's provider capabilities in the [OpenRouter structured-output guide](https://openrouter.ai/docs/guides/features/structured-outputs). No application fallback to direct OpenAI is configured.
 
 ## One public origin, two listeners
 
@@ -60,10 +73,10 @@ There is one pending approval per sender and at most one new approval per minute
 - The record and consumed approval are saved together. Pending approvals resume polling after restart with their original expiry. Interrupted model work, CIBA initiation and outbound sends become failed and are never automatically retried. A timeout can leave an external push/reply delivered despite uncertain local status. Text `STATUS` to recover the saved outcome.
 - Outbound replies are attempted once, with a ten-second transport timeout. A Meta send failure never undoes an approved record. There is no production delivery retry queue. Replies after the 24-hour customer service window are suppressed until the user texts again. Delivery/status webhooks do not establish authorization.
 - There is no public enqueue or record-list endpoint and no automatic relinking. For a clean reset, stop the app and deliberately archive its data, which removes identity/deduplication continuity. Never reset with a pending request. Recycled numbers, retention, rate limits, multi-process transactions and production account recovery need additional product work.
-- OpenAI tracing and CopilotKit telemetry export are disabled by the entrypoint. Model inputs still go to OpenAI; messaging and identity data go to their providers. Application diagnostics omit provider bodies, tokens, headers and message content.
+- OpenAI tracing and CopilotKit telemetry export are disabled; each planner also disables tracing on its own runner. Model inputs go to the selected provider (and OpenRouter's serving provider when selected); messaging and identity data go to their providers. Application diagnostics omit provider bodies, tokens, headers and message content.
 
 ## Verification
 
-`npm test` uses the **actual Channels Meta adapter**, real runtime lifecycle, a local Phoenix control server, signed Meta JSON, a local Graph server capturing rendered text, locally signed Auth0/JWKS tokens, and a local OpenAI Responses server. It covers signature/challenge checks, destination isolation, status notifications, sender-bound linking, wrong nonce/subject/audience/scope, exact request hashes, denial/expiry, duplicate delivery, cooldown, reply window, restart and safe diagnostics.
+`npm test` uses the **actual Channels Meta adapter**, real runtime lifecycle, a local Phoenix control server, signed Meta JSON, a local Graph server capturing rendered text, locally signed Auth0/JWKS tokens, and the real Agents SDK against local Responses and Chat Completions servers. It verifies provider/key selection, endpoint/auth isolation, model slugs, strict JSON schema, OpenRouter's required-parameter routing flag, conversation context and invalid-output/provider-error rejection. It also covers signature/challenge checks, destination isolation, status notifications, sender-bound linking, wrong nonce/subject/audience/scope, exact request hashes, denial/expiry, duplicate delivery, cooldown, reply window, restart and safe diagnostics.
 
-These local fixtures are not evidence of a live Meta phone conversation, Intelligence account access, Guardian approval or funded OpenAI access. Record those separately in the walkthrough using your real accounts. No standalone build output is needed: `tsx` runs the TypeScript app; `npm run typecheck` verifies its build configuration.
+These local fixtures are not evidence of a live Meta phone conversation, Intelligence account access, Guardian approval or funded OpenAI/OpenRouter access. Record those separately in the walkthrough using your real accounts. No standalone build output is needed: `tsx` runs the TypeScript app; `npm run typecheck` verifies its build configuration.
