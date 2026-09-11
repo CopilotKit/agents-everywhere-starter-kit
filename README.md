@@ -31,7 +31,7 @@ Then paste this into your coding agent:
 
 ```text
 Read AGENTS.md, hackathon-overview.md, hackathon-rules.md, and
-using-sponsor-tools.md. Help me choose one template in templates/ for my idea,
+using-sponsor-tools.md. Help me choose one template app README for my idea,
 then build a new project using its infrastructure. Ask me who it is for and
 what the agent should do in that setting. Read the selected template before
 editing; for Slack also read .agents/skills/build-channels-agent/SKILL.md.
@@ -53,7 +53,7 @@ An agent reads what people already said, researches with Exa, and answers in the
 
 The included Slack app supplies thread history, subscriptions, search, and Channels UI. Configure your model, Exa, and a managed Channel, then run `npm run dev:slack`. No public tunnel is needed.
 
-**[Use the Slack template →](templates/slack.md)** · [Screenshot walkthrough](dev-docs/channels-sdk-walkthrough/README.md) · [Channels guide](https://copilotkit.ai/channels-guide.md)
+**[Use the Slack template →](apps/channel/README.md)** · [Screenshot walkthrough](dev-docs/channels-sdk-walkthrough/README.md) · [Channels guide](https://copilotkit.ai/channels-guide.md)
 
 ### 2. Web — an agent inside your app
 
@@ -63,7 +63,7 @@ An agent sees the page you are on and turns a request into a real workplace reco
 
 The included web app supplies page context, frontend tools, agent-rendered UI, and a browser approval step. Connect an Ambiguous AI workspace, then run `npm run dev:web`; approved follow-ups are saved through the server and can be read back after refresh.
 
-**[Use the web template →](templates/web.md)** · [CopilotKit docs](https://docs.copilotkit.ai/) · [Ambiguous AI setup](using-sponsor-tools.md#ambiguous-ai)
+**[Use the web template →](apps/web/README.md)** · [CopilotKit docs](https://docs.copilotkit.ai/) · [Ambiguous AI setup](using-sponsor-tools.md#ambiguous-ai)
 
 ### 3. React Native — an agent in your pocket
 
@@ -73,7 +73,7 @@ A mobile agent reads app state, renders native cards, and waits for a tap before
 
 The included Expo app supplies seeded finance state, native rendered tool UI, a human-in-the-loop expense approval, and a mobile-specific CopilotKit runtime endpoint served by the web app. Configure your model provider, start `npm run dev:web`, then run the mobile app from `apps/mobile`.
 
-**[Use the React Native template →](templates/react-native.md)** · [Mobile app README](apps/mobile/README.md)
+**[Use the React Native template →](apps/mobile/README.md)**
 
 ### The demo you can build on
 
@@ -81,7 +81,7 @@ The supplied on-call assistant is an **infrastructure example**: read ambient co
 
 Use the [demo prompts](dev-docs/demo-prompts.md) to learn how the pieces connect, then replace the incident scenario. Approval cards in the Slack/web reference demo record decisions; they do not execute production actions or enforce authorization around every external tool.
 
-Want another surface? The kit also includes [voice, MCP, and terminal starting points](dev-docs/surfaces.md). The event surfaces are inspiration, not separate tracks or a requirement to build multiple apps.
+Want another surface pattern? The web app also includes a voice route, and the shared agent can connect to remote MCP tools when configured. The event surfaces are inspiration, not separate tracks or a requirement to build multiple apps.
 
 ## Coding agent
 
@@ -95,7 +95,7 @@ Give your agent these files before it starts coding:
 | [AGENTS.md](AGENTS.md) | Repository conventions and verification commands |
 | [Channels skill](.agents/skills/build-channels-agent/SKILL.md) | Verified Channels APIs for the Slack template |
 
-The [template guides](templates/) provide launch commands, files to customize, and a concrete result to check. Start with one template and add a second surface only if it helps your user.
+The app READMEs provide launch commands, files to customize, and a concrete result to check. Start with one template and add a second surface only if it helps your user.
 
 ## Resources
 
@@ -113,4 +113,4 @@ The [template guides](templates/) provide launch commands, files to customize, a
 | Rehearse and debug | [Demo prompts](dev-docs/demo-prompts.md) · [Troubleshooting](dev-docs/troubleshooting.md) |
 | Prepare your entry | [Submission checklist](SUBMISSION.md) |
 
-For the Slack/web workspaces, `npm run verify` runs typechecks, tests, and MCP checks without credentials. The mobile app has its own install, tests, typecheck, and Metro export checks under `apps/mobile`. `npm run check-env` validates configured startup. Live sponsor calls and platform delivery require your accounts. See [developer docs](dev-docs/README.md) for detailed setup and deployment.
+For the Slack/web workspaces, `npm run verify` runs typechecks and offline tests without credentials. The mobile app has its own install, tests, typecheck, and Metro export checks under `apps/mobile`. `npm run check-env` validates configured startup. Live sponsor calls and platform delivery require your accounts. See [developer docs](dev-docs/README.md) for detailed setup and deployment.

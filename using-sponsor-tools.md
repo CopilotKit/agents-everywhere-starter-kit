@@ -52,7 +52,7 @@ console.log(answer);
 JS
 ```
 
-**Check:** the response accounts for the failed rollback; confirm usage in the correct API project. Then run `npm run dev:local`, `npm run dev:slack`, `npm run dev:web`, or the React Native template runtime plus Expo app. These use the [shared model adapter](packages/agent-core/src/model.ts). [Agents SDK quickstart](https://openai.github.io/openai-agents-js/guides/quickstart/)
+**Check:** the response accounts for the failed rollback; confirm usage in the correct API project. Then run `npm run dev:slack`, `npm run dev:web`, or the React Native template runtime plus Expo app. These use the [shared model adapter](packages/agent-core/src/model.ts). [Agents SDK quickstart](https://openai.github.io/openai-agents-js/guides/quickstart/)
 
 ## CopilotKit
 
@@ -75,7 +75,7 @@ npm run check-env
 npm run dev:slack
 ```
 
-Invite the bot and add a few facts to a thread before asking: “Read this thread and show an incident card.” **Check:** `read_thread` uses earlier messages and `incident_card` renders in Slack. Customize [the Channel](apps/channel-slack/src/channel.tsx), [tools](apps/channel-slack/src/tools.tsx), and [components](apps/channel-slack/src/components.tsx).
+Invite the bot and add a few facts to a thread before asking: “Read this thread and show an incident card.” **Check:** `read_thread` uses earlier messages and `incident_card` renders in Slack. Customize [the Channel](apps/channel/src/channel.tsx), [tools](apps/channel/src/tools.tsx), and [components](apps/channel/src/components.tsx).
 
 **First call, React web:** run `npm run dev:web`, open `http://localhost:3100`, select an incident, then ask: “What is happening with the selected incident? Show a card.” **Check:** the answer matches the current page without pasting its contents. [AppControl](apps/web/src/components/app-control.tsx) registers page context and frontend tools; [GenerativeUI](apps/web/src/components/generative-ui.tsx) registers React components. With Ambiguous configured, ask for a follow-up proposal, approve it in the page, then refresh and read back the same provider record.
 
@@ -146,7 +146,7 @@ console.log(result.results.map(({ title, url, highlights }) => ({ title, url, hi
 JS
 ```
 
-**Check:** open the returned URLs and compare their evidence with the answer. In Slack ask the agent to research the question in the thread and include sources. The [search capability](packages/agent-core/src/capabilities/search.ts) is registered by the Slack template when the key exists. It also appears in MCP and voice search; ordinary web chat does not register Exa. [Search API quickstart](https://exa.ai/docs/reference/search-api-guide)
+**Check:** open the returned URLs and compare their evidence with the answer. In Slack ask the agent to research the question in the thread and include sources. The [search capability](packages/agent-core/src/capabilities/search.ts) is registered by the Slack template when the key exists. It also appears in the voice search route; ordinary web chat does not register Exa. [Search API quickstart](https://exa.ai/docs/reference/search-api-guide)
 
 ## Auth0
 
@@ -198,8 +198,8 @@ console.log(await response.json());
 JS
 ```
 
-**Check:** the returned identity belongs to the intended demo workspace. Then run `npm run dev:web` and follow [the web template's create/read-back sequence](templates/web.md#prove-a-record-survives-refresh). Ask for the exact proposed task, approve it with the page button, and retrieve the same ID after refreshing. Open the actual returned record link. The web chat proposes and reads through frontend tools; it does not receive raw Ambiguous write tools.
+**Check:** the returned identity belongs to the intended demo workspace. Then run `npm run dev:web` and follow [the web template's create/read-back sequence](apps/web/README.md#prove-a-record-survives-refresh). Ask for the exact proposed task, approve it with the page button, and retrieve the same ID after refreshing. Open the actual returned record link. The web chat proposes and reads through frontend tools; it does not receive raw Ambiguous write tools.
 
-The [shared MCP connection](packages/agent-core/src/capabilities/workplace.ts) is also available to Slack and terminal chat when configured. Tool schemas come from the live workspace; never invent names, arguments, or record URLs. Approval prompts and cards guide behavior but do not enforce a gate around every MCP tool. For your own app, enforce required authorization at the write boundary. A `401` needs valid credentials; a `403` needs appropriate permissions. A new workspace does not fix access to the intended one.
+The [shared MCP connection](packages/agent-core/src/capabilities/workplace.ts) is also available to Slack when configured. Tool schemas come from the live workspace; never invent names, arguments, or record URLs. Approval prompts and cards guide behavior but do not enforce a gate around every MCP tool. For your own app, enforce required authorization at the write boundary. A `401` needs valid credentials; a `403` needs appropriate permissions. A new workspace does not fix access to the intended one.
 
 [Developer guide](https://www.ambiguous.ai/llms.txt) · [API schemas](https://app.ambiguous.ai/api/openapi.json) · [Task-only disposable sandbox](https://www.ambiguous.ai/sandbox.md) (separate credentials, no MCP)

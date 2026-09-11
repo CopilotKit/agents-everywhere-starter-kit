@@ -32,7 +32,7 @@ npm run check-env
 npm run dev
 ```
 
-With no Channel configured, `dev` starts terminal chat. The terminal has your selected model and prompt, but no thread-history, native-card, or Exa search tools. For the sample incident workspace, run `npm run dev:web` and open `http://127.0.0.1:3100` or `http://localhost:3100`. The web follow-up approval server is loopback-only by default because it can use local Ambiguous credentials. For the React Native template, the same command starts the mobile runtime endpoint; simulators can use the documented localhost/emulator URLs, while physical devices need a deliberate reachable host or deployment.
+With no Channel configured, `dev` starts the web template. Open `http://127.0.0.1:3100` or `http://localhost:3100`. The web follow-up approval server is loopback-only by default because it can use local Ambiguous credentials. For the React Native template, the same command starts the mobile runtime endpoint; simulators can use the documented localhost/emulator URLs, while physical devices need a deliberate reachable host or deployment.
 
 ## Add Slack
 
@@ -71,4 +71,4 @@ Choose the tools your [template](../README.md#templates) needs, then follow [usi
 npm run verify
 ```
 
-This needs no `.env` and makes no live sponsor calls. It checks workspace types, tests, and the MCP stdio protocol. Run `npm run check-env` separately for configured startup, then demonstrate an actual reply and the sponsor result you plan to show. [Demo prompts](demo-prompts.md)
+This needs no `.env` and makes no live sponsor calls. It checks retained workspace types and offline tests. Run `npm run check-env` separately for configured startup, then demonstrate an actual reply and the sponsor result you plan to show. [Demo prompts](demo-prompts.md)

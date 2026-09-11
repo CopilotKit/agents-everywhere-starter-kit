@@ -11,7 +11,7 @@
  *    `app.channels.ready()`. Next.js isolates freeze and recycle per request,
  *    so a cold start would mint a competing listener for the same Channel —
  *    and managed delivery is claim-based, so the loser silently gets nothing.
- *    The Channels listener is `apps/channel-slack`, a long-running process.
+ *    The Channels listener is `apps/channel`, a long-running process.
  *
  * 2. Do NOT reuse one agent instance across requests. The factory form hands
  *    out a fresh agent per resolution.

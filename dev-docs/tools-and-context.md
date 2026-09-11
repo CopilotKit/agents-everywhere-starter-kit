@@ -1,6 +1,6 @@
 # Tools, native UI, and approval gates
 
-The Slack template uses CopilotKit Channels for tools, conversation context, and native UI. The examples below live in `apps/channel-slack/src/`.
+The channel template uses CopilotKit Channels for tools, conversation context, and native UI. The examples below live in `apps/channel/src/`.
 
 ## Tools — `defineChannelTool`
 

@@ -34,9 +34,9 @@ The [submission checklist](SUBMISSION.md#evidence-for-the-judging-criteria) tran
 
 ## Choose infrastructure, then make the project yours
 
-- [Slack](templates/slack.md): OpenAI + CopilotKit Channels + Exa for thread context, research, and native cards.
-- [Web](templates/web.md): OpenAI + CopilotKit React + Ambiguous AI for page context and persistent workplace records.
-- [React Native](templates/react-native.md): OpenAI or OpenRouter + CopilotKit React Native for phone app context, native cards, and approval-gated local actions.
+- [Slack](apps/channel/README.md): OpenAI + CopilotKit Channels + Exa for thread context, research, and native cards.
+- [Web](apps/web/README.md): OpenAI + CopilotKit React + Ambiguous AI for page context and persistent workplace records.
+- [React Native](apps/mobile/README.md): OpenAI or OpenRouter + CopilotKit React Native for phone app context, native cards, and approval-gated local actions.
 
 The incident app is a reference for wiring infrastructure. Change the user, problem, data, and interaction. Do not treat the sample scenario as the assigned challenge. Any technical stack is allowed by the handbook.
 
@@ -44,7 +44,7 @@ The incident app is a reference for wiring infrastructure. Change the user, prob
 
 1. Establish the intended user and one task they need help with.
 2. Choose the surface whose existing context helps complete that task.
-3. Read the chosen template and the relevant sections of [using-sponsor-tools.md](using-sponsor-tools.md). Use [AGENTS.md](AGENTS.md) for repository constraints.
+3. Read the chosen app README and the relevant sections of [using-sponsor-tools.md](using-sponsor-tools.md). Use [AGENTS.md](AGENTS.md) for repository constraints.
 4. Implement the new core workflow during the event; record inherited pieces separately.
 5. Verify an actual outcome, including a relevant failure or denied action. Distinguish sample data, local state, and external writes.
 6. Prepare the deliverables in [hackathon-rules.md](hackathon-rules.md). Ask the team to confirm factual claims about when work was built.

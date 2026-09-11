@@ -1,11 +1,11 @@
 # Notes for coding agents
 
-Read [hackathon-overview.md](hackathon-overview.md), [hackathon-rules.md](hackathon-rules.md), and [using-sponsor-tools.md](using-sponsor-tools.md), then the chosen guide in `templates/`. Build the team's own workflow; the incident app is infrastructure reference code.
+Read [hackathon-overview.md](hackathon-overview.md), [hackathon-rules.md](hackathon-rules.md), and [using-sponsor-tools.md](using-sponsor-tools.md), then the chosen app README in `apps/channel`, `apps/web`, or `apps/mobile`. Build the team's own workflow; the incident app is infrastructure reference code.
 
 CopilotKit powers the Slack and web templates. The mobile starting point in `apps/mobile` has its own install and environment; follow its README for setup and checks.
 
 Read `.agents/skills/build-channels-agent/SKILL.md` before touching anything in
-`apps/channel-slack/`. It carries the verified API surface; the most common
+`apps/channel/`. It carries the verified API surface; the most common
 failure mode in this codebase is inventing a plausible-looking Channels API.
 
 Hard-won rules that are easy to get wrong here:
