@@ -54,4 +54,4 @@ bodies or files.
 
 ## WhatsApp
 
-The independent [WhatsApp app](../apps/whatsapp/README.md) needs a public HTTPS callback/webhook URL and its own environment. Follow its deployment notes, including single-process storage and phone-approval requirements.
+The [WhatsApp app](../apps/whatsapp/README.md) uses Channels' direct Meta adapter and its own environment. Expose its main port (3003 by default) through HTTPS for `/webhooks/whatsapp` and `/auth/callback`; keep the SDK listener port (3004 by default) private. Supply Meta credentials and a CopilotKit Intelligence key. Follow the app's deployment notes for single-process persistent storage, transport receipt limits, and Auth0 phone approval.

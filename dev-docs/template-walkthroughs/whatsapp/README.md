@@ -2,21 +2,47 @@
 
 [Template](../../../templates/whatsapp.md) · [All walkthroughs](../README.md) · [Account setup](../../../using-sponsor-tools.md#whatsapp-identity-and-phone-approval)
 
-This independent app uses **OpenAI Agents SDK + Auth0**, with Twilio WhatsApp delivery. All live screenshots below are **pending**: no Twilio/Auth0/Guardian account journey has been captured for this template. The steps describe what to do and what each future screenshot must prove; no mock success images are supplied.
+This app uses **OpenAI Agents SDK + CopilotKit Channels + Auth0**, with direct Meta WhatsApp delivery. Auth0 account setup is being captured from a real development tenant. The Meta message, Guardian approval, saved receipt, and restart journey remain pending; account configuration alone does not prove the phone flow.
+
+![Auth0 setup screenshot walkthrough; live WhatsApp phone approval remains pending](images/auth0-setup-walkthrough.gif)
+
+This 20-second GIF steps through the five setup screenshots below. It is not a recording of a WhatsApp conversation.
 
 ## 1. Prepare the Auth0 application and device
 
 Follow the [Auth0 application and user setup](../../../using-sponsor-tools.md#auth0-application-and-user). Confirm CIBA entitlement/enabling first. Configure a confidential Regular Web Application, authorization code + CIBA grants, the API audience and `create:requests` permission, and the public callback URL. Enable **Guardian push only**, disable email fallback, and enroll the test user's Guardian device.
 
-**Capture pending:** application grant types, push-only CIBA configuration, API permission, and enrolled factor status. Exclude client secrets, tokens, QR enrollment secrets, and private user data.
+**Captured September 11, 2026:** the following screens are from an actual development tenant. They document configuration; no Guardian challenge has yet been approved.
 
-## 2. Join the Twilio Sandbox and configure the public origin
+Create a **Regular Web Application** for the server’s confidential login and CIBA client.
 
-Join the Twilio WhatsApp Sandbox from the phone that will send test messages. Configure the signed inbound webhook and app's public HTTPS origin using [Twilio and app setup](../../../using-sponsor-tools.md#whatsapp-transport-setup-twilio). Use the same public origin for the Auth0 callback. Keep the tunnel running.
+![Auth0 application creation with Regular Web Application selected](images/01-auth0-application.jpg)
 
-**Capture pending:** Sandbox joined confirmation and webhook URL configuration, excluding Twilio credentials and unrelated phone numbers.
+Create the API permission, enable RBAC, and grant this application user-delegated access to `create:requests`. Confirm **1 / 1 permissions granted** in the app’s row.
 
-## 3. Install and start the independent app
+![Auth0 application has one user-delegated API permission](images/02-auth0-app-permission.jpg)
+
+Add the same API permission to a requester role. Assign that role to the application user after their first login; a dashboard administrator is a separate identity.
+
+![Auth0 requester role contains create requests](images/03-auth0-requester-role.jpg)
+
+Enable **Push Notification using Auth0 Guardian** and select the **Auth0 Guardian** app. The phone illustration on this settings page is Auth0’s preview, not a captured approval. Configure the application’s CIBA notification channel as Guardian push only, then require MFA for the demo user’s login.
+
+![Auth0 Guardian push factor enabled with the Guardian app selected](images/04-auth0-guardian-factor.jpg)
+
+In **Advanced Settings → Grant Types**, enable **Authorization Code** and **Client Initiated Backchannel Authentication (CIBA)** and save. The saved settings below show both grants, Guardian push enabled, and email disabled. The demo tenant also has its MFA policy set to **Always** so the first login requests enrollment.
+
+![Saved authorization-code and CIBA grants with Guardian push enabled and email disabled](images/05-auth0-ciba-grants.jpg)
+
+**Capture pending:** actual application-user role assignment and device enrollment. Exclude client secrets, tokens, enrollment QR codes, and private user data.
+
+## 2. Configure Meta and the public origin
+
+Follow [Meta and Channels setup](../../../using-sponsor-tools.md#whatsapp-transport-setup-meta--copilotkit-channels) to configure a WhatsApp-enabled Meta app, business phone-number ID, credentials, and verified test recipient. Start the app and set Meta’s callback to `https://YOUR-PUBLIC-ORIGIN/webhooks/whatsapp`. Supply the matching verify token and subscribe to messages. Use the same public origin for the Auth0 callback. Keep the tunnel running; expose port 3003 and keep the SDK listener on port 3004 private.
+
+**Capture pending:** verified Meta recipient, successful webhook verification, and messages subscription. Exclude access tokens, application secrets, verify tokens, and unrelated phone numbers.
+
+## 3. Install and start the app
 
 ```bash
 npm ci --prefix apps/whatsapp
@@ -28,7 +54,7 @@ npm start --prefix apps/whatsapp
 
 Edit `apps/whatsapp/.env` privately using the [complete environment reference](../../../apps/whatsapp/.env.example). This app listens on port 3003 and has its own install/lockfile. Use one process with persistent disk. Check the [app README](../../../apps/whatsapp/README.md) for health and operational details.
 
-**Capture pending:** healthy app startup and tunnel routing. Local tests exercise adapters; they do not establish real signed Twilio delivery.
+**Capture pending:** healthy app startup and tunnel routing. Local tests exercise adapters; they do not establish real signed Meta delivery.
 
 ## 4. Link the original WhatsApp sender
 

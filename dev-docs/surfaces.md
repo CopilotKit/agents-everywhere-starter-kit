@@ -30,7 +30,7 @@ MCP protocol checks are part of `npm run verify`, independent of a live host or 
 
 ## WhatsApp
 
-The [WhatsApp template](../templates/whatsapp.md) is a separate application using OpenAI Agents SDK and Auth0. It links the sender to an authenticated user and enforces phone approval before its protected action. It does not use the shared CopilotKit runtime or managed Channels. Follow its own install, setup, and verification instructions.
+The [WhatsApp template](../templates/whatsapp.md) runs its own CopilotKit runtime with the Channels direct Meta adapter, OpenAI Agents SDK, and Auth0. It links the sender to an authenticated user and enforces phone approval before its protected action. Meta webhooks and replies travel through the app; its Channel lifecycle still needs an Intelligence connection. Follow its separate install, setup, and verification instructions.
 
 ## Slack to Teams
 

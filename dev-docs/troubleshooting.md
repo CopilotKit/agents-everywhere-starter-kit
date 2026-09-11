@@ -162,4 +162,4 @@ The sample `create_followup` tool writes browser state only. Use the configured 
 
 ## WhatsApp identity or phone approval fails
 
-Use the separate [WhatsApp troubleshooting guide](../apps/whatsapp/README.md). Its webhook signatures, Auth0 user linking, CIBA entitlement, and Guardian enrollment are independent of managed Channels.
+Use the separate [WhatsApp troubleshooting guide](../apps/whatsapp/README.md). Check Meta webhook verification and signatures, the configured business phone-number ID, the Channels/Intelligence startup connection, Auth0 user linking and API grants, CIBA access, and Guardian enrollment. This template uses the direct Meta adapter; it is not a managed WhatsApp connection.

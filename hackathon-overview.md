@@ -36,7 +36,7 @@ The [submission checklist](SUBMISSION.md#evidence-for-the-judging-criteria) tran
 
 - [Slack](templates/slack.md): OpenAI + CopilotKit Channels + Exa for thread context, research, and native cards.
 - [Web](templates/web.md): OpenAI + CopilotKit React + Ambiguous AI for page context and persistent workplace records.
-- [WhatsApp](templates/whatsapp.md): OpenAI Agents SDK + Auth0 for a linked identity and phone approval, independently of CopilotKit.
+- [WhatsApp](templates/whatsapp.md): OpenAI Agents SDK + CopilotKit Channels through Meta + Auth0 for a linked identity and phone approval.
 
 The incident app is a reference for wiring infrastructure. Change the user, problem, data, and interaction. Do not treat the sample scenario as the assigned challenge. Any technical stack is allowed by the handbook.
 

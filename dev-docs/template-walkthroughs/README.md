@@ -6,6 +6,6 @@ Choose one complete journey. Each guide states which screens were captured from 
 | -------- | ------------------------------------------------------------------------ | ------------------------------------------------------------------------------- |
 | Slack    | [Thread context → research → card → follow-up](slack/README.md)          | Live context, Exa calls, and native card follow-up; Slack citations pending     |
 | Web      | [Selected record → proposal → approval → persistent task](web/README.md) | Real approval, Ambiguous create/read-back, reload, and agent retrieval verified |
-| WhatsApp | [Account link → named request → Guardian → status](whatsapp/README.md)   | Concrete capture checklist; live screens pending account/device access          |
+| WhatsApp | [Account link → named request → Guardian → status](whatsapp/README.md)   | Actual Auth0 setup screens; Meta delivery and Guardian phone journey pending          |
 
 Use [validation evidence](../template-validation.md) to distinguish local tests, public schema checks, and authenticated provider journeys. The sample incidents are infrastructure inspiration; build your team's own workflow.

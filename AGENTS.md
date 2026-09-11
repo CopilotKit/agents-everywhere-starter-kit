@@ -2,7 +2,7 @@
 
 Read [hackathon-overview.md](hackathon-overview.md), [hackathon-rules.md](hackathon-rules.md), and [using-sponsor-tools.md](using-sponsor-tools.md), then the chosen guide in `templates/`. Build the team's own workflow; the incident app is infrastructure reference code.
 
-CopilotKit powers the Slack and web templates. `apps/whatsapp` is an independent OpenAI Agents SDK + Auth0 app with a separate install and environment; do not add Channels to it. Run its own typecheck/tests when changing it.
+CopilotKit powers all three templates. `apps/whatsapp` uses the Channels direct Meta adapter, OpenAI Agents SDK, and Auth0 with its own install and environment. Run its own typecheck/tests when changing it. Preserve the tested Channels/runtime pair and verify the installed public adapter APIs; the Slack skill below remains scoped to Slack.
 
 Read `.agents/skills/build-channels-agent/SKILL.md` before touching anything in
 `apps/channel-slack/`. It carries the verified API surface; the most common

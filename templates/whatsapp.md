@@ -1,14 +1,14 @@
 # Template 3: An agent you can text
 
-**OpenAI Agents SDK + Auth0**, delivered through the Twilio WhatsApp Sandbox.
+**OpenAI Agents SDK + CopilotKit Channels + Auth0**, delivered directly through Meta’s WhatsApp Cloud API.
 
-A separate, runnable app that links a WhatsApp sender to an authenticated person, uses their recent conversation, and asks for phone approval before saving a named request. This template uses OpenAI Agents SDK directly and has no CopilotKit dependency. CopilotKit powers the kit's [Slack](slack.md) and [web](web.md) templates.
+A separate, runnable app that links a WhatsApp sender to an authenticated person, uses their recent conversation, and asks for phone approval before saving a named request. CopilotKit Channels receives and renders WhatsApp messages through its direct Meta adapter. OpenAI Agents SDK proposes the action; Auth0 verifies the user's identity and consent.
 
 [Step-by-step screenshot walkthrough](../dev-docs/template-walkthroughs/whatsapp/README.md) · [Verification evidence and live gaps](../dev-docs/template-validation.md)
 
 ## Start it
 
-You need an OpenAI API key, a Twilio WhatsApp Sandbox joined from your phone, and an Auth0 tenant with **CIBA enabled and a Guardian device enrolled**. Check CIBA entitlement before choosing the phone demo; a default free tenant is insufficient for this flow.
+You need an OpenAI API key, a CopilotKit Intelligence key, a Meta app with WhatsApp API access and a verified test recipient, and an Auth0 tenant with **CIBA enabled and a Guardian device enrolled**. Check CIBA availability in your tenant before choosing the phone demo; the trial configuration used in this guide does not establish ongoing free access.
 
 From the repository root, with Node.js 22+:
 
@@ -25,7 +25,7 @@ Follow [the consolidated sponsor setup](../using-sponsor-tools.md#whatsapp-ident
 npm start --prefix apps/whatsapp
 ```
 
-The app listens on port **3003**. WhatsApp ingress and the Auth0 callback need a public HTTPS origin; for local development, connect an HTTPS tunnel and configure its URL in the two dashboards. Keep one app process running.
+The app listens on port **3003**. WhatsApp ingress and the Auth0 callback need a public HTTPS origin; for local development, connect an HTTPS tunnel and configure its URL in the two dashboards. Keep one app process running and keep the SDK listener on port **3004** private.
 
 ## What is included
 
@@ -55,12 +55,13 @@ The demo saves a local request with a label of 1–24 ASCII letters, digits, hyp
 ```text
 Read the root hackathon overview, rules, sponsor guide, and AGENTS.md, then
 apps/whatsapp/README.md. Adapt the WhatsApp app to our own user and task.
+Use CopilotKit Channels with its direct Meta adapter for WhatsApp delivery.
 Keep OpenAI Agents SDK for reasoning and Auth0 for identity and phone consent.
 Preserve signed webhooks, sender-bound account linking, exact-action approval,
 server-side permission checks, and duplicate protection. Replace the demo action
 with our intended action and update the consent message to describe it fully.
 Test denial, expiry, restart, and duplicate delivery before the live phone demo.
-Do not apply the Channels skill or add CopilotKit to this independent template.
+Follow this app’s direct adapter setup; the bundled Channels skill is for Slack.
 ```
 
 [Full app operation and limitations](../apps/whatsapp/README.md) · [Sponsor setup](../using-sponsor-tools.md#whatsapp-identity-and-phone-approval) · [Submission checklist](../SUBMISSION.md)

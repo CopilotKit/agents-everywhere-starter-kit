@@ -3,13 +3,13 @@ name: build-channels-agent
 description: >-
   Use for this hackathon's Slack template in apps/channel-slack: CopilotKit
   Channels setup, thread context, tools, and native cards. Read before editing
-  that app. This skill does not apply to the independent OpenAI Agents SDK +
-  Auth0 WhatsApp template or to the CopilotKit React web template.
+  that app. The WhatsApp template has its own direct Meta adapter guide;
+  this skill does not configure that app or the CopilotKit React web template.
 ---
 
 # Build the Slack template with Channels
 
-**Hackathon scope:** apply this skill to `templates/slack.md` and `apps/channel-slack/`. Other adapters below are SDK reference material, not instructions to migrate the WhatsApp template. Preserve the repository's pinned Channels/runtime pair instead of installing the older illustrative versions below.
+**Hackathon scope:** apply this skill to `templates/slack.md` and `apps/channel-slack/`. For WhatsApp, follow `templates/whatsapp.md` and `apps/whatsapp/README.md`; its direct Meta adapter has different credentials and delivery behavior. Other adapters below are SDK reference material. Preserve the repository's pinned Channels/runtime pair instead of installing the older illustrative versions below.
 
 The Channels SDK (`@copilotkit/channels`) is a **platform-agnostic engine** for
 agents that live in chat. You write the logic once — handlers, tools, and
