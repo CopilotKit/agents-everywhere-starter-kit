@@ -42,7 +42,7 @@ Expected: a **real task record**, with a returned URL you can open from the thre
 
 The prompt and `propose_action` guide approval behavior but do not enforce approval around every external MCP call. Use a demo workspace. For an enforced authorization example, run the standalone [Auth0 recipe](../examples/auth0/README.md).
 
-## Browser: ambient context and visible local actions
+## Browser: ambient context and approved workplace actions
 
 ```bash
 npm run dev:web
@@ -52,15 +52,15 @@ Open `http://localhost:3100` and select an incident. Try:
 
 > What is happening with the selected incident? Show an incident card and a timeline.
 
-> Create a follow-up for this incident to investigate the retry spike.
+> Propose a follow-up for this incident to investigate the retry spike. Show me the exact task before it is saved.
 
 > Select the other incident and tell me what changed.
 
-Expected: `incident_card`, `timeline`, `create_followup`, and `select_incident` as appropriate. The selected incident and follow-up list should visibly change. The context is derived from the displayed sample data; local tasks last only for this page session. `propose_action` provides approval UI but does not execute a production action. Web chat does not register Exa search; use Slack or the standalone recipes for that step.
+Expected: `incident_card`, `timeline`, `propose_followup`, `retrieve_followup`, `refresh_followups`, and `select_incident` as appropriate. The context is derived from the displayed sample data and the Ambiguous records retrieved for the selected incident. The agent prepares a proposal; the page approval button performs the write. `propose_action` provides a separate sample approval UI but does not execute a production action. Web chat does not register Exa search; use Slack or the standalone recipes for that step.
 
 ### Add a persistent workplace record
 
-With Ambiguous AI configured, follow [the web template](../templates/web.md#prove-a-record-survives-refresh): propose an exact task in your demo workspace, approve it, create it through the connected MCP tool, and open the returned record link. Refresh the page and retrieve the same ID. Do not use the session-only `create_followup` for this check.
+With Ambiguous AI configured, follow [the web template](../templates/web.md#prove-a-record-survives-refresh): propose an exact task in your demo workspace, approve it with the page button, and open the returned record link if Ambiguous provides one. Refresh the page and retrieve the same ID.
 
 ## Record a focused video
 

@@ -61,7 +61,7 @@ The included Slack app supplies thread history, subscriptions, search, and Chann
 
 An agent sees the page you are on and turns a request into a real workplace record you can still find after a refresh. Adapt it to customer follow-ups, a project workspace, or a personal planning app.
 
-The included web app supplies page context, frontend tools, and agent-rendered UI. Connect an Ambiguous AI workspace for persistent records, then run `npm run dev:web`. The sample app also has local follow-ups; those reset on refresh. The template shows how to verify the external record separately.
+The included web app supplies page context, frontend tools, agent-rendered UI, and a browser approval step. Connect an Ambiguous AI workspace, then run `npm run dev:web`; approved follow-ups are saved through the server and can be read back after refresh.
 
 **[Use the web template →](templates/web.md)** · [CopilotKit docs](https://docs.copilotkit.ai/) · [Ambiguous AI setup](using-sponsor-tools.md#ambiguous-ai)
 

@@ -77,7 +77,7 @@ npm run dev:slack
 
 Invite the bot and add a few facts to a thread before asking: “Read this thread and show an incident card.” **Check:** `read_thread` uses earlier messages and `incident_card` renders in Slack. Customize [the Channel](apps/channel-slack/src/channel.tsx), [tools](apps/channel-slack/src/tools.tsx), and [components](apps/channel-slack/src/components.tsx).
 
-**First call, React web:** run `npm run dev:web`, open `http://localhost:3100`, select an incident, then ask: “What is happening with the selected incident? Show a card.” **Check:** the answer matches the current page without pasting its contents. [AppControl](apps/web/src/components/app-control.tsx) registers page context and frontend tools; [GenerativeUI](apps/web/src/components/generative-ui.tsx) registers React components.
+**First call, React web:** run `npm run dev:web`, open `http://localhost:3100`, select an incident, then ask: “What is happening with the selected incident? Show a card.” **Check:** the answer matches the current page without pasting its contents. [AppControl](apps/web/src/components/app-control.tsx) registers page context and frontend tools; [GenerativeUI](apps/web/src/components/generative-ui.tsx) registers React components. With Ambiguous configured, ask for a follow-up proposal, approve it in the page, then refresh and read back the same provider record.
 
 **First call, React Native:** run `npm run dev:web`, then `npm ci --prefix apps/mobile` and `npm start --prefix apps/mobile`. Ask “Show my balances.” **Check:** the app uses its local finance state and renders the native account card. The sample expense write waits for an approval tap and changes in-memory data only.
 
@@ -198,7 +198,7 @@ console.log(await response.json());
 JS
 ```
 
-**Check:** the returned identity belongs to the intended demo workspace. Then run `npm run dev:web` and follow [the web template's create/read-back sequence](templates/web.md#prove-a-record-survives-refresh). Ask for the exact proposed task, approve it, create it through the connected MCP tools, and retrieve the same ID after refreshing. Open the actual returned record link. Do not confuse this with the browser-only `create_followup` tool.
+**Check:** the returned identity belongs to the intended demo workspace. Then run `npm run dev:web` and follow [the web template's create/read-back sequence](templates/web.md#prove-a-record-survives-refresh). Ask for the exact proposed task, approve it with the page button, and retrieve the same ID after refreshing. Open the actual returned record link. The web chat proposes and reads through frontend tools; it does not receive raw Ambiguous write tools.
 
 The [shared MCP connection](packages/agent-core/src/capabilities/workplace.ts) is also available to Slack and terminal chat when configured. Tool schemas come from the live workspace; never invent names, arguments, or record URLs. Approval prompts and cards guide behavior but do not enforce a gate around every MCP tool. For your own app, enforce required authorization at the write boundary. A `401` needs valid credentials; a `403` needs appropriate permissions. A new workspace does not fix access to the intended one.
 
