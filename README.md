@@ -112,4 +112,6 @@ The app READMEs provide launch commands, files to customize, and a concrete resu
 | Rehearse and debug | [Demo prompts](dev-docs/demo-prompts.md) · [Troubleshooting](dev-docs/troubleshooting.md) |
 | Prepare your entry | [Submission checklist](SUBMISSION.md) |
 
-For the Slack/web workspaces, `npm run verify` runs typechecks and offline tests without credentials. The mobile app has its own install, tests, typecheck, and Metro export checks under `apps/mobile`. `npm run check-env` validates configured startup. Live sponsor calls and platform delivery require your accounts. Look for credit redemption instructions on the [AI Tinkerers event page](https://sf.aitinkerers.org/hackathons/h_XWWQL5eKfJM). See [developer docs](dev-docs/README.md) for detailed setup and deployment.
+Look for credit redemption instructions on the [AI Tinkerers event page](https://sf.aitinkerers.org/hackathons/h_XWWQL5eKfJM).
+
+For the Slack/web workspaces, `npm run verify` runs typechecks and offline tests without credentials. The mobile app has its own install, tests, typecheck, and Metro export checks under `apps/mobile`. `npm run check-env` validates configured startup. Live sponsor calls and platform delivery require your accounts. See [developer docs](dev-docs/README.md) for detailed setup and deployment.
