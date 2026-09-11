@@ -42,7 +42,7 @@ is not in. `/invite @yourbot`.
 
 **4. Another runtime is stealing the delivery.** Two runtimes declaring the same
 Channel name in one project race per delivery and the loser gets nothing,
-silently. The tell: a Slack reply your terminal knows nothing about. Give your
+silently. The tell: one runtime logs the delivery while the other never sees it. Give your
 laptop its own Intelligence project.
 
 **5. You are testing without a mention.** A non-mentioned turn only ever reaches
@@ -114,18 +114,6 @@ Harmless and not yours. `BuiltInAgent`'s `prompt` option becomes a system messag
 in the messages array, and the AI SDK warns about that pattern generically. It
 does not mean your prompt is being injected.
 
-## Provider errors are swallowed in local-chat
-
-They arrive through the run lifecycle rather than as a rejection from
-`runAgent()`. `apps/local-chat` subscribes to `onRunFailed` for this. If you
-write your own loop, do the same or you get an unhandled rejection with a
-thirty-line stack.
-
-## `ERR_USE_AFTER_CLOSE`
-
-`rl.question()` after stdin closed — happens whenever input is piped rather than
-typed. `apps/local-chat` guards on `rl.once("close")`.
-
 ## `npm install` fails with "Cannot read properties of null (reading 'edgesOut')"
 
 You added **vitest**. `@copilotkit/channels` declares `vitest: ^4.0.0` as a peer
@@ -145,7 +133,7 @@ If you genuinely need vitest, `--legacy-peer-deps` gets you past it — put it i
 
 ## Still stuck
 
-- `npm run verify` — typecheck, tests, and a real MCP protocol round trip
+- `npm run verify` — retained workspace typechecks and offline tests
 - `npm run check-env` — numbered list of what is missing
 - `npm run channel:status` — real doctor command for the Channel
 - `.agents/skills/build-channels-agent/SKILL.md` — the verified API surface plus
@@ -158,4 +146,4 @@ If you genuinely need vitest, `--legacy-peer-deps` gets you past it — put it i
 
 ## A web follow-up does not appear after refresh
 
-Only approved Ambiguous records should survive refresh. First confirm `AMBIGUOUS_API_KEY` is set, restart `npm run dev:web`, prepare a proposal, and click **Approve & save to Ambiguous** on the page. Then refresh and use the returned record ID or **Refresh from Ambiguous**. If the provider returns no retrievable record, the persistence check has not passed. See [the web template](../templates/web.md#prove-a-record-survives-refresh).
+Only approved Ambiguous records should survive refresh. First confirm `AMBIGUOUS_API_KEY` is set, restart `npm run dev:web`, prepare a proposal, and click **Approve & save to Ambiguous** on the page. Then refresh and use the returned record ID or **Refresh from Ambiguous**. If the provider returns no retrievable record, the persistence check has not passed. See [the web template](../apps/web/README.md#prove-a-record-survives-refresh).

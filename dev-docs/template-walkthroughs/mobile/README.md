@@ -1,6 +1,6 @@
 # React Native template walkthrough
 
-[Back to developer docs](../../README.md) · [Template guide](../../../templates/react-native.md)
+[Back to developer docs](../../README.md) · [Template guide](../../../apps/mobile/README.md)
 
 This guide lists the React Native checks to reproduce from your own simulator or device. The current template evidence covers an iOS Simulator run with Expo Go, OpenAI `gpt-5.6-sol`, and local sample finance state; it does not claim an OpenRouter live run, physical phone networking, or OCR verification.
 

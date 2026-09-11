@@ -1,14 +1,12 @@
-# Choose a surface
+# Surface map
 
-Pick the place where your agent's context already exists. The following matrix describes this kit's implementation, not every feature of the underlying SDKs.
+The starter kit now keeps the three runnable template apps together under `apps/`: channel, web, and mobile. The voice route lives inside the web app. Remote MCP tools, such as Ambiguous AI, are connected through the shared agent factory when configured; the old standalone local MCP host is no longer part of the retained starter layout.
 
 | Surface | Agent and context | UI and actions | Optional capabilities | Limits |
 |---|---|---|---|---|
-| Terminal | `makeAgent`; messages you type | Text and tool output | Ambiguous MCP through shared factory | No Slack history, incident cards, Exa tool, or approval UI |
-| Slack / Teams | `makeAgent`; `read_thread` plus channel context | `incident_card`, `timeline`, `propose_action` | Exa and Ambiguous MCP | Managed Channel setup required; live platform validation required |
+| Channel (Slack / Teams / Discord) | `makeAgent`; `read_thread` plus channel context | `incident_card`, `timeline`, `propose_action` | Exa and Ambiguous MCP | Managed Channel setup required; live platform validation required |
 | Web | `makeAgent`; selected sample incident, timeline and Ambiguous follow-ups via `useAgentContext` | Incident cards, timeline, approval UI; `select_incident`, `propose_followup`, `retrieve_followup`, `refresh_followups` | Ambiguous through the server-side approval boundary | Web chat does not register Exa search or raw workplace write tools; approval server is loopback-only by default |
 | Voice (`/voice`) | Separate `RealtimeAgent`; shares system prompt | Spoken conversation and transcript | Exa via server search route | OpenAI Realtime key required regardless of chat provider; no incident workspace context, workplace MCP, or approval tools |
-| MCP | Host's agent/model; server exposes tools | `incident_card` and HTML UI resource | Exa `search_web` | Does not call `makeAgent`; rendering depends on host; no workplace or approval tools |
 | Mobile | Web runtime's `makeAgent` with a mobile prompt; finance app state through frontend tools | Expo chat, native cards, and `add_mobile_expense` approval UI | OpenAI or OpenRouter through the shared model resolver | Separate install; local sample data only; no bank, messaging, or Realtime voice integration |
 
 Managed `propose_action` posts a nonblocking proposal; its later click reports a decision without automatically resuming the agent. There is no production restart implementation. The web template has its own Ambiguous approval boundary for follow-up tasks; other surfaces that expose Ambiguous MCP should use an isolated demo workspace and enforce required write approval in their own code. Auth0's standalone example separately verifies a machine token and scope before creating its local record.
@@ -19,26 +17,19 @@ Run these from the repository root after [setup](setup.md):
 
 | Surface | Command | Next step |
 |---|---|---|
-| Terminal | `npm run dev:local` | Type the incident context and a question |
-| Slack | `npm run dev:slack` | Invite and mention the bot in a thread |
+| Channel | `npm run dev:slack` | Invite and mention the bot in a thread |
 | Web | `npm run dev:web` | Open `http://localhost:3100` |
 | Voice | `npm run dev:web` | Run `npm run check-env -- --voice`, then open `http://localhost:3100/voice` and allow microphone access |
-| MCP HTTP | `npm run dev:mcp` | Connect an HTTP MCP client to `http://localhost:3200/mcp` |
 | Mobile | Start `npm run dev:web`, then `cd apps/mobile && npm ci && npm start` | Configure the runtime URL for your simulator or device; see [mobile setup](../apps/mobile/README.md) |
 
-MCP protocol checks are part of `npm run verify`, independent of a live host or its widget rendering. Mobile is not an npm workspace member because React Native uses its own dependency versions. Its CI job runs `npm ci`, tests, typecheck, and iOS/Android Metro exports under `apps/mobile`.
+`npm run verify` covers the retained root workspaces without credentials. Mobile is not an npm workspace member because React Native uses its own dependency versions. Its CI job runs `npm ci`, tests, typecheck, and iOS/Android Metro exports under `apps/mobile`.
 
 ## Slack to Teams
 
 Create a separate Channel with the Teams adapter:
 
 ```bash
-npx copilotkit@latest channels add --name my-agent \
-  --display-name "My Agent" --adapter teams --json
+npx copilotkit@latest channels setup --platform teams
 ```
 
-Complete the Teams installation and consent flow and set the resulting Channel code. The JSX uses the SDK's native rendering path; prove the thread, card, and button interactions on your actual platform before recording a demo.
-
-## Customize
-
-The shared factory is [agent.ts](../packages/agent-core/src/agent.ts). Surface-specific tools belong in their respective app. For a new backend, validate AG-UI tool and context behavior rather than assuming identical capabilities across all surfaces.
+Then route the same app code through that Channel. Keep the slash-command and mention behavior explicit in your README because users will discover the agent differently than in Slack.

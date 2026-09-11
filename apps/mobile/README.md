@@ -112,6 +112,24 @@ Imports come from `@copilotkit/react-native/headless` so the template avoids opt
 
 This template changes local sample state only. It does not connect to bank accounts, cards, payment services, external storage, messaging providers, or the OpenAI Realtime voice route. Use it as the phone-native approval and app-context pattern, then replace the sample finance data and tools with your hackathon workflow.
 
+## Make it yours
+
+Change the sample data and tool contracts to match your workflow. Good mobile fits include field checklists, travel plans, patient intake preparation, fitness logs, inventory counts, and expense capture. Keep the pattern: app context first, native rendered result, explicit approval before a local or external write, and a visible result after the tap.
+
+## Give this to your coding agent
+
+```text
+Read the root hackathon overview, rules, sponsor guide, AGENTS.md, and
+apps/mobile/README.md. Adapt apps/mobile to our mobile workflow. Keep
+CopilotKit React Native headless APIs for app context, native tool rendering,
+and human-in-the-loop approval. Keep the runtime URL/device networking notes.
+Replace sample finance state and tools with our own app state and one complete
+approved action. Run npm ci --prefix apps/mobile, npm test --prefix apps/mobile,
+npm run typecheck --prefix apps/mobile, and the relevant root checks. Record
+OpenRouter, physical-phone, and OCR evidence separately if your submission
+depends on those paths.
+```
+
 ## Upstream source
 
 Inspired by CopilotKit PR [#5430](https://github.com/CopilotKit/CopilotKit/pull/5430), `examples/showcases/react-native-personal-finance` at commit `6815a3eed0d80570cc17c121d952b94d5543d0a7`. This app adapts the concept into the starter kit's existing Expo app and shared web runtime. It does not copy the standalone bare native project, screenshots, video, Git LFS media, or credentials.

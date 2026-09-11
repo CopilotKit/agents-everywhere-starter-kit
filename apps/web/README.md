@@ -6,7 +6,7 @@ Build an agent that sees the selected record or page, helps the user act on it, 
 
 ## Start it
 
-Complete the homepage's clone/install steps. Configure root `.env` with [OpenAI](../using-sponsor-tools.md#openai) and [Ambiguous AI](../using-sponsor-tools.md#ambiguous-ai):
+Complete the homepage's clone/install steps. Configure root `.env` with [OpenAI](../../using-sponsor-tools.md#openai) and [Ambiguous AI](../../using-sponsor-tools.md#ambiguous-ai):
 
 ```dotenv
 MODEL_PROVIDER=openai
@@ -30,13 +30,13 @@ The page pairs a compact incident view with an always-visible assistant. Start w
 
 | Piece | Implementation |
 | --- | --- |
-| App and selected record | [Page](../apps/web/src/app/page.tsx) and [sample data](../apps/web/src/lib/incidents.ts) |
-| Context and frontend tools | [AppControl](../apps/web/src/components/app-control.tsx): `useAgentContext`, `select_incident`, `propose_followup`, `retrieve_followup`, and `refresh_followups` |
-| Approval UI and provider reads | [Workplace follow-ups](../apps/web/src/components/workplace-followups.tsx) and [browser client hook](../apps/web/src/lib/use-workplace.ts) |
-| Server approval boundary | [Follow-up API](../apps/web/src/app/api/followups/route.ts) and [service](../apps/web/src/lib/server/followups.ts) |
-| Ambiguous MCP adapter | [Workplace adapter](../apps/web/src/lib/server/workplace.ts), used only after browser approval |
-| CopilotKit React UI | [Generative UI](../apps/web/src/components/generative-ui.tsx) and [providers](../apps/web/src/components/providers.tsx) |
-| Agent endpoint | [Server runtime](../apps/web/src/app/api/copilotkit/[[...path]]/route.ts), configured without raw workplace write tools |
+| App and selected record | [Page](src/app/page.tsx) and [sample data](src/lib/incidents.ts) |
+| Context and frontend tools | [AppControl](src/components/app-control.tsx): `useAgentContext`, `select_incident`, `propose_followup`, `retrieve_followup`, and `refresh_followups` |
+| Approval UI and provider reads | [Workplace follow-ups](src/components/workplace-followups.tsx) and [browser client hook](src/lib/use-workplace.ts) |
+| Server approval boundary | [Follow-up API](src/app/api/followups/route.ts) and [service](src/lib/server/followups.ts) |
+| Ambiguous MCP adapter | [Workplace adapter](src/lib/server/workplace.ts), reads workspace context and saves approved tasks |
+| CopilotKit React UI | [Generative UI](src/components/generative-ui.tsx) and [providers](src/components/providers.tsx) |
+| Agent endpoint | [Server runtime](src/app/api/copilotkit/[[...path]]/route.ts), configured without raw workplace write tools |
 
 The web chat does not receive raw Ambiguous write tools. It can propose a task and read or refresh existing records through frontend tools; the server writes only after the user clicks **Approve & save to Ambiguous**. Tool schemas come from the MCP server at write time, and returned links must come from Ambiguous rather than being invented.
 
@@ -63,4 +63,4 @@ write boundary. Run npm run verify and npm run build --workspace web, then
 document the live record create/read/decline checks.
 ```
 
-[CopilotKit docs](https://docs.copilotkit.ai/) · [Sponsor authentication and first calls](../using-sponsor-tools.md) · [Demo prompts](../dev-docs/demo-prompts.md)
+[CopilotKit docs](https://docs.copilotkit.ai/) · [Sponsor authentication and first calls](../../using-sponsor-tools.md) · [Demo prompts](../../dev-docs/demo-prompts.md)

@@ -10,22 +10,18 @@
   },
   "workspaces": [
     "packages/*",
-    "apps/channel-slack",
-    "apps/local-chat",
-    "apps/web",
-    "apps/mcp"
+    "apps/channel",
+    "apps/web"
   ],
   "scripts": {
     "check-env": "bash scripts/check-env.sh",
     "predev": "bash scripts/check-env.sh",
     "dev": "bash scripts/dev.sh",
-    "dev:slack": "npm run dev --workspace channel-slack",
+    "dev:slack": "npm run dev --workspace channel",
     "channel:status": "npx copilotkit@latest channels status --json",
     "channel:setup": "npx copilotkit@latest channels setup",
     "typecheck": "npm run typecheck --workspaces --if-present",
-    "dev:local": "npm run dev --workspace local-chat",
     "dev:web": "npm run dev --workspace web",
-    "dev:mcp": "npm run dev --workspace mcp",
     "test": "node --import tsx --test scripts/check-env.test.ts scripts/verify.test.mjs && npm run test --workspaces --if-present",
     "verify": "bash scripts/verify.sh"
   },
