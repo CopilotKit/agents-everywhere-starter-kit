@@ -61,16 +61,15 @@ export class ChannelRunAgent extends AbstractAgent {
 
       return () => {
         subscription?.unsubscribe();
-        if (inner && this.activeInner === inner) {
-          inner.abortRun();
-          this.activeInner = undefined;
-        }
+        inner?.abortRun();
+        release();
       };
     });
   }
 
   override abortRun() {
     this.activeInner?.abortRun();
+    super.abortRun();
   }
 
   override clone(): ChannelRunAgent {
