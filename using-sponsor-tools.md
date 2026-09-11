@@ -10,7 +10,7 @@ Use Node.js 22+. For Slack/web/mobile, run the homepage's clone/install steps an
 | [CopilotKit](#copilotkit) | Slack, web, mobile | A contextual answer and native UI |
 | [OpenRouter](#openrouter) | Optional Slack/web/mobile model gateway | A response from your chosen catalog model |
 | [Exa](#exa) | Slack template | Research with inspectable sources |
-| [Auth0](#auth0) | Standalone protected-API example | Verified service identity and scope before a protected action |
+| [Auth0](#auth0) | Optional protected-API recipe | Verified service identity and scope before a protected action |
 | [Ambiguous AI](#ambiguous-ai) | Web template; optional Slack integration | A real workplace record that survives refresh |
 
 ## OpenAI
@@ -152,7 +152,7 @@ JS
 
 ### Standalone protected API call
 
-Use this example to learn Auth0 machine-to-machine API authorization. The server verifies the service identity and required scope before creating a record.
+Use this optional docs companion recipe to learn Auth0 machine-to-machine API authorization. The server verifies the service identity and required scope before creating a local record. Use it as an authorization reference alongside the starter app you choose from `apps/`.
 
 **Access and configure:** in Auth0, create an RS256 API with identifier `https://agents-everywhere.example/api`, add permission `create:followups`, and grant it to a Machine to Machine application. The identifier is an audience string and does not need a hosted URL. Add these values to root `.env`:
 
@@ -166,15 +166,15 @@ AUTH0_CLIENT_SECRET=your-m2m-client-secret
 **First working call:**
 
 ```bash
-npm ci --prefix examples/auth0
-npm test --prefix examples/auth0
+npm ci --prefix dev-docs/auth0
+npm test --prefix dev-docs/auth0
 # Terminal 1, from root:
-node --env-file=.env examples/auth0/server.mjs
+node --env-file=.env dev-docs/auth0/server.mjs
 # Terminal 2, from root:
-node --env-file=.env examples/auth0/client.mjs
+node --env-file=.env dev-docs/auth0/client.mjs
 ```
 
-**Check:** the client first gets `401` without authorization, then `201` and a local record with an Auth0 service identity. Tokens are not printed. Records last until the server stops. A `403` indicates missing scope; check the API grant. Customize [client.mjs](examples/auth0/client.mjs) and [server.mjs](examples/auth0/server.mjs). The server validates signature, issuer, audience, expiry, and scope before the write. [Node API quickstart](https://auth0.com/docs/quickstart/backend/nodejs) · [Client credentials flow](https://auth0.com/docs/get-started/authentication-and-authorization-flow/client-credentials-flow/call-your-api-using-the-client-credentials-flow)
+**Check:** the client first gets `401` without authorization, then `201` and a local record with an Auth0 service identity. Tokens are not printed. Records last until the server stops. A `403` indicates missing scope; check the API grant. Customize [client.mjs](dev-docs/auth0/client.mjs) and [server.mjs](dev-docs/auth0/server.mjs). The server validates signature, issuer, audience, expiry, and scope before the write. [Node API quickstart](https://auth0.com/docs/quickstart/backend/nodejs) · [Client credentials flow](https://auth0.com/docs/get-started/authentication-and-authorization-flow/client-credentials-flow/call-your-api-using-the-client-credentials-flow)
 
 ## Ambiguous AI
 

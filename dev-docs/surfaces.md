@@ -9,7 +9,7 @@ The starter kit now keeps the three runnable template apps together under `apps/
 | Voice (`/voice`) | Separate `RealtimeAgent`; shares system prompt | Spoken conversation and transcript | Exa via server search route | OpenAI Realtime key required regardless of chat provider; no incident workspace context, workplace MCP, or approval tools |
 | Mobile | Web runtime's `makeAgent` with a mobile prompt; finance app state through frontend tools | Expo chat, native cards, and `add_mobile_expense` approval UI | OpenAI or OpenRouter through the shared model resolver | Separate install; local sample data only; no bank, messaging, or Realtime voice integration |
 
-Managed `propose_action` posts a nonblocking proposal; its later click reports a decision without automatically resuming the agent. There is no production restart implementation. The web template has its own Ambiguous approval boundary for follow-up tasks; other surfaces that expose Ambiguous MCP should use an isolated demo workspace and enforce required write approval in their own code. Auth0's standalone example separately verifies a machine token and scope before creating its local record.
+Managed `propose_action` posts a nonblocking proposal; its later click reports a decision without automatically resuming the agent. There is no production restart implementation. The web template has its own Ambiguous approval boundary for follow-up tasks; other surfaces that expose Ambiguous MCP should use an isolated demo workspace and enforce required write approval in their own code. Auth0's optional docs companion recipe separately verifies a machine token and scope before creating its local record.
 
 ## Launch commands
 
@@ -22,7 +22,7 @@ Run these from the repository root after [setup](setup.md):
 | Voice | `npm run dev:web` | Run `npm run check-env -- --voice`, then open `http://localhost:3100/voice` and allow microphone access |
 | Mobile | Start `npm run dev:web`, then `cd apps/mobile && npm ci && npm start` | Configure the runtime URL for your simulator or device; see [mobile setup](../apps/mobile/README.md) |
 
-`npm run verify` covers the retained root workspaces without credentials. Mobile is not an npm workspace member because React Native uses its own dependency versions. Its CI job runs `npm ci`, tests, typecheck, and iOS/Android Metro exports under `apps/mobile`.
+`npm run verify` covers the retained root workspaces without credentials. Mobile is not an npm workspace member because React Native uses its own dependency versions; run its local install, tests, typecheck, and iOS/Android Metro export checks under `apps/mobile` when validating the mobile template.
 
 ## Slack to Teams
 

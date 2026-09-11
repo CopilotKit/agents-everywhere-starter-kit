@@ -5,6 +5,7 @@ Start with the [hackathon homepage](../README.md), choose a [template](../README
 | Doc | When you need it |
 |---|---|
 | [Sponsor tool guide](../using-sponsor-tools.md) | Authentication, configuration, and a first working call for each featured sponsor |
+| [Auth0 protected API recipe](auth0/README.md) | Optional machine-to-machine authorization reference for a protected local API |
 | [Channels screenshot walkthrough](channels-sdk-walkthrough/README.md) | Intelligence, Slack installation, runtime, and a verified native-card conversation |
 | [Setup](setup.md) | Getting from clone to a first Slack or web reply |
 | [Channels](channels.md) | How managed delivery works and Slack/Teams setup order |
