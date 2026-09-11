@@ -24,13 +24,15 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useAgent, useRenderToolCall } from "@copilotkit/react-native/headless";
+import { useAgent, useCopilotKit, useRenderToolCall } from "@copilotkit/react-native/headless";
 import { Tools } from "@/tools";
 import { styles } from "@/styles";
 import { formatMoney, initialFinance } from "@/finance";
+import { createUserMessageId } from "@/message-id";
 
 export function ChatScreen() {
   const { agent } = useAgent({ agentId: "default" });
+  const { copilotkit } = useCopilotKit();
   const renderToolCall = useRenderToolCall();
   const [finance, setFinance] = useState(initialFinance);
   const [draft, setDraft] = useState("");
@@ -44,23 +46,15 @@ export function ChatScreen() {
     setError(undefined);
     setBusy(true);
 
-    agent.addMessage({ id: globalThis.crypto.randomUUID(), role: "user", content: text });
     try {
-      await agent.runAgent(
-        {},
-        {
-          // Provider errors arrive through the run lifecycle, not as a rejection.
-          onRunFailed({ error: cause }) {
-            setError(cause instanceof Error ? cause.message : String(cause));
-          },
-        },
-      );
+      agent.addMessage({ id: createUserMessageId(), role: "user", content: text });
+      await copilotkit.runAgent({ agent });
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : String(cause));
     } finally {
       setBusy(false);
     }
-  }, [agent, draft, busy]);
+  }, [agent, copilotkit, draft, busy]);
 
   const messages = agent.messages ?? [];
 

@@ -66,7 +66,7 @@ This template uses CopilotKit React Native's headless APIs so the app stays smal
 5. Confirm the card resolves with a local transaction ID and that the account balance pill changes.
 6. Repeat with a second expense and tap **Cancel**. Confirm the answer says nothing changed and the balance remains the same.
 
-Offline checks cover dependency resolution, 10 mobile regression tests, and TypeScript. Native smoke has also verified iOS and Android Metro exports, an iOS Expo Go clean first render, and mobile runtime metadata `/info` HTTP 200 with a placeholder process key. This does not claim live model chat, approval UI end-to-end, physical phone networking, or OCR verification. Capture your own screen recording for the hackathon submission.
+Offline checks cover dependency resolution, 11 mobile regression tests, and TypeScript. Native smoke has also verified iOS and Android Metro exports, an iOS Expo Go clean first render, and mobile runtime metadata `/info` HTTP 200 with a placeholder process key. This does not claim live model chat, approval UI end-to-end, physical phone networking, or OCR verification. Capture your own screen recording for the hackathon submission.
 
 ## Make it yours
 

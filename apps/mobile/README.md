@@ -9,7 +9,7 @@ The app is deliberately not an npm workspace member. React Native pins its own `
 | Check | Status |
 | --- | --- |
 | Dependency install | verified with `npm ci --prefix apps/mobile` |
-| Offline tests | verified with `npm test --prefix apps/mobile` (10 tests) |
+| Offline tests | verified with `npm test --prefix apps/mobile` (11 tests) |
 | TypeScript | verified with `npm run typecheck --prefix apps/mobile` |
 | Metro exports | verified for iOS and Android with `npm run bundle:ios --prefix apps/mobile` and `npm run bundle:android --prefix apps/mobile` |
 | iOS Expo Go smoke | verified clean first render and mobile runtime metadata `/info` HTTP 200 with a placeholder process key |
