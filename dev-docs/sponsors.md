@@ -10,4 +10,4 @@ It contains authentication, configuration, and a first working call for every sp
 - [Auth0](../using-sponsor-tools.md#auth0)
 - [Ambiguous AI](../using-sponsor-tools.md#ambiguous-ai)
 
-Choose a [template](../README.md#templates), then use the relevant sections of that guide. Event offers and OpenAI redemption instructions are in [CREDITS.md](../CREDITS.md).
+Choose a [template](../README.md#templates), then use the relevant sections of that guide.

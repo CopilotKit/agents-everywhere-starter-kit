@@ -102,7 +102,6 @@ The app READMEs provide launch commands, files to customize, and a concrete resu
 | Need | Go here |
 |---|---|
 | Event details, deadline, and judging | [Official portal](https://sf.aitinkerers.org/hackathons/h_XWWQL5eKfJM) · [Handbook](https://sf.aitinkerers.org/hackathons/h_XWWQL5eKfJM/handbook) |
-| OpenAI credits and redemption | [Credit instructions](CREDITS.md#openai-credits) · [API keys](https://platform.openai.com/api-keys) |
 | OpenAI agent development | [Agents SDK quickstart](https://openai.github.io/openai-agents-js/guides/quickstart/) |
 | OpenRouter access and model choice | [Keys](https://openrouter.ai/keys) · [Model catalog](https://openrouter.ai/models) · [Model switching](dev-docs/model-switching.md) |
 | CopilotKit app development | [Docs](https://docs.copilotkit.ai/) · [Tools and context](dev-docs/tools-and-context.md) |
@@ -112,5 +111,7 @@ The app READMEs provide launch commands, files to customize, and a concrete resu
 | Ambiguous AI quickstart | [Developer guide](https://www.ambiguous.ai/llms.txt) · [Kit setup](using-sponsor-tools.md#ambiguous-ai) |
 | Rehearse and debug | [Demo prompts](dev-docs/demo-prompts.md) · [Troubleshooting](dev-docs/troubleshooting.md) |
 | Prepare your entry | [Submission checklist](SUBMISSION.md) |
+
+Look for credit redemption instructions on the [AI Tinkerers event page](https://sf.aitinkerers.org/hackathons/h_XWWQL5eKfJM).
 
 For the Slack/web workspaces, `npm run verify` runs typechecks and offline tests without credentials. The mobile app has its own install, tests, typecheck, and Metro export checks under `apps/mobile`. `npm run check-env` validates configured startup. Live sponsor calls and platform delivery require your accounts. See [developer docs](dev-docs/README.md) for detailed setup and deployment.

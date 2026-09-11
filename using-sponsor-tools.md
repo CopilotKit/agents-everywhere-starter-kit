@@ -15,7 +15,7 @@ Use Node.js 22+. For Slack/web/mobile, run the homepage's clone/install steps an
 
 ## OpenAI
 
-**Access and authentication.** Follow [OpenAI credit instructions](CREDITS.md#openai-credits), then create a server-side [API key](https://platform.openai.com/api-keys) in the funded organization/project. Credit redemption and key creation are separate steps.
+**Access and authentication.** Create a server-side [API key](https://platform.openai.com/api-keys) in the OpenAI organization/project you will use for the hackathon.
 
 **Configure Slack/web/mobile** in root `.env`:
 
@@ -85,7 +85,7 @@ Keep the tested Channels/runtime versions and the `@ag-ui/client` override. Befo
 
 ## OpenRouter
 
-**Access and authentication.** Create an [API key](https://openrouter.ai/keys), choose a model from the [catalog](https://openrouter.ai/models), and check any event offer in [CREDITS.md](CREDITS.md#other-sponsor-access). Use a model that supports tools for Slack, web, and React Native workflows.
+**Access and authentication.** Create an [API key](https://openrouter.ai/keys) and choose a model from the [catalog](https://openrouter.ai/models). Use a model that supports tools for Slack, web, and React Native workflows.
 
 **Configure** root `.env`:
 
