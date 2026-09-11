@@ -24,14 +24,19 @@ npm run dev:web
 
 Open `http://localhost:3100` and select an incident.
 
+The page pairs a compact incident view with an always-visible assistant. Start
+with “Summarize this incident” or “Add a follow-up” in chat. Expand **Details &
+timeline** for more context. You can also add follow-ups directly on the page;
+these last only for the current browser session.
+
 ## What is included
 
-| Piece | Implementation |
-|---|---|
-| App and selected record | [Page](../apps/web/src/app/page.tsx) and [sample data](../apps/web/src/lib/incidents.ts) |
-| Context and local tools | [AppControl](../apps/web/src/components/app-control.tsx): `useAgentContext`, `select_incident`, and local `create_followup` |
-| CopilotKit React UI | [Providers](../apps/web/src/components/providers.tsx) and [generative UI](../apps/web/src/components/generative-ui.tsx) |
-| Agent endpoint | [Server runtime](../apps/web/src/app/api/copilotkit/[[...path]]/route.ts) |
+| Piece                      | Implementation                                                                                                                      |
+| -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| App and selected record    | [Page](../apps/web/src/app/page.tsx) and [sample data](../apps/web/src/lib/incidents.ts)                                            |
+| Context and local tools    | [AppControl](../apps/web/src/components/app-control.tsx): `useAgentContext`, `select_incident`, and local `create_followup`         |
+| CopilotKit React UI        | [Providers](../apps/web/src/components/providers.tsx) and [generative UI](../apps/web/src/components/generative-ui.tsx)             |
+| Agent endpoint             | [Server runtime](../apps/web/src/app/api/copilotkit/[[...path]]/route.ts)                                                           |
 | Persistent workplace tools | [Ambiguous MCP connection](../packages/agent-core/src/capabilities/workplace.ts), added by the shared agent factory when configured |
 
 `create_followup` changes only browser state. For the persistent path, explicitly use the connected **Ambiguous workspace's task tools**, which store the record outside the page. Their schemas come from the MCP server; discover them instead of inventing a tool name or URL.
