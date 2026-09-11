@@ -96,13 +96,13 @@ a `MessageRef`. Use a block body: `async ({ thread }) => { await thread.post(…
 
 Search and invalid-source failures post a visible failure notice and preserve the error for the agent. Rejected source-card deliveries propagate as errors. A completed delivery therefore does not necessarily mean research succeeded. If an older runtime still returns no sources, sync `apps/channel/src/search.tsx` and `apps/channel/src/tools.tsx` together and restart it.
 
-## A delivered Slack card still says “working”
+## A Slack run stops after the first native card
 
-A visible card alone does not prove the native status cleared. With the pinned Channels `0.9.2`, the offline managed-delivery regression exercises a real AG-UI search, an incident card, and an agent finish without prose. It verifies empty `slack.thread.status` effects, stream closure, and a final complete terminal packet in sequence. Run it with `npm test --workspace channel`.
+A delivered card alone does not prove the same Channel turn can continue after a tool result. With the pinned Channels/runtime pair, the run loop can re-enter the agent as soon as the previous observable completes. CopilotKit's `BuiltInAgent` clears its internal abort controller later, during async cleanup, so reusing the same inner instance can throw `Agent is already running. Call abortRun() first or create a new instance.` before the follow-up answer or status clear is delivered.
 
-This does not verify Slack applied those effects. The SDK treats native status updates as best effort and logs a rejected clear with `[slack-renderer] setStatus failed:` via `console.debug`. Preserve raw runtime stdout/stderr when reproducing; this console diagnostic is independent of `LOG_LEVEL`. Set `LOG_LEVEL=info` or `debug` to retain the runtime's transport warnings too. Correlate the affected delivery's status-clear and terminal acknowledgements in Intelligence, especially after `packet_out_of_order`.
+The Slack template wraps the shared `makeAgent` factory with `ChannelRunAgent` in `apps/channel/src/agent.ts`. The wrapper keeps the public AG-UI transcript, state, subscribers, clone behavior, and cancellation on the outer agent, but delegates each low-level `run(input)` to a fresh inner `BuiltInAgent`. This is scoped to Channels; web and mobile continue using the shared factory directly.
 
-The pinned renderer also has a retry gap: a rejected clear after starting a native stream can leave its internal “reply posted” flag set, so later finish callbacks can skip another clear. Subsequent tool events can change that path; it is not a confirmed explanation for the live multi-tool trial. This template has no public `Thread.setStatus` hook, and this change does not claim to fix the lingering indicator or change the paired SDK/runtime pins.
+Run `npm test --workspace channel` to exercise the local lifecycle regression: a real `BuiltInAgent` reproduces the same-tick continuation guard, the channel wrapper continues with tool-result transcript and state intact, and cancellation/teardown are forwarded to the active inner agent. That test proves the local lifecycle boundary only. Actual Slack delivery still requires a live managed Channel run; preserve raw runtime stdout/stderr and Intelligence delivery traces when checking source cards, final answers, and a cleared working indicator.
 
 ## Slash commands and modals never fire
 
