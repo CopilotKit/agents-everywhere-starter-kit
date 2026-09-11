@@ -14,7 +14,11 @@ Checked September 11, 2026. This page separates implemented boundaries, local te
 
 **Signed-in Ambiguous setup check:** verified **Admin → People & access → API keys → New API key** in an existing workspace. The [setup screenshot](template-walkthroughs/web/images/05-ambiguous-key-setup.jpg) shows the selected identity, task-only `tasks.read,tasks.write` scopes, expiry, and rate limit before key creation. No credential was generated or exposed in this capture; this verifies onboarding only. A task-scoped key was subsequently created with user approval for the live trial.
 
-**Pending:** authenticated identity check, approved create, exact returned record ID and any provider-returned link, refresh/retrieval without duplication, and live denied/expired/error cases. The app labels a missing returned link explicitly; it never invents a record URL. The approved-write UI and persistence boundary are tested locally, but the full live workplace journey has not passed.
+**Authenticated Ambiguous persistence check:** `npm run check:workplace --workspace web -- --identity` passed for Jerel Velarde in workspace `cb67313c-970a-4fb1-a6d8-05c8f08d5fc7`. The real OpenAI/CopilotKit agent prepared `[Hackathon demo] Verify checkout latency recovery` through `propose_followup`. Before approval, the UI showed the exact immutable fields and no saved task. Clicking **Approve & save to Ambiguous** created and read back task `5b1f10b9-1f41-44cc-a583-4f4fccfa846c` with the exact title and description. Ambiguous returned no record URL; the UI showed the actual ID and explained that no link was available. A full browser reload retrieved exactly the same one task. A subsequent real `retrieve_followup` call returned that ID with the same title, description, and INC-1042 markers, without creating a duplicate. [Review, saved-record, and retrieval screenshots](template-walkthroughs/web/README.md#4-prepare-and-review-a-task) document the live write.
+
+**Live denial check:** a separate proposal titled `[Hackathon demo] Declined proposal — do not save` was declined. The UI reported no task was created, and refreshing from Ambiguous still returned exactly the original approved task. The [decline screenshot](template-walkthroughs/web/images/10-declined-no-task-created.jpg) shows the status and refreshed list.
+
+**Pending:** live expiry and authenticated provider-error/recovery cases. Local tests cover these boundaries; the authenticated proposal, approval, create, read-back, reload, and agent retrieval journey has passed.
 
 ## Slack
 
