@@ -34,7 +34,7 @@ The page pairs a compact incident view with an always-visible assistant. Start w
 | Context and frontend tools | [AppControl](src/components/app-control.tsx): `useAgentContext`, `select_incident`, `propose_followup`, `retrieve_followup`, and `refresh_followups` |
 | Approval UI and provider reads | [Workplace follow-ups](src/components/workplace-followups.tsx) and [browser client hook](src/lib/use-workplace.ts) |
 | Server approval boundary | [Follow-up API](src/app/api/followups/route.ts) and [service](src/lib/server/followups.ts) |
-| Ambiguous MCP adapter | [Workplace adapter](src/lib/server/workplace.ts), used only after browser approval |
+| Ambiguous MCP adapter | [Workplace adapter](src/lib/server/workplace.ts), reads workspace context and saves approved tasks |
 | CopilotKit React UI | [Generative UI](src/components/generative-ui.tsx) and [providers](src/components/providers.tsx) |
 | Agent endpoint | [Server runtime](src/app/api/copilotkit/[[...path]]/route.ts), configured without raw workplace write tools |
 
