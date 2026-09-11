@@ -17,7 +17,7 @@ MODEL=gpt-5.6-sol
 AMBIGUOUS_API_KEY=your-workspace-key
 ```
 
-Choose an available model and a demo workspace you control. No managed Channel or Intelligence account is needed. The key stays on the server.
+Choose an available model and a demo workspace you control. In Ambiguous, open **Admin → People & access → API keys → New API key**, select the intended user, and replace the default wildcard scope with `tasks.read,tasks.write`. Follow the [existing-account key setup](../using-sponsor-tools.md#ambiguous-ai), then put the key privately in root `.env`. No managed Channel or Intelligence account is needed. The key stays on the server.
 
 ```bash
 npm run check-env

@@ -2,7 +2,7 @@
 
 [Template](../../../templates/web.md) · [All walkthroughs](../README.md) · [Sponsor setup](../../../using-sponsor-tools.md#ambiguous-ai)
 
-Use the sample incident workspace to learn the wiring, then replace the domain with your own workflow. The screenshots below come from a real browser trial on September 11, 2026. Authenticated Ambiguous create/read and returned-link screenshots remain pending workspace access.
+Use the sample incident workspace to learn the wiring, then replace the domain with your own workflow. The screenshots below come from a real browser trial on September 11, 2026. Authenticated Ambiguous create/read and returned-link screenshots remain pending the authenticated task trial.
 
 ## 1. Install and open the sample workspace
 
@@ -29,7 +29,24 @@ Check the service, facts, and timeline against the page without pasting them int
 
 ## 3. Connect the intended Ambiguous workspace
 
-Set `AMBIGUOUS_API_KEY` privately in root `.env`, restart, and run:
+Sign into [Ambiguous](https://app.ambiguous.ai/) and select your existing workspace. The signed-in setup path is **Admin → People & access → API keys → New API key**.
+
+On the new-key screen:
+
+- Select the **User** whose identity the template should use.
+- Enter `Hackathon web template` as the **API key name**.
+- Replace the default `*` in **Scopes** with `tasks.read,tasks.write`.
+- Choose an expiry after your demo; `2026-09-18` is an example for this event. The observed **Rate limit** default is `100`.
+
+![Verified existing-workspace API-key form with task-only scopes, before creation](images/05-ambiguous-key-setup.jpg)
+
+This real capture shows a prepared form in the test workspace. **Create API key had not been selected**, and no credential was generated or exposed. Select your own intended workspace identity.
+
+Review the workspace, user, and scope before selecting **Create API key**. If you already have a suitable key stored privately, reuse it. Follow the [full existing-account setup](../../../using-sponsor-tools.md#ambiguous-ai) if the administration page is unavailable. Do not create another workspace to solve an access problem.
+
+Copy the generated value privately into root `.env` as `AMBIGUOUS_API_KEY`, then restart the web app. Exclude the revealed key from screenshots; a safe setup capture shows the form before creation. The navigation and fields above were verified in a signed-in account, but creating a key alone does not verify task persistence.
+
+Run:
 
 ```bash
 npm run check:workplace --workspace web

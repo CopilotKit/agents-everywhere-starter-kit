@@ -245,7 +245,17 @@ node --env-file=.env examples/auth0/client.mjs
 
 ## Ambiguous AI
 
-**Access and authentication.** Open [Ambiguous AI](https://www.ambiguous.ai/) and choose a demo workspace you control. Use that workspace's **Connect** instructions and obtain an API key with the task read/write permissions you need. The kit sends this key as a Bearer credential to `https://app.ambiguous.ai/mcp`. Its environment name is specific to this kit; the vendor CLI manages credentials separately. [Authentication guide](https://www.ambiguous.ai/auth.md) · [MCP guide](https://www.ambiguous.ai/agents/mcp)
+**Access and authentication.** Sign into [Ambiguous](https://app.ambiguous.ai/) and select the existing demo workspace you intend to use. The following existing-account flow was checked in the signed-in interface on September 11, 2026:
+
+1. Open **Admin → People & access → API keys**. If a suitable key already exists in your private environment or secret store, reuse it; do not create a duplicate just because its value is not visible in the list.
+2. Select **New API key**. In the **User** selector, choose the identity the web template should act as in this workspace. If you cannot access this administration page, ask the workspace administrator to create the scoped key.
+3. Set **API key name** to `Hackathon web template`.
+4. Replace the default `*` in **Scopes** with `tasks.read,tasks.write`. This is a comma-separated text field. These API-key scopes permit task retrieval and creation; the wildcard is unnecessary for this template. OAuth's wildcard grant is a different authentication path.
+5. Set an expiry after your demo; for the September 12 event, `2026-09-18` is an example. Keep the displayed **Rate limit** value of `100` for the initial demo unless your workspace administrator specifies otherwise.
+6. Review the workspace, selected user, scopes, and expiry, then select **Create API key**. Creation grants access for that identity; a human should approve the selected scope before an agent creates it.
+7. Copy the generated key privately into root `.env` as `AMBIGUOUS_API_KEY`. Keep the value out of chat, screenshots, recordings, frontend code, and commits. Restart the web app after updating its environment.
+
+The kit sends the key as a Bearer credential to `https://app.ambiguous.ai/mcp`. `AMBIGUOUS_API_KEY` is this kit's setting; the vendor CLI manages credentials separately. [Authentication and API-key scopes](https://www.ambiguous.ai/auth.md) · [MCP guide](https://www.ambiguous.ai/agents/mcp)
 
 **Configure** root `.env`:
 
