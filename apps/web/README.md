@@ -1,4 +1,4 @@
-# Template 2: An agent inside your web app
+# An agent inside your web app
 
 **OpenAI + CopilotKit React + Ambiguous AI**
 
