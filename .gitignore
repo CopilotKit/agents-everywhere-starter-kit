@@ -10,3 +10,6 @@ dist/
 next-env.d.ts
 assets/fonts/
 apps/mobile/.expo/
+
+# Web approval and attempt metadata (not task storage)
+.data/

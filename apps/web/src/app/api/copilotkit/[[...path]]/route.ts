@@ -17,11 +17,15 @@
  *    out a fresh agent per resolution.
  */
 import { randomUUID } from "node:crypto";
-import { CopilotRuntime, createCopilotHonoHandler } from "@copilotkit/runtime/v2";
+import {
+  CopilotRuntime,
+  createCopilotHonoHandler,
+} from "@copilotkit/runtime/v2";
 import { makeAgent } from "agent-core";
 
+// Web writes use /api/followups after a browser approval. Never expose raw MCP writes here.
 const runtime = new CopilotRuntime({
-  agents: () => ({ default: makeAgent(randomUUID()) }),
+  agents: () => ({ default: makeAgent(randomUUID(), { workplace: false }) }),
 });
 
 const app = createCopilotHonoHandler({
