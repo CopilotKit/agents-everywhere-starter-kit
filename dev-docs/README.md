@@ -3,6 +3,7 @@
 | Doc | When you need it |
 |---|---|
 | [sponsors.md](sponsors.md) | Runnable recipes for all eight sponsors |
+| [Channels SDK screenshot walkthrough](channels-sdk-walkthrough/README.md) | Account, Intelligence, Slack app, runtime, and a verified native-card conversation |
 | [setup.md](setup.md) | Getting from clone to a first reply |
 | [channels.md](channels.md) | How Channels delivery actually works, and the Slack/Teams setup order |
 | [surfaces.md](surfaces.md) | Choosing a surface and understanding its actual capabilities |

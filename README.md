@@ -6,7 +6,7 @@
 
 Build an agent that belongs where people already work, talk, and live.
 
-[Channels SDK](#build-with-the-copilotkit-channels-sdk) · [Quickstart](#run-it-locally) · [Choose a surface](#choose-a-surface) · [Sponsor recipes](dev-docs/sponsors.md) · [Demo](dev-docs/demo-prompts.md) · [Submission](SUBMISSION.md)
+[Channels SDK](#build-with-the-copilotkit-channels-sdk) · [Quickstart](#run-it-locally) · [Screenshot walkthrough](dev-docs/channels-sdk-walkthrough/README.md) · [Choose a surface](#choose-a-surface) · [Sponsor recipes](dev-docs/sponsors.md) · [Demo](dev-docs/demo-prompts.md) · [Submission](SUBMISSION.md)
 
 </div>
 
@@ -25,6 +25,8 @@ Built for **[Agents, Everywhere: Bots, Channels, & More](https://sf.aitinkerers.
 Start with the included **Slack** example. The SDK also provides a **Teams** adapter path; Teams needs its own setup and validation. CopilotKit Intelligence manages the connection, so the listener needs no public tunnel.
 
 **[Set up your first Channel](dev-docs/setup.md)** · [Channels SDK guide](https://copilotkit.ai/channels-guide.md) · [Build tools and native UI](dev-docs/tools-and-context.md)
+
+**[Follow the screenshot walkthrough: account → Slack bot → native incident card](dev-docs/channels-sdk-walkthrough/README.md).** Includes Intelligence setup, the Channels SDK runtime, and a real contextual follow-up.
 
 ### Example app: OpenTag
 
