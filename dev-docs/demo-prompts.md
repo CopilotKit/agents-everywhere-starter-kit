@@ -62,10 +62,6 @@ Expected: `incident_card`, `timeline`, `create_followup`, and `select_incident` 
 
 With Ambiguous AI configured, follow [the web template](../templates/web.md#prove-a-record-survives-refresh): propose an exact task in your demo workspace, approve it, create it through the connected MCP tool, and open the returned record link. Refresh the page and retrieve the same ID. Do not use the session-only `create_followup` for this check.
 
-## WhatsApp: identity and phone approval
-
-Follow [the WhatsApp template](../templates/whatsapp.md) to link your account and request a protected follow-up. Show denial leaving no record, then approve a fresh request on your phone and show the actual saved receipt.
-
 ## Record a focused video
 
 1. Show the surface and existing context.

@@ -159,7 +159,3 @@ If you genuinely need vitest, `--legacy-peer-deps` gets you past it — put it i
 ## A web follow-up disappears on refresh
 
 The sample `create_followup` tool writes browser state only. Use the configured Ambiguous workspace tools for a persistent record and verify its ID after refresh. See [the web template](../templates/web.md#prove-a-record-survives-refresh).
-
-## WhatsApp identity or phone approval fails
-
-Use the separate [WhatsApp troubleshooting guide](../apps/whatsapp/README.md). Its webhook signatures, Auth0 user linking, CIBA entitlement, and Guardian enrollment are independent of managed Channels.

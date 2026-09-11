@@ -15,7 +15,7 @@ These are examples, not competition tracks. One surface is enough.
 | Surface | Context to build around | Possible project |
 |---|---|---|
 | At work | Team conversations, documents, tickets, and shared decisions | A Slack research assistant that uses the discussion already in the thread |
-| In your pocket | Identity, messaging, notifications, and short asynchronous interactions | A WhatsApp assistant that requests approval on the user's phone |
+| In your pocket | Device and app state, notifications, and quick interactions | A mobile assistant that asks for approval before changing an expense |
 | On the web | The current page, selected record, and app state | An in-app agent that creates a persistent follow-up from the open record |
 | In the room | Voice, vision, and physical surroundings | A spoken assistant that responds to a live situation |
 
@@ -36,7 +36,6 @@ The [submission checklist](SUBMISSION.md#evidence-for-the-judging-criteria) tran
 
 - [Slack](templates/slack.md): OpenAI + CopilotKit Channels + Exa for thread context, research, and native cards.
 - [Web](templates/web.md): OpenAI + CopilotKit React + Ambiguous AI for page context and persistent workplace records.
-- [WhatsApp](templates/whatsapp.md): OpenAI Agents SDK + Auth0 for a linked identity and phone approval, independently of CopilotKit.
 
 The incident app is a reference for wiring infrastructure. Change the user, problem, data, and interaction. Do not treat the sample scenario as the assigned challenge. Any technical stack is allowed by the handbook.
 

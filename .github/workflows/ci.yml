@@ -32,16 +32,3 @@ jobs:
           cache-dependency-path: examples/auth0/package-lock.json
       - run: npm ci --prefix examples/auth0
       - run: npm test --prefix examples/auth0
-
-  whatsapp-template:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
-          cache-dependency-path: apps/whatsapp/package-lock.json
-      - run: npm ci --prefix apps/whatsapp
-      - run: npm run typecheck --prefix apps/whatsapp
-      - run: npm test --prefix apps/whatsapp

@@ -14,5 +14,4 @@ Start with the [hackathon homepage](../README.md), choose a [template](../README
 | [Deployment](deploy.md) | Hosting the chosen surface |
 | [Demo prompts](demo-prompts.md) | Reproducible reference interactions to adapt |
 | [Troubleshooting](troubleshooting.md) | Diagnosing setup and runtime failures |
-| [WhatsApp app](../apps/whatsapp/README.md) | Independent OpenAI Agents SDK + Auth0 setup and checks |
 | [Submission checklist](../SUBMISSION.md) | Preparing evidence and deliverables |
