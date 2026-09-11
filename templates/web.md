@@ -2,7 +2,9 @@
 
 **OpenAI + CopilotKit React + Ambiguous AI**
 
-Build an agent that sees the selected record or page, helps the user act on it, and creates a workplace record that remains after a refresh. Try a customer workspace, project review page, or personal planning app. Replace the sample incident domain with your own project.
+Build an agent that sees the selected record, proposes a useful follow-up, and saves it to a workplace after approval. The incident domain is infrastructure inspiration; replace it with your own project.
+
+[Step-by-step screenshot walkthrough](../dev-docs/template-walkthroughs/web/README.md) · [Verification evidence and live gaps](../dev-docs/template-validation.md)
 
 ## Start it
 
@@ -15,47 +17,60 @@ MODEL=gpt-5.6-sol
 AMBIGUOUS_API_KEY=your-workspace-key
 ```
 
-Choose an OpenAI model your account can use. Use a demo workspace you control for the first write. This web template needs no managed Channel or Intelligence account.
+Choose an available model and a demo workspace you control. No managed Channel or Intelligence account is needed. The key stays on the server.
 
 ```bash
 npm run check-env
+npm run check:workplace --workspace web
+npm run check:workplace --workspace web -- --identity
 npm run dev:web
 ```
 
-Open `http://localhost:3100` and select an incident.
+The first workplace check discovers and validates the real public MCP input schemas without calling workspace tools. `--identity` additionally checks your authenticated identity and workspace. Open `http://localhost:3100` and select an incident.
+
+Without credentials, the page still shows selectable sample incidents and setup instructions. Chat requires a configured model; task controls require Ambiguous. There is no browser-state or local-storage task fallback.
 
 ## What is included
 
-| Piece | Implementation |
-|---|---|
-| App and selected record | [Page](../apps/web/src/app/page.tsx) and [sample data](../apps/web/src/lib/incidents.ts) |
-| Context and local tools | [AppControl](../apps/web/src/components/app-control.tsx): `useAgentContext`, `select_incident`, and local `create_followup` |
-| CopilotKit React UI | [Providers](../apps/web/src/components/providers.tsx) and [generative UI](../apps/web/src/components/generative-ui.tsx) |
-| Agent endpoint | [Server runtime](../apps/web/src/app/api/copilotkit/[[...path]]/route.ts) |
-| Persistent workplace tools | [Ambiguous MCP connection](../packages/agent-core/src/capabilities/workplace.ts), added by the shared agent factory when configured |
+| Piece                    | Implementation                                                                                                                              |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| Page and sample context  | [Page](../apps/web/src/app/page.tsx), [incidents](../apps/web/src/lib/incidents.ts)                                                         |
+| Agent tools              | [AppControl](../apps/web/src/components/app-control.tsx): `select_incident`, `propose_followup`, `retrieve_followup`, `refresh_followups`   |
+| Review and save controls | [Follow-up panel](../apps/web/src/components/workplace-followups.tsx)                                                                       |
+| Approval boundary        | [HTTP route](../apps/web/src/app/api/followups/route.ts), [approval service](../apps/web/src/lib/server/followups.ts)                       |
+| Persistent records       | [Ambiguous MCP adapter](../apps/web/src/lib/server/workplace.ts): discovered `auth_whoami`, `create_task`, `get_task`, `list_tasks` schemas |
+| CopilotKit runtime       | [Web endpoint](../apps/web/src/app/api/copilotkit/[[...path]]/route.ts), with raw workplace MCP tools disabled                              |
 
-`create_followup` changes only browser state. For the persistent path, explicitly use the connected **Ambiguous workspace's task tools**, which store the record outside the page. Their schemas come from the MCP server; discover them instead of inventing a tool name or URL.
+The model prepares a proposal. It cannot approve it or call raw Ambiguous write tools in this web runtime. The page's **Approve & save to Ambiguous** button sends a separate request tied to the browser session and immutable proposed fields. The server checks the identity/workspace and expiry, validates the discovered schema, and claims the exact action immediately before the MCP write. Chat text saying “approved” does not save a task.
 
 ## Prove a record survives refresh
 
-1. Ask: “What is happening with the selected incident? Use the page context.” Check its answer against the incident currently selected.
-2. Ask: “Propose a task in our Ambiguous workspace to investigate the selected incident. Show the exact title and details for approval. Do not use the session-only create_followup tool.”
-3. Approve that specific demo-workspace write. Ask the agent to create it with the connected workplace tool, then return its actual ID and record link. Open the link and inspect the saved fields.
-4. Refresh the browser. Ask the agent to retrieve the saved task by its ID from Ambiguous. Check it returns the same record without creating a duplicate.
+1. Ask: “What is happening with the selected incident? Use the page context.” Compare its answer with the selected record.
+2. Ask: “Propose a follow-up to investigate this incident. Include what we know and the next useful check.” Or enter a title and details in the page form and choose **Review task before saving**.
+3. Inspect the exact title, complete description, connected identity, workspace ID, and expiry in the approval panel. The incident/reference markers are included in the saved description. Select **Approve & save to Ambiguous** only for your intended demo-workspace write.
+4. Check the actual task ID. Success is reported only after retrieving the task from Ambiguous and comparing its ID, title, and description with the approved fields. Open the provider-returned record link when present.
+5. Refresh the browser and select the same incident. Its follow-ups are read from Ambiguous. Ask: “Retrieve follow-up ID [the actual ID] and confirm its details.” Neither refresh nor retrieval creates a record.
+6. Prepare another proposal and decline it. Prepare another and let its ten-minute approval expire. Neither may save a task.
 
-If only a local follow-up appears or the tool returns no retrievable record, the persistence check has not passed. Do not manufacture a URL. The shared MCP connection is implemented; live workspace access and writes require your account. The reference approval UI is not a hard authorization wrapper around every MCP call.
+Ambiguous's published Task schema does **not** promise a record URL. The page shows a returned `url` when available; otherwise it displays the actual ID and explicitly says no link was returned. It never constructs an assumed URL. A live workspace is still needed to verify real create/read results and whether it supplies a usable link.
+
+## Failure and deployment behavior
+
+A rejected credential, missing permission, changed schema, malformed result, or failed read appears as an error. After a timeout/lost create reply, the exact action is not blindly retried: the app searches Ambiguous for the matching task and reads it back. If it cannot confirm a record, the outcome stays uncertain. Different proposals with identical workspace, incident, title, and details reuse the same action identity.
+
+The `.data/web-approvals` directory under `apps/web` stores consent and attempt metadata, **not task records**. Set `WEB_APPROVAL_DIR` to a persistent directory when hosting. Preserve it across restart; deleting it removes protection against retrying an uncertain write. This demo assumes one server/shared persistent disk and does not support independently stored replicas. Pending proposals expire in ten minutes; completed-task reads always use Ambiguous.
+
+The default web scripts bind to loopback, and the API accepts only loopback hostnames to prevent DNS rebinding. This is a local demo with one server-side workspace credential. Before exposing it publicly, add application authentication and authorization that binds each user to their intended workspace, then replace the loopback-only check with an explicit trusted-origin allowlist. The session cookie protects the approval flow; it is not a user login.
 
 ## Give this to your coding agent
 
 ```text
 Read the root hackathon overview, rules, sponsor guide, and AGENTS.md.
 Adapt apps/web to our user and workflow. Keep CopilotKit React for page context,
-frontend tools, and agent-rendered UI. Use Ambiguous AI for persistent records.
-Rename or remove the sample session-only create_followup so users cannot confuse
-it with saving a workplace task. Return the real record ID/link and verify read-
-back after refresh. Keep credentials server-side and enforce any required
-approval immediately before writes. Run npm run verify and npm run build
---workspace web, then document the live record create/read check.
+frontend tools, and agent-rendered UI. Keep the separate proposal/approval path
+and real Ambiguous reads. Never expose raw write tools to the web model or
+substitute browser storage for persistence. Test denied/expired approvals,
+workspace changes, duplicate requests, uncertain writes, and read-back mismatch.
+Run npm run verify and npm run build --workspace web. Record live workspace
+create/read evidence separately from offline tests and public schema discovery.
 ```
-
-[CopilotKit docs](https://docs.copilotkit.ai/) · [Sponsor authentication and first calls](../using-sponsor-tools.md) · [Demo prompts](../dev-docs/demo-prompts.md)

@@ -1,56 +1,33 @@
 "use client";
 
-import { useCallback, useState, type FormEvent } from "react";
+import { useCallback, useState } from "react";
 import { CopilotSidebar } from "@copilotkit/react-core/v2";
 import { GenerativeUI } from "@/components/generative-ui";
+import { useModelAvailable } from "@/components/providers";
 import { AppControl } from "@/components/app-control";
-import {
-  createFollowup,
-  findIncident,
-  incidents,
-  workspaceContext,
-  type Followup,
-} from "@/lib/incidents";
+import { findIncident, incidents } from "@/lib/incidents";
+import { useWorkplace } from "@/lib/use-workplace";
+import { WorkplaceFollowups } from "@/components/workplace-followups";
 
 export default function Home() {
   const [selectedId, setSelectedId] = useState<string>(incidents[0].id);
-  const [followups, setFollowups] = useState<Followup[]>([]);
-  const [title, setTitle] = useState("");
-  const [notice, setNotice] = useState("");
-  const { selectedIncident: incident, followups: visibleTasks } =
-    workspaceContext(selectedId, followups);
+  const modelAvailable = useModelAvailable();
+  const workplace = useWorkplace(selectedId);
+  const incident = findIncident(selectedId);
   const selectIncident = useCallback((id: string) => {
     setSelectedId(findIncident(id).id);
-    setTitle("");
-    setNotice("");
   }, []);
-  const addFollowup = useCallback((incidentId: string, nextTitle: string) => {
-    const task = createFollowup(incidentId, nextTitle, crypto.randomUUID());
-    setFollowups((current) => [...current, task]);
-    setNotice(`Added a local follow-up to ${task.incidentId}.`);
-    return task;
-  }, []);
-  function submitFollowup(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    try {
-      addFollowup(selectedId, title);
-      setTitle("");
-    } catch (error) {
-      setNotice(
-        error instanceof Error ? error.message : "Unable to add follow-up.",
-      );
-    }
-  }
 
   return (
     <>
-      <GenerativeUI />
-      <AppControl
-        selectedId={selectedId}
-        followups={followups}
-        selectIncident={selectIncident}
-        addFollowup={addFollowup}
-      />
+      {modelAvailable && <GenerativeUI />}
+      {modelAvailable && (
+        <AppControl
+          selectedId={selectedId}
+          selectIncident={selectIncident}
+          workplace={workplace}
+        />
+      )}
       <main className="ck-workspace">
         <div className="ck-atmosphere" aria-hidden="true">
           {Array.from({ length: 6 }, (_, i) => (
@@ -149,51 +126,7 @@ export default function Home() {
                 ))}
               </ol>
             </section>
-            <section className="ck-panel" aria-labelledby="followup-title">
-              <h2 className="ck-section-label" id="followup-title">
-                Follow-ups <span />
-                <span className="ck-tag">{visibleTasks.length} local</span>
-              </h2>
-              <p className="ck-muted">
-                This page session only. Refreshing clears tasks; no external
-                system is updated.
-              </p>
-              {visibleTasks.length ? (
-                <ul className="ck-task-list">
-                  {visibleTasks.map((task) => (
-                    <li key={task.id}>
-                      <span aria-hidden="true">○</span>
-                      {task.title}
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="ck-empty">
-                  No follow-ups yet. Add one here or ask the agent.
-                </p>
-              )}
-              <form onSubmit={submitFollowup} className="ck-task-form">
-                <label htmlFor="task-title">
-                  New follow-up for {incident.id}
-                </label>
-                <div>
-                  <input
-                    id="task-title"
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    maxLength={200}
-                    placeholder="e.g. Compare connection pool metrics"
-                    required
-                  />
-                  <button className="ck-btn ck-btn--primary" type="submit">
-                    Add task
-                  </button>
-                </div>
-              </form>
-              <p role="status" className="ck-notice">
-                {notice}
-              </p>
-            </section>
+            <WorkplaceFollowups incidentId={selectedId} workplace={workplace} />
           </div>
           <aside className="ck-panel ck-guide" aria-label="Agent demo prompts">
             <h2 className="ck-section-label">
@@ -204,6 +137,14 @@ export default function Home() {
               Open the chat to try these prompts with your configured model
               provider.
             </p>
+            {!modelAvailable && (
+              <p className="ck-setup-note">
+                Chat needs a model provider. Configure root .env using the
+                sponsor guide, run npm run check-env, and restart. You can
+                explore incidents and use the Ambiguous task controls
+                independently.
+              </p>
+            )}
             <ol>
               <li>
                 <strong>Read the room</strong>
@@ -222,9 +163,11 @@ export default function Home() {
                 <code>timeline</code>
               </li>
               <li>
-                <strong>Take a local action</strong>
-                <p>“Add a follow-up to check the metrics for this incident.”</p>
-                <code>create_followup</code>
+                <strong>Save a real follow-up</strong>
+                <p>
+                  “Propose a follow-up to check the metrics for this incident.”
+                </p>
+                <code>propose_followup</code>
               </li>
               <li>
                 <strong>Move with the work</strong>
@@ -248,13 +191,13 @@ export default function Home() {
               </p>
             </details>
             <p className="ck-guide-footer">
-              You can select incidents and add local tasks without API
-              credentials.
+              Select sample incidents without credentials. Connect Ambiguous to
+              review, approve, and save real tasks that survive refresh.
             </p>
           </aside>
         </div>
       </main>
-      <CopilotSidebar />
+      {modelAvailable && <CopilotSidebar />}
     </>
   );
 }

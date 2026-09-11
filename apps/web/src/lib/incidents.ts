@@ -1,4 +1,5 @@
-/** Sample workspace data. All follow-ups live only in the current React session. */
+/** Sample incident context. Follow-ups are retrieved separately from Ambiguous. */
+import type { WorkplaceTask } from "./followup-types";
 export const incidents = [
   {
     id: "INC-1042",
@@ -66,12 +67,6 @@ export const incidents = [
 ] as const;
 
 export type Incident = (typeof incidents)[number];
-export type Followup = {
-  id: string;
-  incidentId: Incident["id"];
-  title: string;
-};
-
 export function findIncident(id: string): Incident {
   const incident = incidents.find((item) => item.id === id);
   if (!incident)
@@ -81,24 +76,13 @@ export function findIncident(id: string): Incident {
   return incident;
 }
 
-export function createFollowup(
-  incidentId: string,
-  title: string,
-  id: string,
-): Followup {
-  const incident = findIncident(incidentId);
-  const trimmed = title.trim();
-  if (!trimmed)
-    throw new Error("Enter a follow-up title before adding a task.");
-  if (trimmed.length > 200)
-    throw new Error("Keep the follow-up title to 200 characters or fewer.");
-  return { id, incidentId: incident.id, title: trimmed };
-}
-
-export function workspaceContext(selectedId: string, followups: Followup[]) {
+export function workspaceContext(
+  selectedId: string,
+  followups: WorkplaceTask[],
+) {
   return {
     dataSource:
-      "Fictional sample incidents. Follow-ups exist only in this browser page session; refreshing clears them. No external task system is updated.",
+      "Fictional sample incidents. Follow-ups shown here were retrieved from Ambiguous for the selected incident. A proposal is not a saved task.",
     availableIncidents: incidents.map(({ id, title, status }) => ({
       id,
       title,
@@ -108,6 +92,6 @@ export function workspaceContext(selectedId: string, followups: Followup[]) {
       ...findIncident(selectedId),
       timeline: [...findIncident(selectedId).timeline],
     },
-    followups: followups.filter((task) => task.incidentId === selectedId),
+    followups,
   };
 }

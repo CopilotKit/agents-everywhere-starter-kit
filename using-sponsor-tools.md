@@ -4,14 +4,14 @@ One setup reference for the six sponsors featured in this kit. Choose the tools 
 
 Use Node.js 22+. For Slack/web, run the homepage's clone/install steps and keep credentials in root `.env`. WhatsApp has its own `apps/whatsapp/.env`. Never put keys in frontend code or a submission. `npm run verify` covers offline behavior, not live account access.
 
-| Sponsor | Used by | First result |
-|---|---|---|
-| [OpenAI](#openai) | Slack, web, WhatsApp | A model response to supplied context |
-| [CopilotKit](#copilotkit) | Slack and web | A contextual answer and native UI |
-| [OpenRouter](#openrouter) | Optional Slack/web model gateway | A response from your chosen catalog model |
-| [Exa](#exa) | Slack template | Research with inspectable sources |
-| [Auth0](#auth0) | WhatsApp; standalone protected-API example | Verified identity and approval before a protected action |
-| [Ambiguous AI](#ambiguous-ai) | Web template; optional Slack integration | A real workplace record that survives refresh |
+| Sponsor                       | Used by                                    | First result                                             |
+| ----------------------------- | ------------------------------------------ | -------------------------------------------------------- |
+| [OpenAI](#openai)             | Slack, web, WhatsApp                       | A model response to supplied context                     |
+| [CopilotKit](#copilotkit)     | Slack and web                              | A contextual answer and native UI                        |
+| [OpenRouter](#openrouter)     | Optional Slack/web model gateway           | A response from your chosen catalog model                |
+| [Exa](#exa)                   | Slack template                             | Research with inspectable sources                        |
+| [Auth0](#auth0)               | WhatsApp; standalone protected-API example | Verified identity and approval before a protected action |
+| [Ambiguous AI](#ambiguous-ai) | Web template; optional Slack integration   | A real workplace record that survives refresh            |
 
 ## OpenAI
 
@@ -265,8 +265,12 @@ console.log(await response.json());
 JS
 ```
 
-**Check:** the returned identity belongs to the intended demo workspace. Then run `npm run dev:web` and follow [the web template's create/read-back sequence](templates/web.md#prove-a-record-survives-refresh). Ask for the exact proposed task, approve it, create it through the connected MCP tools, and retrieve the same ID after refreshing. Open the actual returned record link. Do not confuse this with the browser-only `create_followup` tool.
+**Check:** the returned identity belongs to the intended demo workspace. Run `npm run check:workplace --workspace web` to discover and validate the public MCP input schemas, then add `-- --identity` to verify your authenticated workspace. These commands never create tasks.
 
-The [shared MCP connection](packages/agent-core/src/capabilities/workplace.ts) is also available to Slack and terminal chat when configured. Tool schemas come from the live workspace; never invent names, arguments, or record URLs. Approval prompts and cards guide behavior but do not enforce a gate around every MCP tool. For your own app, enforce required authorization at the write boundary. A `401` needs valid credentials; a `403` needs appropriate permissions. A new workspace does not fix access to the intended one.
+Run `npm run dev:web` and follow [the web template's create/read-back sequence](templates/web.md#prove-a-record-survives-refresh). The agent's `propose_followup` prepares the exact fields; the page's **Approve & save to Ambiguous** button authorizes the server to write them. The web runtime has no raw MCP write tools. Saved tasks are retrieved from Ambiguous after refresh; consent/attempt metadata needs persistent disk. See [web operation](templates/web.md#failure-and-deployment-behavior).
+
+Tool names and inputs come from the live MCP catalog. The adapter uses `auth_whoami`, `create_task`, `get_task`, and `list_tasks`, verified on September 11, 2026. The published Task response supplies a real ID but does not guarantee a record URL. Display a provider-returned link when present and identify its absence when missing; never manufacture a URL.
+
+The [shared MCP connection](packages/agent-core/src/capabilities/workplace.ts) remains available to Slack and terminal chat when configured. Unlike the web's narrow approval path, those surfaces expose the general workspace tools; their proposal cards do not enforce approval around every MCP call. A `401` needs valid credentials; a `403` needs appropriate permissions. Creating a new workspace does not repair access to the intended one.
 
 [Developer guide](https://www.ambiguous.ai/llms.txt) · [API schemas](https://app.ambiguous.ai/api/openapi.json) · [Task-only disposable sandbox](https://www.ambiguous.ai/sandbox.md) (separate credentials, no MCP)

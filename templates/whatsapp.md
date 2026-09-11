@@ -4,6 +4,8 @@
 
 A separate, runnable app that links a WhatsApp sender to an authenticated person, uses their recent conversation, and asks for phone approval before saving a named request. This template uses OpenAI Agents SDK directly and has no CopilotKit dependency. CopilotKit powers the kit's [Slack](slack.md) and [web](web.md) templates.
 
+[Step-by-step screenshot walkthrough](../dev-docs/template-walkthroughs/whatsapp/README.md) · [Verification evidence and live gaps](../dev-docs/template-validation.md)
+
 ## Start it
 
 You need an OpenAI API key, a Twilio WhatsApp Sandbox joined from your phone, and an Auth0 tenant with **CIBA enabled and a Guardian device enrolled**. Check CIBA entitlement before choosing the phone demo; a default free tenant is insufficient for this flow.
@@ -27,13 +29,13 @@ The app listens on port **3003**. WhatsApp ingress and the Auth0 callback need a
 
 ## What is included
 
-| Piece | Implementation |
-|---|---|
-| Agent conversation and proposed action | [OpenAI Agents SDK agent](../apps/whatsapp/src/agent.ts) |
-| Signed WhatsApp messages and account linking | [HTTP app and worker](../apps/whatsapp/src/service.ts) |
-| Authenticated identity and phone consent | [Auth0 authorization code and CIBA flow](../apps/whatsapp/src/auth0.ts) |
-| Persistent requests and approval state | [Atomic local store](../apps/whatsapp/src/store.ts) |
-| Startup and configuration | [Entrypoint](../apps/whatsapp/src/index.ts) and [environment example](../apps/whatsapp/.env.example) |
+| Piece                                        | Implementation                                                                                       |
+| -------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| Agent conversation and proposed action       | [OpenAI Agents SDK agent](../apps/whatsapp/src/agent.ts)                                             |
+| Signed WhatsApp messages and account linking | [HTTP app and worker](../apps/whatsapp/src/service.ts)                                               |
+| Authenticated identity and phone consent     | [Auth0 authorization code and CIBA flow](../apps/whatsapp/src/auth0.ts)                              |
+| Persistent requests and approval state       | [Atomic local store](../apps/whatsapp/src/store.ts)                                                  |
+| Startup and configuration                    | [Entrypoint](../apps/whatsapp/src/index.ts) and [environment example](../apps/whatsapp/.env.example) |
 
 The model proposes a short request label. It cannot execute the protected write. The server waits for the linked user's approval of that exact action and verifies the resulting Auth0 permission before saving it.
 

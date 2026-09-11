@@ -42,7 +42,7 @@ Expected: a **real task record**, with a returned URL you can open from the thre
 
 The prompt and `propose_action` guide approval behavior but do not enforce approval around every external MCP call. Use a demo workspace. For an enforced authorization example, run the standalone [Auth0 recipe](../examples/auth0/README.md).
 
-## Browser: ambient context and visible local actions
+## Browser: ambient context and approved workplace tasks
 
 ```bash
 npm run dev:web
@@ -52,15 +52,15 @@ Open `http://localhost:3100` and select an incident. Try:
 
 > What is happening with the selected incident? Show an incident card and a timeline.
 
-> Create a follow-up for this incident to investigate the retry spike.
+> Propose a follow-up for this incident to investigate the retry spike. Include the known facts and a next check.
 
 > Select the other incident and tell me what changed.
 
-Expected: `incident_card`, `timeline`, `create_followup`, and `select_incident` as appropriate. The selected incident and follow-up list should visibly change. The context is derived from the displayed sample data; local tasks last only for this page session. `propose_action` provides approval UI but does not execute a production action. Web chat does not register Exa search; use Slack or the standalone recipes for that step.
+Expected: `incident_card`, `timeline`, `propose_followup`, and `select_incident` as appropriate. Page context comes from sample incidents. A proposal appears for review and is not yet saved. Chat requires model configuration; Ambiguous reads/writes require its workspace key. `propose_action` still only demonstrates production-action approval and executes nothing. Web chat does not register Exa search.
 
-### Add a persistent workplace record
+### Save and retrieve a workplace record
 
-With Ambiguous AI configured, follow [the web template](../templates/web.md#prove-a-record-survives-refresh): propose an exact task in your demo workspace, approve it, create it through the connected MCP tool, and open the returned record link. Refresh the page and retrieve the same ID. Do not use the session-only `create_followup` for this check.
+Follow [the web template](../templates/web.md#prove-a-record-survives-refresh): inspect the exact fields and workspace in the page, click **Approve & save to Ambiguous**, and check the returned ID. Open the provider's link if returned; a missing link is explicitly labeled. Refresh, select the same incident, and retrieve the same ID with `retrieve_followup`. No create tool runs during retrieval. Try decline and expiry too.
 
 ## WhatsApp: identity and phone approval
 

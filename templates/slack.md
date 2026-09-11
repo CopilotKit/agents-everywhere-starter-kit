@@ -4,6 +4,8 @@
 
 Build an agent that reads an existing conversation, researches what matters, and replies with native cards and source links. Try a team research discussion, support handoff, or project decision. The included incident scenario shows how the infrastructure fits together; replace it with your own workflow.
 
+[Step-by-step screenshot walkthrough](../dev-docs/template-walkthroughs/slack/README.md) · [Verification evidence and live gaps](../dev-docs/template-validation.md)
+
 ## Start it
 
 Complete the homepage's clone/install steps, then configure root `.env` using [OpenAI](../using-sponsor-tools.md#openai), [CopilotKit](../using-sponsor-tools.md#copilotkit), and [Exa](../using-sponsor-tools.md#exa):
@@ -29,13 +31,13 @@ Invite the bot to a Slack channel and mention it in a populated thread. CopilotK
 
 ## What is included
 
-| Piece | Implementation |
-|---|---|
-| Agent and model | [Shared agent factory](../packages/agent-core/src/agent.ts), using CopilotKit's built-in agent with OpenAI |
-| Conversation | [Channel](../apps/channel-slack/src/channel.tsx): mention, subscribe, respond to subscribed messages |
-| Thread context and research | [Tools](../apps/channel-slack/src/tools.tsx): `read_thread` and Exa-backed `search_web` |
-| Native cards | [Components](../apps/channel-slack/src/components.tsx): incident card and timeline via Channels JSX |
-| Prompt | [Shared prompt](../packages/agent-core/src/prompt.ts) |
+| Piece                       | Implementation                                                                                             |
+| --------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| Agent and model             | [Shared agent factory](../packages/agent-core/src/agent.ts), using CopilotKit's built-in agent with OpenAI |
+| Conversation                | [Channel](../apps/channel-slack/src/channel.tsx): mention, subscribe, respond to subscribed messages       |
+| Thread context and research | [Tools](../apps/channel-slack/src/tools.tsx): `read_thread` and Exa-backed `search_web`                    |
+| Native cards                | [Components](../apps/channel-slack/src/components.tsx): incident card and timeline via Channels JSX        |
+| Prompt                      | [Shared prompt](../packages/agent-core/src/prompt.ts)                                                      |
 
 This template uses OpenAI through CopilotKit's runtime. It does not claim that the built-in agent is OpenAI Agents SDK; the [WhatsApp template](whatsapp.md) demonstrates that SDK directly. [OpenRouter](../using-sponsor-tools.md#openrouter) is an optional model gateway for Slack and web.
 

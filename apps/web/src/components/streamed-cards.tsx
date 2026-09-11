@@ -15,10 +15,23 @@ export interface TimelineProps {
   rows?: Array<Array<string | null> | null> | null;
 }
 
-const toneColor = { neutral: "var(--muted)", good: "#2e7d5b", attention: "var(--accent)" } as const;
+const toneColor = {
+  neutral: "var(--ae-muted)",
+  good: "#2e7d5b",
+  attention: "var(--ae-accent)",
+} as const;
 
-export function IncidentCard({ headline, summary, facts, nextSteps, tone }: IncidentCardProps) {
-  const color = tone === "good" || tone === "attention" ? toneColor[tone] : toneColor.neutral;
+export function IncidentCard({
+  headline,
+  summary,
+  facts,
+  nextSteps,
+  tone,
+}: IncidentCardProps) {
+  const color =
+    tone === "good" || tone === "attention"
+      ? toneColor[tone]
+      : toneColor.neutral;
   return (
     <article className="ck-card" style={{ borderLeftColor: color }}>
       <h3>{headline || "Preparing incident assessment…"}</h3>
@@ -62,14 +75,18 @@ export function Timeline({ title, columns, rows }: TimelineProps) {
             </thead>
             <tbody>
               {!rows?.length ? (
-                <tr><td colSpan={columns.length}>Loading events…</td></tr>
-              ) : rows.map((row, rowIndex) => (
-                <tr key={rowIndex}>
-                  {columns.map((_, cellIndex) => (
-                    <td key={cellIndex}>{row?.[cellIndex] ?? "Loading…"}</td>
-                  ))}
+                <tr>
+                  <td colSpan={columns.length}>Loading events…</td>
                 </tr>
-              ))}
+              ) : (
+                rows.map((row, rowIndex) => (
+                  <tr key={rowIndex}>
+                    {columns.map((_, cellIndex) => (
+                      <td key={cellIndex}>{row?.[cellIndex] ?? "Loading…"}</td>
+                    ))}
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

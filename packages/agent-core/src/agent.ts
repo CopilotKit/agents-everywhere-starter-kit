@@ -18,7 +18,10 @@ import { workplaceMcpServers } from "./capabilities/workplace";
  *
  * Nothing else in the kit changes. That is the point of AG-UI.
  */
-export function makeAgent(threadId: string) {
+export function makeAgent(
+  threadId: string,
+  options: { workplace?: boolean } = {},
+) {
   const agent = new BuiltInAgent({
     model: resolveModel(),
     prompt: SYSTEM_PROMPT,
@@ -32,7 +35,7 @@ export function makeAgent(threadId: string) {
     // agent is never handed tools that would 401. Add your own MCP servers here
     // the same way — note HTTP transport takes `options` (with a wrapped
     // `options.fetch` for auth), not `headers`.
-    mcpServers: [...workplaceMcpServers()],
+    mcpServers: options.workplace === false ? [] : workplaceMcpServers(),
   });
   agent.threadId = threadId;
   return agent;

@@ -9,3 +9,6 @@ dist/
 .next/
 next-env.d.ts
 assets/fonts/
+
+# Web approval and attempt metadata (not task storage)
+.data/

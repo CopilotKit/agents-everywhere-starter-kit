@@ -10,6 +10,8 @@
 
 </div>
 
+[Screenshot walkthroughs: Slack, web, and WhatsApp](dev-docs/template-walkthroughs/README.md)
+
 ## Overview
 
 Build for **[Agents, Everywhere: Bots, Channels, & More](https://sf.aitinkerers.org/p/agents-everywhere-bots-channels-more-global-hackathon)**, the AI Tinkerers global hackathon on **September 12, 2026**. Put an agent inside a conversation, an app, a phone, or a physical environment. Make the context of that place essential to what it can do.
@@ -59,7 +61,7 @@ The included Slack app supplies thread history, subscriptions, search, and Chann
 
 An agent sees the page you are on and turns a request into a real workplace record you can still find after a refresh. Adapt it to customer follow-ups, a project workspace, or a personal planning app.
 
-The included web app supplies page context, frontend tools, and agent-rendered UI. Connect an Ambiguous AI workspace for persistent records, then run `npm run dev:web`. The sample app also has local follow-ups; those reset on refresh. The template shows how to verify the external record separately.
+The included web app supplies page context, frontend tools, and agent-rendered UI. Connect an Ambiguous AI workspace for persistent records, then run `npm run dev:web`. The agent prepares a task for review; the page enforces approval before the Ambiguous write and retrieves saved records after refresh. The template explains setup, duplicate protection, and live verification.
 
 **[Use the web template →](templates/web.md)** · [CopilotKit docs](https://docs.copilotkit.ai/) · [Ambiguous AI setup](using-sponsor-tools.md#ambiguous-ai)
 
@@ -85,30 +87,30 @@ Want another surface? The kit also includes [voice, MCP, mobile, and terminal st
 
 Give your agent these files before it starts coding:
 
-| File | What it provides |
-|---|---|
-| [hackathon-overview.md](hackathon-overview.md) | The challenge, four surfaces, and official judging criteria |
-| [hackathon-rules.md](hackathon-rules.md) | Build eligibility, inherited code, and required deliverables |
-| [using-sponsor-tools.md](using-sponsor-tools.md) | Every sponsor featured in this kit: access, authentication, configuration, and a first working call |
-| [AGENTS.md](AGENTS.md) | Repository conventions and verification commands |
-| [Channels skill](.agents/skills/build-channels-agent/SKILL.md) | Verified Channels APIs for the Slack template |
+| File                                                           | What it provides                                                                                    |
+| -------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| [hackathon-overview.md](hackathon-overview.md)                 | The challenge, four surfaces, and official judging criteria                                         |
+| [hackathon-rules.md](hackathon-rules.md)                       | Build eligibility, inherited code, and required deliverables                                        |
+| [using-sponsor-tools.md](using-sponsor-tools.md)               | Every sponsor featured in this kit: access, authentication, configuration, and a first working call |
+| [AGENTS.md](AGENTS.md)                                         | Repository conventions and verification commands                                                    |
+| [Channels skill](.agents/skills/build-channels-agent/SKILL.md) | Verified Channels APIs for the Slack template                                                       |
 
 The [template guides](templates/) provide launch commands, files to customize, and a concrete result to check. Start with one template and add a second surface only if it helps your user.
 
 ## Resources
 
-| Need | Go here |
-|---|---|
-| Event details, deadline, and judging | [Official portal](https://sf.aitinkerers.org/hackathons/h_XWWQL5eKfJM) · [Handbook](https://sf.aitinkerers.org/hackathons/h_XWWQL5eKfJM/handbook) |
-| OpenAI credits and redemption | [Credit instructions](CREDITS.md#openai-credits) · [API keys](https://platform.openai.com/api-keys) |
-| OpenAI agent development | [Agents SDK quickstart](https://openai.github.io/openai-agents-js/guides/quickstart/) |
-| OpenRouter access and model choice | [Keys](https://openrouter.ai/keys) · [Model catalog](https://openrouter.ai/models) · [Model switching](dev-docs/model-switching.md) |
-| CopilotKit app development | [Docs](https://docs.copilotkit.ai/) · [Tools and context](dev-docs/tools-and-context.md) |
-| CopilotKit Channels | [Channels guide](https://copilotkit.ai/channels-guide.md) · [Screenshot walkthrough](dev-docs/channels-sdk-walkthrough/README.md) · [OpenTag example app](https://github.com/CopilotKit/OpenTag) |
-| Exa quickstart | [Search API guide](https://exa.ai/docs/reference/search-api-guide) · [Kit setup](using-sponsor-tools.md#exa) |
-| Auth0 quickstarts | [Node API](https://auth0.com/docs/quickstart/backend/nodejs) · [Asynchronous authorization](https://auth0.com/ai/docs/get-started/asynchronous-authorization) · [Kit setup](using-sponsor-tools.md#auth0) |
-| Ambiguous AI quickstart | [Developer guide](https://www.ambiguous.ai/llms.txt) · [Kit setup](using-sponsor-tools.md#ambiguous-ai) |
-| Rehearse and debug | [Demo prompts](dev-docs/demo-prompts.md) · [Troubleshooting](dev-docs/troubleshooting.md) |
-| Prepare your entry | [Submission checklist](SUBMISSION.md) |
+| Need                                 | Go here                                                                                                                                                                                                   |
+| ------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Event details, deadline, and judging | [Official portal](https://sf.aitinkerers.org/hackathons/h_XWWQL5eKfJM) · [Handbook](https://sf.aitinkerers.org/hackathons/h_XWWQL5eKfJM/handbook)                                                         |
+| OpenAI credits and redemption        | [Credit instructions](CREDITS.md#openai-credits) · [API keys](https://platform.openai.com/api-keys)                                                                                                       |
+| OpenAI agent development             | [Agents SDK quickstart](https://openai.github.io/openai-agents-js/guides/quickstart/)                                                                                                                     |
+| OpenRouter access and model choice   | [Keys](https://openrouter.ai/keys) · [Model catalog](https://openrouter.ai/models) · [Model switching](dev-docs/model-switching.md)                                                                       |
+| CopilotKit app development           | [Docs](https://docs.copilotkit.ai/) · [Tools and context](dev-docs/tools-and-context.md)                                                                                                                  |
+| CopilotKit Channels                  | [Channels guide](https://copilotkit.ai/channels-guide.md) · [Screenshot walkthrough](dev-docs/channels-sdk-walkthrough/README.md) · [OpenTag example app](https://github.com/CopilotKit/OpenTag)          |
+| Exa quickstart                       | [Search API guide](https://exa.ai/docs/reference/search-api-guide) · [Kit setup](using-sponsor-tools.md#exa)                                                                                              |
+| Auth0 quickstarts                    | [Node API](https://auth0.com/docs/quickstart/backend/nodejs) · [Asynchronous authorization](https://auth0.com/ai/docs/get-started/asynchronous-authorization) · [Kit setup](using-sponsor-tools.md#auth0) |
+| Ambiguous AI quickstart              | [Developer guide](https://www.ambiguous.ai/llms.txt) · [Kit setup](using-sponsor-tools.md#ambiguous-ai)                                                                                                   |
+| Rehearse and debug                   | [Demo prompts](dev-docs/demo-prompts.md) · [Troubleshooting](dev-docs/troubleshooting.md)                                                                                                                 |
+| Prepare your entry                   | [Submission checklist](SUBMISSION.md)                                                                                                                                                                     |
 
 For the Slack/web workspaces, `npm run verify` runs typechecks, tests, and MCP checks without credentials. `npm run check-env` validates configured startup. WhatsApp has separate checks in its template. Live sponsor calls and platform delivery require your accounts. See [developer docs](dev-docs/README.md) for detailed setup and deployment.
