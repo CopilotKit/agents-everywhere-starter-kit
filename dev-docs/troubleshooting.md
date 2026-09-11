@@ -37,7 +37,7 @@ LOG_LEVEL=debug
 ```
 
 **3. The bot is not in the channel.** Workspace-installed is not the same as
-channel member. Slack emits no `app_mention` event *at all* for a channel the app
+channel member. Slack emits no `app_mention` event _at all_ for a channel the app
 is not in. `/invite @yourbot`.
 
 **4. Another runtime is stealing the delivery.** Two runtimes declaring the same
@@ -90,6 +90,20 @@ a `MessageRef`. Use a block body: `async ({ thread }) => { await thread.post(…
 `maxSteps` defaults to **1** on `BuiltInAgent`. The kit sets 10 in
 `packages/agent-core/src/agent.ts`.
 
+## Research produces a card without source links
+
+`search_web` posts a **Search sources** card directly from Exa's returned URLs before handing the evidence back to the agent. The source buttons remain available when the agent ends with an incident card and no prose. Each search has its own query and references; public documentation does not establish the incident's root cause. Empty searches visibly report **No sources found**.
+
+Search and invalid-source failures post a visible failure notice and preserve the error for the agent. Rejected source-card deliveries propagate as errors. A completed delivery therefore does not necessarily mean research succeeded. If an older runtime still returns no sources, sync `apps/channel/src/search.tsx` and `apps/channel/src/tools.tsx` together and restart it.
+
+## A Slack run stops after the first native card
+
+A delivered card alone does not prove the same Channel turn can continue after a tool result. With the pinned Channels/runtime pair, the run loop can re-enter the agent as soon as the previous observable completes. CopilotKit's `BuiltInAgent` clears its internal abort controller later, during async cleanup, so reusing the same inner instance can throw `Agent is already running. Call abortRun() first or create a new instance.` before the follow-up answer or status clear is delivered.
+
+The Slack template wraps the shared `makeAgent` factory with `ChannelRunAgent` in `apps/channel/src/agent.ts`. The wrapper keeps the public AG-UI transcript, state, subscribers, clone behavior, and cancellation on the outer agent, but delegates each low-level `run(input)` to a fresh inner `BuiltInAgent`. This is scoped to Channels; web and mobile continue using the shared factory directly.
+
+Run `npm test --workspace channel` to exercise the local lifecycle regression: a real `BuiltInAgent` reproduces the same-tick continuation guard, the channel wrapper continues with tool-result transcript and state intact, and cancellation/teardown are forwarded to the active inner agent. That test proves the local lifecycle boundary only. Actual Slack delivery still requires a live managed Channel run; preserve raw runtime stdout/stderr and Intelligence delivery traces when checking source cards, final answers, and a cleared working indicator.
+
 ## Slash commands and modals never fire
 
 They are not delivered on the managed path. Code that registers `onCommand` or
@@ -118,7 +132,7 @@ does not mean your prompt is being injected.
 
 You added **vitest**. `@copilotkit/channels` declares `vitest: ^4.0.0` as a peer
 dependency, and npm's dependency resolver crashes trying to reconcile that with
-vitest as a direct dependency — at the root *or* in a workspace, and from a
+vitest as a direct dependency — at the root _or_ in a workspace, and from a
 completely clean `node_modules`. The error names nothing useful.
 
 That is why this kit tests with **`node:test`**, Node's built-in runner: no
