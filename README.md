@@ -1,6 +1,6 @@
 <div align="center">
 
-# Agents, Everywhere
+# Agents, Everywhere Hackathon Starter Kit
 
 ![Agents, Everywhere hackathon — OpenAI, CopilotKit, OpenRouter, Exa, Auth0, and Ambiguous AI](assets/banner.png)
 
