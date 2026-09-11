@@ -4,6 +4,10 @@
 
 Use the sample incident workspace to learn the wiring, then replace the domain with your own workflow. The screenshots below come from a real browser trial on September 11, 2026. The authenticated Ambiguous trial verified review, explicit approval, create/read-back, persistence after a full browser reload, and agent retrieval by the saved ID. Ambiguous returned an actual task ID and no record URL.
 
+![Screenshot walkthrough: review, approved save and read-back, retrieval after refresh, and decline](images/web-approval-persistence.gif)
+
+This 24-second looping **screenshot walkthrough** uses four authentic captures from the trial below: review before approval, saved task and read-back, retrieval after refresh, and decline without a new task. It is assembled from screenshots, not a real-time recording.
+
 ## 1. Install and open the sample workspace
 
 ```bash

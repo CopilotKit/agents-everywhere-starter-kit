@@ -4,6 +4,8 @@
 
 This guide uses real September 10, 2026 captures for Channels account setup and real September 11 captures for Exa and Slack. The current trial verified authenticated Exa search, earlier thread context, and native card delivery. Source-link delivery in the Slack research reply remains pending.
 
+[Watch the 48-second Slack walkthrough (silent MP4)](videos/slack-thread-walkthrough.mp4). This is a real recording of scrolling the existing test thread: earlier context and the bot mention, the delivered incident card and timeline, and the follow-up without another mention with Exa tool calls. It records the existing thread rather than a fresh agent run. Citation delivery and the lingering working indicator remain unresolved.
+
 ## 1. Create the managed Slack Channel
 
 Follow steps 1–4 of the [account setup guide](../../channels-sdk-walkthrough/README.md#1-sign-in-and-create-an-intelligence-project): sign into Intelligence, create a project, create a Channel with Slack, install its Slack app, and complete platform setup. Keep credential fields out of captures.
