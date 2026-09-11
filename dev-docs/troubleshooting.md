@@ -37,7 +37,7 @@ LOG_LEVEL=debug
 ```
 
 **3. The bot is not in the channel.** Workspace-installed is not the same as
-channel member. Slack emits no `app_mention` event *at all* for a channel the app
+channel member. Slack emits no `app_mention` event _at all_ for a channel the app
 is not in. `/invite @yourbot`.
 
 **4. Another runtime is stealing the delivery.** Two runtimes declaring the same
@@ -90,6 +90,20 @@ a `MessageRef`. Use a block body: `async ({ thread }) => { await thread.post(…
 `maxSteps` defaults to **1** on `BuiltInAgent`. The kit sets 10 in
 `packages/agent-core/src/agent.ts`.
 
+## Research produces a card without source links
+
+`search_web` posts a **Search sources** card directly from Exa's returned URLs before handing the evidence back to the agent. The source buttons remain available when the agent ends with an incident card and no prose. Each search has its own query and references; public documentation does not establish the incident's root cause. Empty searches visibly report **No sources found**.
+
+Search and invalid-source failures post a visible failure notice and preserve the error for the agent. Rejected source-card deliveries propagate as errors. A completed delivery therefore does not necessarily mean research succeeded. If an older runtime still returns no sources, sync `apps/channel/src/search.tsx` and `apps/channel/src/tools.tsx` together and restart it.
+
+## A delivered Slack card still says “working”
+
+A visible card alone does not prove the native status cleared. With the pinned Channels `0.9.2`, the offline managed-delivery regression exercises a real AG-UI search, an incident card, and an agent finish without prose. It verifies empty `slack.thread.status` effects, stream closure, and a final complete terminal packet in sequence. Run it with `npm test --workspace channel`.
+
+This does not verify Slack applied those effects. The SDK treats native status updates as best effort and logs a rejected clear with `[slack-renderer] setStatus failed:` via `console.debug`. Preserve raw runtime stdout/stderr when reproducing; this console diagnostic is independent of `LOG_LEVEL`. Set `LOG_LEVEL=info` or `debug` to retain the runtime's transport warnings too. Correlate the affected delivery's status-clear and terminal acknowledgements in Intelligence, especially after `packet_out_of_order`.
+
+The pinned renderer also has a retry gap: a rejected clear after starting a native stream can leave its internal “reply posted” flag set, so later finish callbacks can skip another clear. Subsequent tool events can change that path; it is not a confirmed explanation for the live multi-tool trial. This template has no public `Thread.setStatus` hook, and this change does not claim to fix the lingering indicator or change the paired SDK/runtime pins.
+
 ## Slash commands and modals never fire
 
 They are not delivered on the managed path. Code that registers `onCommand` or
@@ -118,7 +132,7 @@ does not mean your prompt is being injected.
 
 You added **vitest**. `@copilotkit/channels` declares `vitest: ^4.0.0` as a peer
 dependency, and npm's dependency resolver crashes trying to reconcile that with
-vitest as a direct dependency — at the root *or* in a workspace, and from a
+vitest as a direct dependency — at the root _or_ in a workspace, and from a
 completely clean `node_modules`. The error names nothing useful.
 
 That is why this kit tests with **`node:test`**, Node's built-in runner: no
