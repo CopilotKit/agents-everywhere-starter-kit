@@ -98,7 +98,7 @@ async function fixture(defaultLogger = false) {
   async function login() {
     await send('hello');
     await service.tick();
-    const link = messages.at(-1)?.match(/https:\/\/demo\.example\/link\/[a-zA-Z0-9_-]+/)?.[0];
+    const link = messages.at(-1)?.match(/https:\/\/demo\.example\/link\/(?:[a-zA-Z0-9_-]|%[A-F0-9]{2})+/)?.[0];
     assert.ok(link);
     const linkUrl = link.replace(config.publicBaseUrl, appServer.url);
     assert.equal((await fetch(linkUrl)).status, 200); // Link previews must not consume it.
@@ -400,3 +400,21 @@ test('the proxy preserves signed raw JSON whitespace and Unicode bytes for actua
   assert.equal((await fetch(`${f.appUrl}/webhooks/whatsapp`, { method: 'POST', body: raw.replace('café', 'changed'), headers: signedHeaders })).status, 401);
   assert.equal((await fetch(`${f.appUrl}/webhooks/whatsapp`, { method: 'POST', body: raw, headers: { 'content-type': 'application/json' } })).status, 401);
 });
+
+for (const label of ['__lunch__', 'a__b__c', '_team_lunch_', '--team-lunch--', 'team-lunch'] as const) {
+  test(`actual Meta rendering preserves the literal consent, receipt and STATUS label ${label}`, async () => {
+    const f = await fixture(); await f.link();
+    f.changeProposal({ reply: 'Please approve this request.', requestLabel: label });
+    await f.send(`Save a request called ${label}`); await f.service.tick();
+    const action = Object.values(f.service.store.data.approvals)[0];
+    const exactBinding = `Save:${label}:#${action.id}`;
+    const start = f.calls.find((call) => call.path === '/bc-authorize')!;
+    assert.equal(start.body.binding_message, exactBinding, 'Guardian receives the original binding without presentation markup');
+    assert.ok(f.messages.at(-1)!.includes(`\`${exactBinding}\``), 'WhatsApp displays the entire same binding as literal code');
+    f.approve('approved'); f.advance(5); await f.service.tick();
+    assert.equal(f.service.store.data.records[action.id].label, label);
+    assert.ok(f.messages.at(-1)!.includes(`\`${label}\``), 'saved receipt displays the original literal label');
+    await f.send('STATUS'); await f.service.tick();
+    assert.ok(f.messages.at(-1)!.includes(`\`${action.id}: ${label} — saved\``), 'STATUS preserves the exact label after approval');
+  });
+}

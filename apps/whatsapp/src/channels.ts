@@ -48,7 +48,10 @@ export function createWhatsAppChannel(config: Config, receive: (message: IntakeM
     }
   });
   const sendReply: SendReply = async (from, body) => {
-    const ref = await adapter.post({ to: from, phoneNumberId: config.whatsappPhoneNumberId }, renderToIR(body));
+    // The SDK treats plain text as Markdown. Percent encoding keeps underscore
+    // URL tokens literal and clickable, including links already in the outbox.
+    const linkSafeBody = body.replace(/https?:\/\/[^\s`]+/g, (url) => url.replaceAll('_', '%5F'));
+    const ref = await adapter.post({ to: from, phoneNumberId: config.whatsappPhoneNumberId }, renderToIR(linkSafeBody));
     if (!ref.id) throw new DiagnosticError('META_INVALID_RESPONSE');
   };
   return { channel, sendReply };

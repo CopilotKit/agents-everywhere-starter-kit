@@ -18,6 +18,9 @@ const hash = (value: string) => createHash('sha256').update(value).digest('hex')
 const same = (a: string, b: string) => a.length === b.length && timingSafeEqual(Buffer.from(a), Buffer.from(b));
 const labelSchema = z.string().regex(/^[A-Za-z0-9_-]{1,24}$/);
 const binding = (action: Approval) => `Save:${action.label}:#${action.id}`;
+// Allowed labels and generated IDs cannot contain backticks. Channels preserves
+// code spans verbatim, so WhatsApp displays the same literal values as Guardian.
+const literal = (value: string) => `\`${value}\``;
 const actionHash = (action: Pick<Approval, 'id' | 'from' | 'sub' | 'label'>) => hash(JSON.stringify([action.id, action.from, action.sub, action.label]));
 
 export type IntakeMessage = { id: string; from: string; body: string };
@@ -130,7 +133,7 @@ export function createService(config: Config, options: {
     }
     const actions = Object.values(store.data.approvals).filter((action) => action.from === from).sort((a, b) => b.createdAt - a.createdAt);
     if (body.toUpperCase() === 'STATUS') {
-      const lines = actions.slice(0, 5).map((action) => `${action.id}: ${action.label} — ${action.status}`);
+      const lines = actions.slice(0, 5).map((action) => literal(`${action.id}: ${action.label} — ${action.status}`));
       reply(from, `Connected as ${identity.name}.\n${lines.length ? lines.join('\n') : 'No requests yet.'}`); return;
     }
     if (actions.some((action) => ['pending', 'initiating'].includes(action.status))) {
@@ -153,7 +156,7 @@ export function createService(config: Config, options: {
         action.authReqId = start.auth_req_id; action.status = 'pending';
         action.expiresAt = Math.min(action.expiresAt, now() + start.expires_in * 1000);
         action.interval = Math.max(5, start.interval); action.nextPollAt = now() + action.interval * 1000;
-        reply(from, `Approve saving the local demo request "${label}" in Auth0 Guardian. Match this exact message:\n${binding(action)}\nNo record is saved until approval. This expires within 5 minutes. You may deny it on your phone.`);
+        reply(from, `Approve saving the local demo request ${literal(label)} in Auth0 Guardian. Match this exact message:\n${literal(binding(action))}\nNo record is saved until approval. This expires within 5 minutes. You may deny it on your phone.`);
       } catch (error) {
         action.status = 'failed'; report('Approval initiation failed', error);
         reply(from, `Approval for ${action.id} could not be started. Nothing was saved. Check Auth0 CIBA configuration and Guardian enrollment, then try again.`);
@@ -187,7 +190,7 @@ export function createService(config: Config, options: {
       labelSchema.parse(action.label);
       store.data.records[action.id] = { id: action.id, sub: action.sub, label: action.label, createdAt: now() };
       action.status = 'saved';
-      reply(action.from, `Saved request "${action.label}" with ID ${action.id}, after your Auth0 approval. This is a local demo record; no external purchase or booking was made.`);
+      reply(action.from, `Saved request ${literal(action.label)} with ID ${action.id}, after your Auth0 approval. This is a local demo record; no external purchase or booking was made.`);
     } catch (error) {
       action.status = 'failed'; report('Approval verification failed', error);
       reply(action.from, `Request ${action.id} failed verification. Nothing was saved. Check the app log and Auth0 API permission, then send a new request.`);
