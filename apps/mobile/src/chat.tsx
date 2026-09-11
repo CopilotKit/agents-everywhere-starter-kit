@@ -34,6 +34,7 @@ import { Tools } from "@/tools";
 import { styles } from "@/styles";
 import { formatMoney, initialFinance } from "@/finance";
 import { createUserMessageId } from "@/message-id";
+import { AssistantMarkdown } from "@/assistant-markdown";
 
 export function ChatScreen() {
   const listRef = useRef<FlatList>(null);
@@ -149,13 +150,11 @@ export function ChatScreen() {
                     isUser ? styles.bubbleUser : styles.bubbleAgent,
                   ]}
                 >
-                  <Text
-                    style={
-                      isUser ? styles.bubbleTextUser : styles.bubbleTextAgent
-                    }
-                  >
-                    {text}
-                  </Text>
+                  {isUser ? (
+                    <Text style={styles.bubbleTextUser}>{text}</Text>
+                  ) : (
+                    <AssistantMarkdown source={text} />
+                  )}
                 </View>
               ) : null}
 
