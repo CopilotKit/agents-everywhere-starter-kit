@@ -1,37 +1,25 @@
 "use client";
 
-import { useCallback, useState, type FormEvent } from "react";
+import { useCallback, useState } from "react";
 import {
   CopilotChat,
   useConfigureSuggestions,
 } from "@copilotkit/react-core/v2";
 import { GenerativeUI } from "@/components/generative-ui";
 import { AppControl } from "@/components/app-control";
-import {
-  createFollowup,
-  findIncident,
-  incidents,
-  workspaceContext,
-  type Followup,
-} from "@/lib/incidents";
+import { findIncident, incidents, workspaceContext } from "@/lib/incidents";
+import { useWorkplace } from "@/lib/use-workplace";
+import { WorkplaceFollowups } from "@/components/workplace-followups";
 
 export default function Home() {
   const [selectedId, setSelectedId] = useState<string>(incidents[0].id);
-  const [followups, setFollowups] = useState<Followup[]>([]);
-  const [title, setTitle] = useState("");
-  const [notice, setNotice] = useState("");
-  const { selectedIncident: incident, followups: visibleTasks } =
-    workspaceContext(selectedId, followups);
+  const workplace = useWorkplace(selectedId);
+  const { selectedIncident: incident } = workspaceContext(
+    selectedId,
+    workplace.status?.status === "connected" ? workplace.status.tasks : [],
+  );
   const selectIncident = useCallback((id: string) => {
     setSelectedId(findIncident(id).id);
-    setTitle("");
-    setNotice("");
-  }, []);
-  const addFollowup = useCallback((incidentId: string, nextTitle: string) => {
-    const task = createFollowup(incidentId, nextTitle, crypto.randomUUID());
-    setFollowups((current) => [...current, task]);
-    setNotice(`Added a follow-up to ${task.incidentId}.`);
-    return task;
   }, []);
 
   useConfigureSuggestions(
@@ -43,9 +31,9 @@ export default function Home() {
             "Summarize the selected incident using the page context. What needs attention?",
         },
         {
-          title: "Add a follow-up",
+          title: "Propose a follow-up",
           message:
-            "Add one useful local follow-up for the selected incident based on its current status.",
+            "Prepare one useful Ambiguous follow-up for the selected incident. Show me the proposal before it is saved.",
         },
       ],
       available: "before-first-message",
@@ -53,26 +41,13 @@ export default function Home() {
     [],
   );
 
-  function submitFollowup(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    try {
-      addFollowup(selectedId, title);
-      setTitle("");
-    } catch (error) {
-      setNotice(
-        error instanceof Error ? error.message : "Unable to add follow-up.",
-      );
-    }
-  }
-
   return (
     <>
       <GenerativeUI />
       <AppControl
         selectedId={selectedId}
-        followups={followups}
         selectIncident={selectIncident}
-        addFollowup={addFollowup}
+        workplace={workplace}
       />
       <main className="ck-workspace">
         <header className="ck-workspace-header">
@@ -80,7 +55,7 @@ export default function Home() {
             <p className="ck-eyebrow">Agents, everywhere · Web example</p>
             <h1>Incident assistant</h1>
             <p className="ck-intro">
-              Pick an incident. Ask your assistant. Add a follow-up.
+              Pick an incident. Ask your assistant. Review a follow-up.
             </p>
           </div>
           <span className="ck-tag">Sample data</span>
@@ -140,45 +115,7 @@ export default function Home() {
               </details>
             </div>
 
-            <section className="ck-followups" aria-labelledby="followup-title">
-              <h2 id="followup-title">Follow-ups</h2>
-              {visibleTasks.length ? (
-                <ul className="ck-task-list">
-                  {visibleTasks.map((task) => (
-                    <li key={task.id}>
-                      <span aria-hidden="true">○</span>
-                      {task.title}
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="ck-empty">
-                  No follow-ups yet. Ask the assistant or add one.
-                </p>
-              )}
-              <form onSubmit={submitFollowup} className="ck-task-form">
-                <label className="ck-sr-only" htmlFor="task-title">
-                  New follow-up for {incident.id}
-                </label>
-                <input
-                  id="task-title"
-                  value={title}
-                  onChange={(event) => setTitle(event.target.value)}
-                  maxLength={200}
-                  placeholder="Write a follow-up…"
-                  required
-                />
-                <button className="ck-btn ck-btn--primary" type="submit">
-                  Add
-                </button>
-              </form>
-              <p className="ck-local-note">
-                Saved for this session. Cleared on refresh.
-              </p>
-              <p role="status" className="ck-notice">
-                {notice}
-              </p>
-            </section>
+            <WorkplaceFollowups incidentId={selectedId} workplace={workplace} />
           </section>
 
           <section
@@ -187,7 +124,7 @@ export default function Home() {
           >
             <header className="ck-assistant-header">
               <h2 id="assistant-title">Ask assistant</h2>
-              <p>It can read this incident and add follow-ups.</p>
+              <p>It can read this incident and prepare follow-ups.</p>
             </header>
             <CopilotChat
               className="ck-chat"

@@ -88,7 +88,7 @@ p {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 24px;
-  align-items: start;
+  align-items: flex-start;
 }
 .ck-panel {
   background: var(--surface);
@@ -452,4 +452,82 @@ p {
   padding: 0.9rem 1rem;
   overflow-x: auto;
   white-space: pre-wrap;
+}
+
+/* Persistent workplace follow-ups */
+.ck-followups-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+.ck-task-form--stacked {
+  display: grid;
+  gap: 8px;
+  margin-top: 16px;
+}
+.ck-task-form--stacked input,
+.ck-task-form--stacked textarea {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  border-radius: 8px;
+  padding: 10px 12px;
+  color: var(--text);
+}
+.ck-task-form--stacked textarea {
+  resize: vertical;
+}
+.ck-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.ck-record-id {
+  display: block;
+  overflow-wrap: anywhere;
+  font-size: 12px;
+  margin: 5px 0;
+}
+.ck-muted {
+  color: var(--muted);
+  font-size: 12px;
+}
+.ck-task-list .ck-muted {
+  display: block;
+}
+.ck-preserve-lines {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.ck-setup-note,
+.ck-approval {
+  background: #f7f7f9;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+  margin: 16px 0;
+  overflow-wrap: anywhere;
+}
+.ck-setup-note p,
+.ck-approval p {
+  font-size: 13px;
+  line-height: 1.6;
+}
+.ck-approval h3 {
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+.ck-approval-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.ck-error {
+  color: #a12730;
+  background: #fff1f2;
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  overflow-wrap: anywhere;
 }

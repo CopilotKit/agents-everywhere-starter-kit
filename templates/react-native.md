@@ -42,7 +42,7 @@ npm run bundle:android
 npm start
 ```
 
-Press `i` for the iOS Simulator or `a` for Android. Set `EXPO_PUBLIC_RUNTIME_URL` in `apps/mobile/.env` when the default URL does not match your target; use the full endpoint path, for example `http://10.0.2.2:3100/api/mobile-copilotkit` for Android. Current main runs Next.js without a forced host binding; use the LAN URL printed by `npm run dev:web` for a physical device, or deploy the runtime first.
+Press `i` for the iOS Simulator or `a` for Android. Set `EXPO_PUBLIC_RUNTIME_URL` in `apps/mobile/.env` when the default URL does not match your target; use the full endpoint path, for example `http://10.0.2.2:3100/api/mobile-copilotkit` for Android. The default `npm run dev:web` binds Next.js to loopback for the web approval demo; for a physical device, explicitly expose a trusted LAN host, use a tunnel/deployment, or run the runtime with the security boundary you intend.
 
 ## What is included
 

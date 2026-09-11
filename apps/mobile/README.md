@@ -50,7 +50,7 @@ npm run bundle:android
 npm start
 ```
 
-Press `i` for the iOS Simulator or `a` for Android. For a physical device, first make the web runtime reachable from the device, then scan the Expo code.
+Press `i` for the iOS Simulator or `a` for Android. For a physical device, first make the mobile runtime reachable from the device with a deliberate host or deployment, then scan the Expo code.
 
 ## Runtime URL
 
@@ -60,9 +60,9 @@ The default endpoint is `http://localhost:3100/api/mobile-copilotkit`, served by
 | --- | --- |
 | iOS Simulator | `http://localhost:3100/api/mobile-copilotkit` |
 | Android emulator | `http://10.0.2.2:3100/api/mobile-copilotkit` |
-| Physical device | `http://<your-laptop-LAN-IP>:3100/api/mobile-copilotkit` using the LAN URL printed by `npm run dev:web`, or after deploying the runtime |
+| Physical device | A deliberately exposed or deployed runtime URL, for example `http://<your-laptop-LAN-IP>:3100/api/mobile-copilotkit` only after starting Next.js on a LAN interface you trust |
 
-Put the override in `apps/mobile/.env`. Current main runs Next.js without a forced host binding. For a physical device, use the LAN URL printed by `npm run dev:web`, or deploy the runtime first.
+Put the override in `apps/mobile/.env`. The default `npm run dev:web` binds Next.js to loopback for the web approval demo, so a physical device will need an explicitly exposed host, a tunnel/deployment, or a separate runtime start command with the security boundary you intend.
 
 ## What to try
 

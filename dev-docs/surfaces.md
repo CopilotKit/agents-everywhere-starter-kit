@@ -6,12 +6,12 @@ Pick the place where your agent's context already exists. The following matrix d
 |---|---|---|---|---|
 | Terminal | `makeAgent`; messages you type | Text and tool output | Ambiguous MCP through shared factory | No Slack history, incident cards, Exa tool, or approval UI |
 | Slack / Teams | `makeAgent`; `read_thread` plus channel context | `incident_card`, `timeline`, `propose_action` | Exa and Ambiguous MCP | Managed Channel setup required; live platform validation required |
-| Web | `makeAgent`; selected sample incident, timeline and follow-ups via `useAgentContext` | Incident cards, timeline, approval UI; `select_incident`, `create_followup` | Ambiguous MCP through shared factory | Local follow-ups reset on refresh; web chat does not register Exa search |
+| Web | `makeAgent`; selected sample incident, timeline and Ambiguous follow-ups via `useAgentContext` | Incident cards, timeline, approval UI; `select_incident`, `propose_followup`, `retrieve_followup`, `refresh_followups` | Ambiguous through the server-side approval boundary | Web chat does not register Exa search or raw workplace write tools; approval server is loopback-only by default |
 | Voice (`/voice`) | Separate `RealtimeAgent`; shares system prompt | Spoken conversation and transcript | Exa via server search route | OpenAI Realtime key required regardless of chat provider; no incident workspace context, workplace MCP, or approval tools |
 | MCP | Host's agent/model; server exposes tools | `incident_card` and HTML UI resource | Exa `search_web` | Does not call `makeAgent`; rendering depends on host; no workplace or approval tools |
 | Mobile | Web runtime's `makeAgent` with a mobile prompt; finance app state through frontend tools | Expo chat, native cards, and `add_mobile_expense` approval UI | OpenAI or OpenRouter through the shared model resolver | Separate install; local sample data only; no bank, messaging, or Realtime voice integration |
 
-Managed `propose_action` posts a nonblocking proposal; its later click reports a decision without automatically resuming the agent. There is no production restart implementation. Nor is it an authorization wrapper around every Ambiguous MCP tool: use an isolated demo workspace and explicitly approve intended writes. Auth0's standalone example separately verifies a machine token and scope before creating its local record.
+Managed `propose_action` posts a nonblocking proposal; its later click reports a decision without automatically resuming the agent. There is no production restart implementation. The web template has its own Ambiguous approval boundary for follow-up tasks; other surfaces that expose Ambiguous MCP should use an isolated demo workspace and enforce required write approval in their own code. Auth0's standalone example separately verifies a machine token and scope before creating its local record.
 
 ## Launch commands
 

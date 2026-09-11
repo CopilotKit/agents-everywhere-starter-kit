@@ -32,7 +32,7 @@ npm run check-env
 npm run dev
 ```
 
-With no Channel configured, `dev` starts terminal chat. The terminal has your selected model and prompt, but no thread-history, native-card, or Exa search tools. For the sample incident workspace, run `npm run dev:web` and open the URL printed by Next.js. For the React Native template, the same command starts the mobile runtime endpoint; run the Expo app separately from `apps/mobile`.
+With no Channel configured, `dev` starts terminal chat. The terminal has your selected model and prompt, but no thread-history, native-card, or Exa search tools. For the sample incident workspace, run `npm run dev:web` and open `http://127.0.0.1:3100` or `http://localhost:3100`. The web follow-up approval server is loopback-only by default because it can use local Ambiguous credentials. For the React Native template, the same command starts the mobile runtime endpoint; simulators can use the documented localhost/emulator URLs, while physical devices need a deliberate reachable host or deployment.
 
 ## Add Slack
 

@@ -156,6 +156,6 @@ If you genuinely need vitest, `--legacy-peer-deps` gets you past it — put it i
 > still tells you to install `@copilotkit/channels@0.6.1` with
 > `@copilotkit/runtime@1.65.0`. Use the versions in this repo's `package.json`.
 
-## A web follow-up disappears on refresh
+## A web follow-up does not appear after refresh
 
-The sample `create_followup` tool writes browser state only. Use the configured Ambiguous workspace tools for a persistent record and verify its ID after refresh. See [the web template](../templates/web.md#prove-a-record-survives-refresh).
+Only approved Ambiguous records should survive refresh. First confirm `AMBIGUOUS_API_KEY` is set, restart `npm run dev:web`, prepare a proposal, and click **Approve & save to Ambiguous** on the page. Then refresh and use the returned record ID or **Refresh from Ambiguous**. If the provider returns no retrievable record, the persistence check has not passed. See [the web template](../templates/web.md#prove-a-record-survives-refresh).

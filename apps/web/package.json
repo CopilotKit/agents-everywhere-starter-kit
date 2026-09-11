@@ -3,11 +3,12 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "node --env-file-if-exists=../../.env ../../node_modules/next/dist/bin/next dev --turbopack -p 3100",
+    "dev": "node --env-file-if-exists=../../.env ../../node_modules/next/dist/bin/next dev --turbopack -p 3100 -H 127.0.0.1",
     "build": "next build",
-    "start": "node --env-file-if-exists=../../.env ../../node_modules/next/dist/bin/next start -p 3100",
+    "start": "node --env-file-if-exists=../../.env ../../node_modules/next/dist/bin/next start -p 3100 -H 127.0.0.1",
     "typecheck": "tsc --noEmit",
-    "test": "node --import tsx --test src/lib/incidents.test.ts src/components/streamed-cards.test.ts"
+    "test": "node --import tsx --test src/lib/*.test.ts src/lib/server/*.test.ts src/components/streamed-cards.test.ts",
+    "check:workplace": "node --env-file-if-exists=../../.env --import tsx scripts/check-workplace.ts"
   },
   "dependencies": {
     "@copilotkit/react-core": "1.70.1",
@@ -17,10 +18,12 @@
     "next": "^15.5.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "zod": "^4.1.0"
+    "zod": "^4.1.0",
+    "@modelcontextprotocol/sdk": "^1.30.0"
   },
   "devDependencies": {
     "@types/react": "^19.0.0",
-    "@types/react-dom": "^19.0.0"
+    "@types/react-dom": "^19.0.0",
+    "tsx": "^4.20.5"
   }
 }
