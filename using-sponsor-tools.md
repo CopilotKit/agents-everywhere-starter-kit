@@ -85,7 +85,7 @@ Keep the tested Channels/runtime versions and the `@ag-ui/client` override. Befo
 
 ## OpenRouter
 
-**Access and authentication.** Create an [API key](https://openrouter.ai/keys), choose a model from the [catalog](https://openrouter.ai/models), and check any event offer in [CREDITS.md](CREDITS.md#other-sponsor-access). Use a model that supports tools for Slack/web workflows.
+**Access and authentication.** Create an [API key](https://openrouter.ai/keys), choose a model from the [catalog](https://openrouter.ai/models), and check any event offer in [CREDITS.md](CREDITS.md#other-sponsor-access). Use a model that supports tools for Slack, web, and React Native workflows.
 
 **Configure** root `.env`:
 

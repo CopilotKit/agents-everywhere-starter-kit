@@ -1,6 +1,6 @@
 # React Native template walkthrough
 
-[Back to walkthroughs](../README.md) · [Template guide](../../../templates/react-native.md)
+[Back to developer docs](../../README.md) · [Template guide](../../../templates/react-native.md)
 
 This guide lists the captures to record from your own simulator or device. The starter ships the Expo app and offline verification, but no claimed live mobile screenshots are included.
 
