@@ -1,4 +1,4 @@
-# Template 3: React Native agent
+# React Native agent
 
 **OpenAI or OpenRouter + CopilotKit React Native**
 

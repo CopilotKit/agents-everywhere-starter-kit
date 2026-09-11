@@ -1,4 +1,4 @@
-# Template 1: Slack thread agent
+# Slack thread agent
 
 **OpenAI + CopilotKit Channels + Exa**
 
