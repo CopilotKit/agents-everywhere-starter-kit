@@ -2,7 +2,7 @@
 
 [Template](../../../templates/whatsapp.md) · [All walkthroughs](../README.md) · [Account setup](../../../using-sponsor-tools.md#whatsapp-identity-and-phone-approval)
 
-This app uses **OpenAI Agents SDK + CopilotKit Channels + Auth0**, with direct Meta WhatsApp delivery. Auth0 account setup is being captured from a real development tenant. The Meta message, Guardian approval, saved receipt, and restart journey remain pending; account configuration alone does not prove the phone flow.
+This app uses **OpenAI Agents SDK + CopilotKit Channels + Auth0**, with direct Meta WhatsApp delivery. Auth0 and Meta setup screenshots below come from real development accounts. The Meta message, Guardian approval, saved receipt, and restart journey remain pending; account configuration alone does not prove the phone flow.
 
 ![Auth0 setup screenshot walkthrough; live WhatsApp phone approval remains pending](images/auth0-setup-walkthrough.gif)
 
@@ -38,7 +38,29 @@ In **Advanced Settings → Grant Types**, enable **Authorization Code** and **Cl
 
 ## 2. Configure Meta and the public origin
 
-Follow [Meta and Channels setup](../../../using-sponsor-tools.md#whatsapp-transport-setup-meta--copilotkit-channels) to configure a WhatsApp-enabled Meta app, business phone-number ID, credentials, and verified test recipient. Start the app and set Meta’s callback to `https://YOUR-PUBLIC-ORIGIN/webhooks/whatsapp`. Supply the matching verify token and subscribe to messages. Use the same public origin for the Auth0 callback. Keep the tunnel running; expose port 3003 and keep the SDK listener on port 3004 private.
+Follow [Meta and Channels setup](../../../using-sponsor-tools.md#whatsapp-transport-setup-meta--copilotkit-channels). The following onboarding screens were captured on September 11, 2026.
+
+![Meta setup screenshot walkthrough; recipient and live delivery remain pending](images/meta-setup-walkthrough.gif)
+
+This 12-second GIF walks through the three Meta screenshots below. It shows app creation and the provisioned test number; no phone message has been sent in this capture.
+
+1. Sign in to Meta for Developers and open **My Apps → Create App**. Enter an app name and your work contact email. In this run, Meta rejected a name containing its “WhatsApp” trademark, so the demo uses **Agents Everywhere Pocket**.
+2. Select **Connect with customers through WhatsApp**. Choose a business portfolio you control, or create one using your public business name. Review the app details and select **Create app**. This development demo uses the new CopilotKit portfolio; its business verification remains incomplete.
+
+![Meta creation overview with the WhatsApp use case and development business portfolio](images/06-meta-app-overview.jpg)
+
+3. On the new dashboard, select **Customize the Connect with customers through WhatsApp use case**. The app is still unpublished.
+
+![Created Meta app dashboard with the WhatsApp customization entry point](images/07-meta-app-dashboard.jpg)
+
+4. Continue with the selected portfolio, then open **Basic setup → Step 1. Try it out**. Meta provisions a test phone number and displays its **Phone Number ID** and WhatsApp Business account ID. The screenshot below was taken before generating an access token.
+
+![Meta test phone number provisioned, with no access token generated in the capture](images/08-meta-test-number.jpg)
+
+5. Select **Generate token** and keep the result private as `WHATSAPP_ACCESS_TOKEN`. Copy the **Phone Number ID**, rather than the displayed phone number, into `WHATSAPP_PHONE_NUMBER_ID`. Open **App settings → Basic → Show** to retrieve the app secret for `WHATSAPP_APP_SECRET`; Meta may require password re-entry. Never include access tokens or app secrets in screenshots or commits.
+6. Add your own WhatsApp number as a test recipient and complete its verification. This step is still pending in the recorded demo. A provisioned sender number alone does not establish that messages can reach your phone.
+
+Start the app and set Meta’s callback to `https://YOUR-PUBLIC-ORIGIN/webhooks/whatsapp`. Supply the matching verify token and subscribe to messages. Use the same public origin for the Auth0 callback. Keep the tunnel running; expose port 3003 and keep the SDK listener on port 3004 private.
 
 **Capture pending:** verified Meta recipient, successful webhook verification, and messages subscription. Exclude access tokens, application secrets, verify tokens, and unrelated phone numbers.
 
