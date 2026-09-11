@@ -1,7 +1,6 @@
 # Tools, native UI, and approval gates
 
-This is where rungs 2 and 3 of the Context Ladder get built. All three examples
-live in `apps/channel-slack/src/`.
+The Slack template uses CopilotKit Channels for tools, conversation context, and native UI. The examples below live in `apps/channel-slack/src/`.
 
 ## Tools — `defineChannelTool`
 
@@ -66,8 +65,8 @@ Pass via `createChannel({ components: [IncidentCard] })`. Registration is also w
 lets handlers be recovered after a restart when a durable store is configured.
 
 This kit ships `incident_card` and `timeline`. Use a native artifact when it makes
-the incident easier to understand. The Context Ladder is kit design guidance,
-supplemental to the [published judging rubric](https://sf.aitinkerers.org/hackathons/h_XWWQL5eKfJM).
+the incident easier to understand. Evaluate the resulting interaction using the
+[official judging criteria](../hackathon-overview.md#judging-criteria).
 
 ## Managed action proposals
 

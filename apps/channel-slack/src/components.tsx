@@ -2,7 +2,7 @@
  * Agent-rendered components for the on-call agent.
  *
  * `defineChannelComponent` turns a component into a tool the agent can call to
- * draw UI itself. This is rung 3 of the Context Ladder: at 2am nobody reads a
+ * draw UI itself. During an incident, a native card is easier to scan than a
  * paragraph, but everyone reads a card.
  *
  * One tree renders as Slack Block Kit, Teams Adaptive Cards, and Discord

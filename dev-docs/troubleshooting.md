@@ -16,12 +16,6 @@ chat provider. `/voice` separately needs OpenAI Realtime credentials. See
 it validates your selected provider and configured surfaces, without authenticating
 against remote services. A successful offline check does not prove live access.
 
-## Background research never arrives
-
-Results are not pushed automatically. Ask `check run_YOUR_ID` in the originating
-thread. Ensure the Trigger worker has its own Exa environment configuration and
-that approval was clicked before a listener restart. See [durable work](durable-work.md).
-
 ## It boots, reports online, and answers nothing
 
 **1. The Channel is `setup_required`, not `online`.**
@@ -161,3 +155,11 @@ If you genuinely need vitest, `--legacy-peer-deps` gets you past it — put it i
 > One stale doc to know about: `docs.copilotkit.ai/slack/deploy-and-operate`
 > still tells you to install `@copilotkit/channels@0.6.1` with
 > `@copilotkit/runtime@1.65.0`. Use the versions in this repo's `package.json`.
+
+## A web follow-up disappears on refresh
+
+The sample `create_followup` tool writes browser state only. Use the configured Ambiguous workspace tools for a persistent record and verify its ID after refresh. See [the web template](../templates/web.md#prove-a-record-survives-refresh).
+
+## WhatsApp identity or phone approval fails
+
+Use the separate [WhatsApp troubleshooting guide](../apps/whatsapp/README.md). Its webhook signatures, Auth0 user linking, CIBA entitlement, and Guardian enrollment are independent of managed Channels.

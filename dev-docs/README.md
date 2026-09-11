@@ -1,15 +1,18 @@
-# dev-docs
+# Developer resources
+
+Start with the [hackathon homepage](../README.md), choose a [template](../README.md#templates), and give your coding agent the [overview](../hackathon-overview.md), [rules](../hackathon-rules.md), and [sponsor tool guide](../using-sponsor-tools.md).
 
 | Doc | When you need it |
 |---|---|
-| [sponsors.md](sponsors.md) | Runnable recipes for all eight sponsors |
-| [Channels SDK screenshot walkthrough](channels-sdk-walkthrough/README.md) | Account, Intelligence, Slack app, runtime, and a verified native-card conversation |
-| [setup.md](setup.md) | Getting from clone to a first reply |
-| [channels.md](channels.md) | How Channels delivery actually works, and the Slack/Teams setup order |
-| [surfaces.md](surfaces.md) | Choosing a surface and understanding its actual capabilities |
-| [model-switching.md](model-switching.md) | Choosing OpenAI or OpenRouter and understanding provider precedence |
-| [tools-and-context.md](tools-and-context.md) | Giving the agent tools, native UI, and approval gates |
-| [durable-work.md](durable-work.md) | Approved research and explicit same-thread result retrieval |
-| [deploy.md](deploy.md) | Getting it off your laptop before 15:30 |
-| [demo-prompts.md](demo-prompts.md) | What to type to get a demo in thirty seconds |
-| [troubleshooting.md](troubleshooting.md) | It boots, reports online, and answers nothing |
+| [Sponsor tool guide](../using-sponsor-tools.md) | Authentication, configuration, and a first working call for each featured sponsor |
+| [Channels screenshot walkthrough](channels-sdk-walkthrough/README.md) | Intelligence, Slack installation, runtime, and a verified native-card conversation |
+| [Setup](setup.md) | Getting from clone to a first Slack or web reply |
+| [Channels](channels.md) | How managed delivery works and Slack/Teams setup order |
+| [Surfaces](surfaces.md) | Additional voice, MCP, mobile, and terminal starting points |
+| [Model switching](model-switching.md) | Choosing OpenAI or OpenRouter and understanding provider precedence |
+| [Tools and context](tools-and-context.md) | CopilotKit Channels tools, native UI, and action proposals |
+| [Deployment](deploy.md) | Hosting the chosen surface |
+| [Demo prompts](demo-prompts.md) | Reproducible reference interactions to adapt |
+| [Troubleshooting](troubleshooting.md) | Diagnosing setup and runtime failures |
+| [WhatsApp app](../apps/whatsapp/README.md) | Independent OpenAI Agents SDK + Auth0 setup and checks |
+| [Submission checklist](../SUBMISSION.md) | Preparing evidence and deliverables |

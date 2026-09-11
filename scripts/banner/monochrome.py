@@ -1,7 +1,7 @@
 """Flatten a brand SVG to a single-colour mark.
 
 Sponsor rows read as one system only if every mark carries the same weight and
-colour. Several of these ship gradients (Trigger.dev, Ambiguous AI), so those
+colour. Some of these ship gradients (for example, Ambiguous AI), so those
 get stripped: <defs> goes, every `fill="url(#...)"` and hard-coded hex becomes
 `currentColor`, and `fill="none"` survives only on the root element where it
 means "don't paint the canvas".

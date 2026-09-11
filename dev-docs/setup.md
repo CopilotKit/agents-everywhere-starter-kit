@@ -63,7 +63,7 @@ Use a separate Intelligence project for local and deployed listeners. Two listen
 
 ## Add one useful capability
 
-[Choose a sponsor recipe](sponsors.md): Exa search, Trigger.dev research, an Ambiguous AI follow-up, a protected Auth0 action, or a Mozilla agent trace. Each has its own prerequisites; adding a key does not configure every service.
+Choose the tools your [template](../README.md#templates) needs, then follow [using-sponsor-tools.md](../using-sponsor-tools.md) for authentication, configuration, and a first call. Each integration has its own prerequisites.
 
 ## Verify offline, then prove the live path
 

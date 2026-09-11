@@ -33,15 +33,15 @@ jobs:
       - run: npm ci --prefix examples/auth0
       - run: npm test --prefix examples/auth0
 
-  mozilla-example:
+  whatsapp-template:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-node@v4
         with:
-          python-version: '3.12'
-          cache: pip
-          cache-dependency-path: examples/mozilla/requirements.txt
-      - run: python -m pip install -r examples/mozilla/requirements.txt
-      - run: python -m pip check
-      - run: python -m unittest discover -s examples/mozilla -v
+          node-version: 22
+          cache: npm
+          cache-dependency-path: apps/whatsapp/package-lock.json
+      - run: npm ci --prefix apps/whatsapp
+      - run: npm run typecheck --prefix apps/whatsapp
+      - run: npm test --prefix apps/whatsapp

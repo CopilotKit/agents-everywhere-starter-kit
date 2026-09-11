@@ -35,7 +35,7 @@ Restart the app after editing `.env`. Provider availability, tool support, acces
 
 With `MODEL_PROVIDER` absent, an `OPENROUTER_API_KEY` selects OpenRouter. Otherwise the prefix in `MODEL` selects a provider, defaulting to OpenAI. Existing `anthropic/` and `google/` prefixes remain supported with `ANTHROPIC_API_KEY` and `GOOGLE_API_KEY`. An explicit non-router provider must match the model prefix; unsupported providers fail with a configuration error.
 
-The browser's `/voice` route uses OpenAI Realtime independently of chat selection. It always needs `OPENAI_API_KEY`; use `npm run check-env -- --voice` before testing it. The MCP server supplies tools to a host and does not use this model resolver. The Mozilla example has its own Python configuration.
+The browser's `/voice` route uses OpenAI Realtime independently of chat selection. It always needs `OPENAI_API_KEY`; use `npm run check-env -- --voice` before testing it. The MCP server supplies tools to a host and does not use this model resolver. The WhatsApp app uses its own OpenAI configuration.
 
 ## Bring another agent backend
 

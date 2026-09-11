@@ -24,8 +24,7 @@ import { searchWeb, searchWebParameters } from "agent-core";
 import { z } from "zod";
 
 /**
- * Rung 2 of the Context Ladder, and the reason this agent belongs in the channel
- * rather than in a separate window: the thread already contains the incident.
+ * Read the incident context already present in the conversation.
  */
 export const readThread = defineChannelTool({
   name: "read_thread",

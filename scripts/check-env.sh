@@ -120,7 +120,7 @@ if [ -f .env ]; then
       xapp-*) fail "SLACK_APP_TOKEN is set. Socket Mode belongs only to the direct-adapter path; a managed Channel needs no app-level token. Remove it." ;;
     esac
   else
-    warn "Tier 1 not configured — the agent will not appear in Slack. Run: npm run channel:setup"
+    warn "Slack is not configured — the agent will not appear there. Run: npm run channel:setup"
   fi
 
   # ── tier 2 ────────────────────────────────────────────────────────────────
@@ -138,15 +138,6 @@ if [ -f .env ]; then
 
   if [ -z "${AMBIGUOUS_API_KEY:-}" ]; then
     warn "AMBIGUOUS_API_KEY not set — the agent has no workplace to act in (no mail/tasks/CRM tools)."
-  fi
-
-  if [ -n "${TRIGGER_SECRET_KEY:-}" ]; then
-    case "$TRIGGER_SECRET_KEY" in
-      tr_dev_*|tr_prod_*) ;;
-      *) warn "TRIGGER_SECRET_KEY does not start with tr_dev_ or tr_prod_. Create one with \"Trigger only\" access in the Trigger.dev dashboard." ;;
-    esac
-  else
-    warn "TRIGGER_SECRET_KEY not set — the durable work tool (run_deep_work) will not be registered."
   fi
 fi
 

@@ -1,0 +1,272 @@
+# Using sponsor tools
+
+One setup reference for the six sponsors featured in this kit. Choose the tools your workflow needs. **OpenAI** is the marquee sponsor; **CopilotKit and OpenRouter** share the next tier; **Exa, Auth0, and Ambiguous AI** provide additional capabilities. This is the kit's selected lineup; the [event portal](https://sf.aitinkerers.org/hackathons/h_XWWQL5eKfJM) maintains the full event roster.
+
+Use Node.js 22+. For Slack/web, run the homepage's clone/install steps and keep credentials in root `.env`. WhatsApp has its own `apps/whatsapp/.env`. Never put keys in frontend code or a submission. `npm run verify` covers offline behavior, not live account access.
+
+| Sponsor | Used by | First result |
+|---|---|---|
+| [OpenAI](#openai) | Slack, web, WhatsApp | A model response to supplied context |
+| [CopilotKit](#copilotkit) | Slack and web | A contextual answer and native UI |
+| [OpenRouter](#openrouter) | Optional Slack/web model gateway | A response from your chosen catalog model |
+| [Exa](#exa) | Slack template | Research with inspectable sources |
+| [Auth0](#auth0) | WhatsApp; standalone protected-API example | Verified identity and approval before a protected action |
+| [Ambiguous AI](#ambiguous-ai) | Web template; optional Slack integration | A real workplace record that survives refresh |
+
+## OpenAI
+
+**Access and authentication.** Follow [OpenAI credit instructions](CREDITS.md#openai-credits), then create a server-side [API key](https://platform.openai.com/api-keys) in the funded organization/project. Credit redemption and key creation are separate steps.
+
+**Configure Slack/web** in root `.env`:
+
+```dotenv
+MODEL_PROVIDER=openai
+OPENAI_API_KEY=your-key
+MODEL=gpt-5.6-sol
+```
+
+`MODEL` is the kit's configured model; choose one available to your API account. For WhatsApp, use `OPENAI_API_KEY` and `OPENAI_MODEL` in its separate environment file.
+
+**First call.** From root, make a small Responses API request using the configured key and model:
+
+```bash
+node --env-file=.env --input-type=module <<'JS'
+const response = await fetch('https://api.openai.com/v1/responses', {
+  method: 'POST',
+  headers: {
+    Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    model: process.env.MODEL,
+    input: 'A team already tried a rollback and it did not help. What should an assistant remember when suggesting the next step?',
+    max_output_tokens: 1024,
+  }),
+});
+if (!response.ok) throw new Error(`OpenAI request failed: HTTP ${response.status}`);
+const result = await response.json();
+const answer = result.output.flatMap(item => item.content ?? [])
+  .filter(item => item.type === 'output_text').map(item => item.text).join('\n');
+if (!answer) throw new Error(`OpenAI returned no text; response status: ${result.status}`);
+console.log(answer);
+JS
+```
+
+**Check:** the response accounts for the failed rollback; confirm usage in the correct API project. Then run `npm run dev:local`, `npm run dev:slack`, or `npm run dev:web`. These use the [shared model adapter](packages/agent-core/src/model.ts). The [WhatsApp app](apps/whatsapp/README.md) uses OpenAI Agents SDK directly. [Agents SDK quickstart](https://openai.github.io/openai-agents-js/guides/quickstart/)
+
+## CopilotKit
+
+**Access and authentication.** The React web template needs only your model-provider account. The Slack template additionally uses [CopilotKit Intelligence](https://intelligence.copilotkit.ai/) to manage the Channel and Slack installation. Create a Channel with `npm run channel:setup`; follow [setup](dev-docs/setup.md) or the [illustrated walkthrough](dev-docs/channels-sdk-walkthrough/README.md).
+
+**Configure Slack** in root `.env`, alongside the model settings:
+
+```dotenv
+CHANNEL_CODE=your-channel-code
+INTELLIGENCE_API_KEY=your-project-scoped-key
+LOG_LEVEL=debug
+```
+
+The Channel Code must match Intelligence exactly. Use a project-scoped API key from that project's API Keys page. Managed Channels require no `xapp-` token or public tunnel.
+
+**First call, Slack:**
+
+```bash
+npm run check-env
+npm run dev:slack
+```
+
+Invite the bot and add a few facts to a thread before asking: “Read this thread and show an incident card.” **Check:** `read_thread` uses earlier messages and `incident_card` renders in Slack. Customize [the Channel](apps/channel-slack/src/channel.tsx), [tools](apps/channel-slack/src/tools.tsx), and [components](apps/channel-slack/src/components.tsx).
+
+**First call, React:** run `npm run dev:web`, open `http://localhost:3100`, select an incident, then ask: “What is happening with the selected incident? Show a card.” **Check:** the answer matches the current page without pasting its contents. [AppControl](apps/web/src/components/app-control.tsx) registers page context and frontend tools; [GenerativeUI](apps/web/src/components/generative-ui.tsx) registers React components.
+
+Keep the tested Channels/runtime versions and the `@ag-ui/client` override. Before editing the Slack template, read the [Channels skill](.agents/skills/build-channels-agent/SKILL.md). [CopilotKit docs](https://docs.copilotkit.ai/) · [Channels guide](https://copilotkit.ai/channels-guide.md)
+
+## OpenRouter
+
+**Access and authentication.** Create an [API key](https://openrouter.ai/keys), choose a model from the [catalog](https://openrouter.ai/models), and check any event offer in [CREDITS.md](CREDITS.md#other-sponsor-access). Use a model that supports tools for Slack/web workflows.
+
+**Configure** root `.env`:
+
+```dotenv
+MODEL_PROVIDER=openrouter
+OPENROUTER_API_KEY=your-key
+MODEL=openai/gpt-5.6-sol
+```
+
+Replace `MODEL` with an available catalog slug. OpenRouter chat does not need an OpenAI key. The independent browser voice route still requires OpenAI Realtime credentials.
+
+**First call:**
+
+```bash
+node --env-file=.env --input-type=module <<'JS'
+const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+  method: 'POST',
+  headers: {
+    Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    model: process.env.MODEL,
+    messages: [{ role: 'user', content: 'Suggest one useful action for an assistant in a team research thread.' }],
+  }),
+});
+if (!response.ok) throw new Error(`OpenRouter request failed: HTTP ${response.status}`);
+const result = await response.json();
+console.log(result.choices[0].message.content);
+JS
+```
+
+**Check:** inspect the response and selected model in your account, then run the same template scenario after restarting the app. [Quickstart](https://openrouter.ai/docs/quickstart) · [Provider precedence and switching](dev-docs/model-switching.md)
+
+## Exa
+
+**Access and authentication.** Create an [Exa API key](https://dashboard.exa.ai/api-keys). Exa supplies public web evidence; it does not read your private incident logs.
+
+**Configure** root `.env`:
+
+```dotenv
+EXA_API_KEY=your-key
+EXA_SEARCH_TYPE=fast
+```
+
+**First call**, using the same SDK as the kit:
+
+```bash
+node --env-file=.env --input-type=module <<'JS'
+import { Exa } from 'exa-js';
+const exa = new Exa(process.env.EXA_API_KEY);
+const result = await exa.searchAndContents('documented causes of retry storms', {
+  type: 'fast',
+  numResults: 3,
+  highlights: { numSentences: 2, highlightsPerUrl: 1 },
+});
+console.log(result.results.map(({ title, url, highlights }) => ({ title, url, highlights })));
+JS
+```
+
+**Check:** open the returned URLs and compare their evidence with the answer. In Slack ask the agent to research the question in the thread and include sources. The [search capability](packages/agent-core/src/capabilities/search.ts) is registered by the Slack template when the key exists. It also appears in MCP and voice search; ordinary web chat does not register Exa. [Search API quickstart](https://exa.ai/docs/reference/search-api-guide)
+
+## Auth0
+
+### WhatsApp identity and phone approval
+
+You need an OpenAI API key, a Twilio account with WhatsApp testing enabled, and an Auth0 tenant entitled to **CIBA**. Auth0 documents an Enterprise plan or appropriate add-on requirement; an ordinary free tenant is not sufficient for the phone approval flow. Enable Guardian push and enroll your test user before testing approvals. See [Auth0 CIBA configuration](https://auth0.com/docs/get-started/applications/configure-client-initiated-backchannel-authentication) and [Guardian enrollment](https://auth0.com/docs/secure/multi-factor-authentication/auth0-guardian).
+
+#### Auth0 application and user
+
+1. In **Applications → Applications**, create a first-party, OIDC-conformant **Regular Web Application**. Open its **Credentials → Authentication Methods** and select **Client Secret (Post)** (`client_secret_post`). In **Grant Types**, enable **Authorization Code** and **Client Initiated Backchannel Authentication**, then save. Use this same confidential client for login and CIBA. See [application credentials](https://auth0.com/docs/get-started/applications/credentials).
+2. Set the Allowed Callback URL to `https://YOUR-PUBLIC-ORIGIN/auth/callback`. Set `AUTH0_ISSUER_BASE_URL`, `AUTH0_CLIENT_ID`, and `AUTH0_CLIENT_SECRET` in `apps/whatsapp/.env`. The issuer must be the exact tenant/custom domain used for login and token issuance.
+3. Create a custom API with identifier `https://whatsapp-demo.example` (or your own value), **RS256** signing, and permission **`create:requests`**. Set `AUTH0_AUDIENCE` to its identifier. Enable API RBAC and grant this permission to your test user through a role. The app checks the access token’s `scope`; it does not treat authentication alone as permission.
+4. In the app’s settings, open **Client Initiated Backchannel Authentication (CIBA)** and enable **Guardian push only**. Disable the email notification channel so an unenrolled user cannot fall back to email approval. In **Security → Multi-factor Auth → Push Notification using Auth0 Guardian**, enable the factor, set **Push Notification App** to **Auth0 Guardian**, and save. Require MFA for the test login to prompt enrollment. Check the test user under **User Management → Users** and confirm Guardian enrollment before trying CIBA. This app requests up to 300 seconds for the push approval.
+
+The login uses authorization code + PKCE, state, browser cookie, and validated ID token nonce. It never trusts a user-supplied Auth0 subject. After login, the browser displays a confirmation code that must be sent from the original WhatsApp sender before linking takes effect. See [Auth0 authorization code with PKCE](https://auth0.com/docs/get-started/authentication-and-authorization-flow/authorization-code-flow-with-pkce/call-your-api-using-the-authorization-code-flow-with-pkce).
+
+CIBA calls `POST /bc-authorize` using an `iss_sub` login hint for the linked subject, your API audience, `openid create:requests`, and the exact action’s binding message. The worker polls `POST /oauth/token` with the returned `auth_req_id`, respecting `interval` and `slow_down`. Approval requires a valid RS256 access token for the expected issuer, audience, client, subject, expiry, and permission. Access tokens are used for that exchange only and are not stored or accepted from WhatsApp. See [Auth0 CIBA push flow](https://auth0.com/docs/get-started/authentication-and-authorization-flow/client-initiated-backchannel-authentication-flow/mobile-push-notifications-with-ciba) and [access token validation](https://auth0.com/docs/secure/tokens/access-tokens/validate-access-tokens).
+
+#### WhatsApp transport setup (Twilio)
+
+1. Activate Twilio’s WhatsApp testing environment / Sandbox and join it from your phone using its displayed join instructions.
+2. Copy the **Account SID**, **Auth Token**, and exact WhatsApp sender to `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, and `TWILIO_WHATSAPP_FROM`. Use the Account Auth Token required for webhook signature validation.
+3. Set **When a message comes in** to `https://YOUR-PUBLIC-ORIGIN/webhooks/whatsapp`, method **POST**. Use the exact URL, with no query or trailing slash.
+4. Keep your public tunnel and this app running. Incoming form bodies are verified with Twilio’s official signature validator using the configured public URL; account and destination are checked too.
+
+The app acknowledges the webhook immediately and sends replies through Twilio’s Messages REST API. Sandbox participants must join, usage may be billed, and free-form replies require an open 24-hour customer service window. See [Twilio WhatsApp Sandbox](https://www.twilio.com/docs/whatsapp/sandbox), [WhatsApp quickstart](https://www.twilio.com/docs/whatsapp/quickstart), and [webhook security](https://www.twilio.com/docs/usage/webhooks/webhooks-security).
+
+#### OpenAI Agents SDK
+
+Set `OPENAI_API_KEY`. `OPENAI_MODEL` defaults to `gpt-4.1-mini`; choose a model available to your project that supports structured output. [agent.ts](apps/whatsapp/src/agent.ts) uses the actual `@openai/agents` `Agent` and `run()` APIs. It receives the authenticated display name and recent conversation and returns a validated proposal. The model has no privileged execution tool. See the [Agents SDK quickstart](https://openai.github.io/openai-agents-js/guides/quickstart/) and [structured output guide](https://openai.github.io/openai-agents-js/guides/agents/).
+
+#### Environment and first working call
+
+This app has its own dependencies and environment; it uses no CopilotKit account. From the repository root:
+
+```bash
+npm ci --prefix apps/whatsapp
+cp apps/whatsapp/.env.example apps/whatsapp/.env
+npm run typecheck --prefix apps/whatsapp
+npm test --prefix apps/whatsapp
+```
+
+Fill in `apps/whatsapp/.env` with the values from the steps above:
+
+```dotenv
+OPENAI_API_KEY=your-openai-key
+OPENAI_MODEL=gpt-4.1-mini
+PUBLIC_BASE_URL=https://your-public-origin.example
+AUTH0_ISSUER_BASE_URL=https://your-tenant.us.auth0.com
+AUTH0_CLIENT_ID=your-regular-web-app-client-id
+AUTH0_CLIENT_SECRET=your-regular-web-app-client-secret
+AUTH0_AUDIENCE=https://whatsapp-demo.example
+TWILIO_ACCOUNT_SID=your-account-sid
+TWILIO_AUTH_TOKEN=your-account-auth-token
+TWILIO_WHATSAPP_FROM=whatsapp:+your-sandbox-sender-number
+PORT=3003
+```
+
+Use the exact WhatsApp sender provided by your own Twilio Sandbox. The default record store is `apps/whatsapp/.data/state.json`; optionally set `DATA_FILE` to an absolute persistent path. Run one process against that file.
+
+```bash
+npm start --prefix apps/whatsapp
+```
+
+Expose port 3003 through a public HTTPS tunnel or deploy the app with a persistent disk. Set `PUBLIC_BASE_URL` to that origin and use it for the Auth0 callback and Twilio webhook. For a local tunnel, `ngrok http 3003` is one option. Restart after editing the environment. `GET http://localhost:3003/health` verifies the process, not external account access.
+
+**First successful call:** text `hello` to the joined WhatsApp Sandbox, open the returned link, select **Continue with Auth0**, and sign in. Send the browser's `LINK <code>` from the original WhatsApp conversation. Then text `Save a request called team-lunch`. Match its label and request ID to the Guardian push on your phone and approve. The reply contains the saved local record ID. Text `STATUS` after restarting to retrieve the same outcome.
+
+**Permission check:** after one minute, request a different label and deny the push. No record should be created. An expired request must also leave no record. A text saying “approved” is not an Auth0 approval. Labels are limited to 1–24 ASCII letters, digits, hyphens, or underscores so the entire action fits in the consent message.
+
+This is a persistent **local demo request**, not an external booking, purchase, or scheduled notification. The server owns the protected write and verifies the scoped token from the exact CIBA request. Offline tests exercise local HTTP adapters; live Twilio delivery, OpenAI access, and Auth0 Guardian approval require your accounts. See the [WhatsApp app](apps/whatsapp/README.md) for operational limits and restart behavior.
+
+### Standalone protected API call
+
+Use this smaller example to learn Auth0 API authorization independently. It is machine-to-machine authorization, not the WhatsApp human-approval flow.
+
+**Access and configure:** in Auth0, create an RS256 API with identifier `https://agents-everywhere.example/api`, add permission `create:followups`, and grant it to a Machine to Machine application. The identifier is an audience string and does not need a hosted URL. Add these values to root `.env`:
+
+```dotenv
+AUTH0_DOMAIN=your-tenant.us.auth0.com
+AUTH0_AUDIENCE=https://agents-everywhere.example/api
+AUTH0_CLIENT_ID=your-m2m-client-id
+AUTH0_CLIENT_SECRET=your-m2m-client-secret
+```
+
+**First working call:**
+
+```bash
+npm ci --prefix examples/auth0
+npm test --prefix examples/auth0
+# Terminal 1, from root:
+node --env-file=.env examples/auth0/server.mjs
+# Terminal 2, from root:
+node --env-file=.env examples/auth0/client.mjs
+```
+
+**Check:** the client first gets `401` without authorization, then `201` and a local record with an Auth0 service identity. Tokens are not printed. Records last until the server stops. A `403` indicates missing scope; check the API grant. Customize [client.mjs](examples/auth0/client.mjs) and [server.mjs](examples/auth0/server.mjs). The server validates signature, issuer, audience, expiry, and scope before the write. [Node API quickstart](https://auth0.com/docs/quickstart/backend/nodejs) · [Client credentials flow](https://auth0.com/docs/get-started/authentication-and-authorization-flow/client-credentials-flow/call-your-api-using-the-client-credentials-flow)
+
+## Ambiguous AI
+
+**Access and authentication.** Open [Ambiguous AI](https://www.ambiguous.ai/) and choose a demo workspace you control. Use that workspace's **Connect** instructions and obtain an API key with the task read/write permissions you need. The kit sends this key as a Bearer credential to `https://app.ambiguous.ai/mcp`. Its environment name is specific to this kit; the vendor CLI manages credentials separately. [Authentication guide](https://www.ambiguous.ai/auth.md) · [MCP guide](https://www.ambiguous.ai/agents/mcp)
+
+**Configure** root `.env`:
+
+```dotenv
+AMBIGUOUS_API_KEY=your-workspace-api-key
+```
+
+**First call:** confirm the credential's identity before creating data:
+
+```bash
+node --env-file=.env --input-type=module <<'JS'
+const response = await fetch('https://app.ambiguous.ai/api/users/me', {
+  headers: { Authorization: `Bearer ${process.env.AMBIGUOUS_API_KEY}` },
+});
+if (!response.ok) throw new Error(`Ambiguous identity check failed: HTTP ${response.status}`);
+console.log(await response.json());
+JS
+```
+
+**Check:** the returned identity belongs to the intended demo workspace. Then run `npm run dev:web` and follow [the web template's create/read-back sequence](templates/web.md#prove-a-record-survives-refresh). Ask for the exact proposed task, approve it, create it through the connected MCP tools, and retrieve the same ID after refreshing. Open the actual returned record link. Do not confuse this with the browser-only `create_followup` tool.
+
+The [shared MCP connection](packages/agent-core/src/capabilities/workplace.ts) is also available to Slack and terminal chat when configured. Tool schemas come from the live workspace; never invent names, arguments, or record URLs. Approval prompts and cards guide behavior but do not enforce a gate around every MCP tool. For your own app, enforce required authorization at the write boundary. A `401` needs valid credentials; a `403` needs appropriate permissions. A new workspace does not fix access to the intended one.
+
+[Developer guide](https://www.ambiguous.ai/llms.txt) · [API schemas](https://app.ambiguous.ai/api/openapi.json) · [Task-only disposable sandbox](https://www.ambiguous.ai/sandbox.md) (separate credentials, no MCP)

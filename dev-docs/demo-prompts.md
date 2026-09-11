@@ -6,7 +6,7 @@ These are reference interactions to learn from. Build your own project and its c
 
 ## Slack: context, sources, card, follow-up
 
-Prerequisites: [Slack setup](setup.md), your selected model provider, Exa for research, and an isolated Ambiguous AI demo workspace for the external-task step. The [sponsor recipes](sponsors.md) give the exact configuration.
+Prerequisites: [Slack setup](setup.md), your selected model provider, Exa for research, and an isolated Ambiguous AI demo workspace for the external-task step. [using-sponsor-tools.md](../using-sponsor-tools.md) give the exact configuration.
 
 ### 1. Establish the surrounding context
 
@@ -42,18 +42,6 @@ Expected: a **real task record**, with a returned URL you can open from the thre
 
 The prompt and `propose_action` guide approval behavior but do not enforce approval around every external MCP call. Use a demo workspace. For an enforced authorization example, run the standalone [Auth0 recipe](../examples/auth0/README.md).
 
-### Alternative closing beat: approved durable research
-
-With Trigger.dev and Exa configured, follow [durable setup](durable-work.md):
-
-> @agent queue background web research about payment-worker retry storms and safe investigation steps. Use run_deep_work.
-
-Click **Approve** while the listener is running, copy the `run_...` ID, and continue chatting. Then, in the original thread:
-
-> @agent check run_YOUR_ID
-
-Expected: `check_deep_work` returns research sources or the run's actual status. Retrieval works after a listener restart once approval is recorded. Results are requested explicitly, not pushed. Demonstrate **Cancel** on a second run to show that declined research does not execute.
-
 ## Browser: ambient context and visible local actions
 
 ```bash
@@ -69,6 +57,14 @@ Open `http://localhost:3100` and select an incident. Try:
 > Select the other incident and tell me what changed.
 
 Expected: `incident_card`, `timeline`, `create_followup`, and `select_incident` as appropriate. The selected incident and follow-up list should visibly change. The context is derived from the displayed sample data; local tasks last only for this page session. `propose_action` provides approval UI but does not execute a production action. Web chat does not register Exa search; use Slack or the standalone recipes for that step.
+
+### Add a persistent workplace record
+
+With Ambiguous AI configured, follow [the web template](../templates/web.md#prove-a-record-survives-refresh): propose an exact task in your demo workspace, approve it, create it through the connected MCP tool, and open the returned record link. Refresh the page and retrieve the same ID. Do not use the session-only `create_followup` for this check.
+
+## WhatsApp: identity and phone approval
+
+Follow [the WhatsApp template](../templates/whatsapp.md) to link your account and request a protected follow-up. Show denial leaving no record, then approve a fresh request on your phone and show the actual saved receipt.
 
 ## Record a focused video
 

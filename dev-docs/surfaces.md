@@ -5,13 +5,13 @@ Pick the place where your agent's context already exists. The following matrix d
 | Surface | Agent and context | UI and actions | Optional capabilities | Limits |
 |---|---|---|---|---|
 | Terminal | `makeAgent`; messages you type | Text and tool output | Ambiguous MCP through shared factory | No Slack history, incident cards, Exa tool, or approval UI |
-| Slack / Teams | `makeAgent`; `read_thread` plus channel context | `incident_card`, `timeline`, `propose_action` | Exa, Ambiguous MCP, Trigger research and `check_deep_work` | Managed Channel setup required; live platform validation required |
+| Slack / Teams | `makeAgent`; `read_thread` plus channel context | `incident_card`, `timeline`, `propose_action` | Exa and Ambiguous MCP | Managed Channel setup required; live platform validation required |
 | Web | `makeAgent`; selected sample incident, timeline and follow-ups via `useAgentContext` | Incident cards, timeline, approval UI; `select_incident`, `create_followup` | Ambiguous MCP through shared factory | Local follow-ups reset on refresh; web chat does not register Exa search |
 | Voice (`/voice`) | Separate `RealtimeAgent`; shares system prompt | Spoken conversation and transcript | Exa via server search route | OpenAI Realtime key required regardless of chat provider; no incident workspace context, workplace MCP, or approval tools |
 | MCP | Host's agent/model; server exposes tools | `incident_card` and HTML UI resource | Exa `search_web` | Does not call `makeAgent`; rendering depends on host; no workplace or approval tools |
 | Mobile | Web runtime's `makeAgent`; device-context tool | Expo chat and `confirm_action` UI | Shared runtime's Ambiguous MCP | Separate install; no native incident cards, Slack tools, or device verification |
 
-Managed `propose_action` posts a nonblocking proposal; its later click reports a decision without automatically resuming the agent. There is no production restart implementation. Nor is it an authorization wrapper around every Ambiguous MCP tool: use an isolated demo workspace and explicitly approve intended writes. Trigger's worker separately checks its waitpoint decision before Exa research. Auth0's standalone example separately verifies a machine token and scope before creating its local record.
+Managed `propose_action` posts a nonblocking proposal; its later click reports a decision without automatically resuming the agent. There is no production restart implementation. Nor is it an authorization wrapper around every Ambiguous MCP tool: use an isolated demo workspace and explicitly approve intended writes. Auth0's standalone example separately verifies a machine token and scope before creating its local record.
 
 ## Launch commands
 
@@ -27,6 +27,10 @@ Run these from the repository root after [setup](setup.md):
 | Mobile | Start `npm run dev:web`, then `cd apps/mobile && npm install && npm start` | Configure the runtime URL for your simulator or device; see [mobile setup](../apps/mobile/README.md) |
 
 MCP protocol checks are part of `npm run verify`, independent of a live host or its widget rendering. Mobile is not an npm workspace member because React Native uses its own dependency versions.
+
+## WhatsApp
+
+The [WhatsApp template](../templates/whatsapp.md) is a separate application using OpenAI Agents SDK and Auth0. It links the sender to an authenticated user and enforces phone approval before its protected action. It does not use the shared CopilotKit runtime or managed Channels. Follow its own install, setup, and verification instructions.
 
 ## Slack to Teams
 
