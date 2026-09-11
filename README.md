@@ -55,10 +55,6 @@ These starting points serve different kinds of context. **CopilotKit Channels** 
 
 An agent reads what people already said, researches with Exa, and answers in the same thread with native cards and source links. Start with a support conversation, a research discussion, or a team decision.
 
-![Slack agent sharing incident context, Exa sources, and next steps](assets/demos/slack.gif)
-
-_Completed-thread recording, sped up for the preview._
-
 The included Slack app supplies thread history, subscriptions, search, and Channels UI. Configure your model, Exa, and a managed Channel, then run `npm run dev:slack`. No public tunnel is needed. Teams or other chat platforms can use the same Channels pattern, but this starter ships the Slack app.
 
 **[Use the Slack template →](apps/channel/)**
@@ -69,10 +65,6 @@ The included Slack app supplies thread history, subscriptions, search, and Chann
 
 An agent sees the page you are on and turns a request into a real workplace record you can still find after a refresh. Adapt it to customer follow-ups, a project workspace, or a personal planning app.
 
-![Web agent proposing a follow-up, saving it after approval, and retrieving it after reload](assets/demos/web.gif)
-
-_Preview at 3× speed; the template guide includes the full recording._
-
 The included web app supplies page context, frontend tools, agent-rendered UI, and a browser approval step. Connect an Ambiguous AI workspace, then run `npm run dev:web`; approved follow-ups are saved through the server and can be read back after refresh.
 
 **[Use the web template →](apps/web/)**
@@ -82,8 +74,6 @@ The included web app supplies page context, frontend tools, agent-rendered UI, a
 **OpenAI or OpenRouter + CopilotKit React Native**
 
 A mobile agent reads app state, renders native cards, and waits for a tap before changing local sample data. Start with a personal finance assistant, a field checklist, an inventory counter, or any workflow where phone context and approval matter.
-
-<img src="assets/demos/mobile.gif" alt="React Native agent waiting for approval before updating a sample balance" width="320" />
 
 The included Expo app supplies seeded finance state, native rendered tool UI, a human-in-the-loop expense approval, and a mobile-specific CopilotKit runtime endpoint served by the web app. Configure your model provider, start `npm run dev:web`, then run the mobile app from `apps/mobile`.
 
