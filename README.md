@@ -14,6 +14,8 @@
 
 Build for **[Agents, Everywhere: Bots, Channels, & More](https://sf.aitinkerers.org/p/agents-everywhere-bots-channels-more-global-hackathon)**, the AI Tinkerers global hackathon on **September 12, 2026**. Put an agent inside a conversation, an app, a phone, or a physical environment. Make the context of that place essential to what it can do.
 
+**Main communication channel:** Use the [hackathon Discord channel](https://discord.com/channels/1122926057641742418/1548038338848489532) for announcements, questions, and team coordination.
+
 This kit gives you **templates to start from, files to hand to your coding agent, and sponsor resources** to connect the pieces. Pick a user, a problem, and one complete interaction. You can use any stack; you do not need every sponsor or every surface.
 
 **Start with your coding agent.** Clone the kit with Node.js 22+ installed:
