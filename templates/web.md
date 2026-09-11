@@ -2,6 +2,8 @@
 
 **OpenAI + CopilotKit React + Ambiguous AI**
 
+Model choice: OpenAI directly or **OpenRouter**.
+
 Build an agent that sees the selected record, proposes a useful follow-up, and saves it to a workplace after approval. The incident domain is infrastructure inspiration; replace it with your own project.
 
 [Step-by-step screenshot walkthrough](../dev-docs/template-walkthroughs/web/README.md) · [Verification evidence and live gaps](../dev-docs/template-validation.md)
@@ -18,6 +20,16 @@ AMBIGUOUS_API_KEY=your-workspace-key
 ```
 
 Choose an available model and a demo workspace you control. In Ambiguous, open **Admin → People & access → API keys → New API key**, select the intended user, and replace the default wildcard scope with `tasks.read,tasks.write`. Follow the [existing-account key setup](../using-sponsor-tools.md#ambiguous-ai), then put the key privately in root `.env`. No managed Channel or Intelligence account is needed. The key stays on the server.
+
+To use **OpenRouter**, replace the three model settings above in root `.env` with:
+
+```dotenv
+MODEL_PROVIDER=openrouter
+OPENROUTER_API_KEY=your-openrouter-key
+MODEL=openai/gpt-4.1-mini
+```
+
+Keep `AMBIGUOUS_API_KEY`. Choose a [catalog model](https://openrouter.ai/models) with tool calling for page actions and task proposals. This chat path only needs the selected provider's key. CopilotKit page context and the separate **Approve & save to Ambiguous** step work with either provider. See [model switching](../dev-docs/model-switching.md).
 
 ```bash
 npm run check-env

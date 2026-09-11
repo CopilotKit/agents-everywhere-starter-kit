@@ -38,6 +38,8 @@ The [submission checklist](SUBMISSION.md#evidence-for-the-judging-criteria) tran
 - [Web](templates/web.md): OpenAI + CopilotKit React + Ambiguous AI for page context and persistent workplace records.
 - [WhatsApp](templates/whatsapp.md): OpenAI Agents SDK + CopilotKit Channels through Meta + Auth0 for a linked identity and phone approval.
 
+All three templates let teams choose OpenAI directly or OpenRouter as the model provider. See [model switching](dev-docs/model-switching.md); the template's context, tools, and approval checks stay in place with either choice.
+
 The incident app is a reference for wiring infrastructure. Change the user, problem, data, and interaction. Do not treat the sample scenario as the assigned challenge. Any technical stack is allowed by the handbook.
 
 ## Instructions for a coding agent

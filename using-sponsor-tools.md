@@ -8,7 +8,7 @@ Use Node.js 22+. For Slack/web, run the homepage's clone/install steps and keep 
 | ----------------------------- | ------------------------------------------ | -------------------------------------------------------- |
 | [OpenAI](#openai)             | Slack, web, WhatsApp                       | A model response to supplied context                     |
 | [CopilotKit](#copilotkit)     | Slack, web, WhatsApp                              | A contextual answer and native UI                        |
-| [OpenRouter](#openrouter)     | Optional Slack/web model gateway           | A response from your chosen catalog model                |
+| [OpenRouter](#openrouter)     | Optional model gateway for all three templates | A response from your chosen catalog model             |
 | [Exa](#exa)                   | Slack template                             | Research with inspectable sources                        |
 | [Auth0](#auth0)               | WhatsApp; standalone protected-API example | Verified identity and approval before a protected action |
 | [Ambiguous AI](#ambiguous-ai) | Web template; optional Slack integration   | A real workplace record that survives refresh            |
@@ -25,7 +25,7 @@ OPENAI_API_KEY=your-key
 MODEL=gpt-5.6-sol
 ```
 
-`MODEL` is the kit's configured model; choose one available to your API account. For WhatsApp, use `OPENAI_API_KEY` and `OPENAI_MODEL` in its separate environment file.
+`MODEL` is the kit's configured model; choose one available to your API account. WhatsApp uses the same `MODEL_PROVIDER`, `OPENAI_API_KEY`, and `MODEL` settings in `apps/whatsapp/.env`, with `gpt-4.1-mini` as its default. Its legacy `OPENAI_MODEL` setting still works when `MODEL` is absent.
 
 **First call.** From root, make a small Responses API request using the configured key and model:
 
@@ -83,19 +83,19 @@ Keep the tested Channels/runtime versions and the `@ag-ui/client` override. Befo
 
 ## OpenRouter
 
-**Access and authentication.** Create an [API key](https://openrouter.ai/keys), choose a model from the [catalog](https://openrouter.ai/models), and check any event offer in [CREDITS.md](CREDITS.md#other-sponsor-access). Use a model that supports tools for Slack/web workflows.
+**Access and authentication.** Create an [API key](https://openrouter.ai/keys), choose a model from the [catalog](https://openrouter.ai/models), and check any event offer in [CREDITS.md](CREDITS.md#other-sponsor-access). Use a model that supports tools for Slack/web workflows, or structured outputs for WhatsApp proposals.
 
-**Configure** root `.env`:
+**Configure** root `.env` for Slack/web, or `apps/whatsapp/.env` for WhatsApp:
 
 ```dotenv
 MODEL_PROVIDER=openrouter
 OPENROUTER_API_KEY=your-key
-MODEL=openai/gpt-5.6-sol
+MODEL=openai/gpt-4.1-mini
 ```
 
-Replace `MODEL` with an available catalog slug. OpenRouter chat does not need an OpenAI key. The independent browser voice route still requires OpenAI Realtime credentials.
+Replace `MODEL` with an available catalog slug. All three chat templates only require the selected model provider's key; keep their other sponsor credentials. WhatsApp still uses OpenAI Agents SDK, with Chat Completions and a strict proposal schema. It requires endpoints supporting the schema through `provider.require_parameters=true` and validates the result before requesting Auth0 approval. See [OpenRouter structured outputs](https://openrouter.ai/docs/guides/features/structured-outputs). The independent browser voice route still requires OpenAI Realtime credentials.
 
-**First call:**
+**First call:** from the repository root. For WhatsApp, change `--env-file=.env` below to `--env-file=apps/whatsapp/.env`.
 
 ```bash
 node --env-file=.env --input-type=module <<'JS'
@@ -159,7 +159,7 @@ JS
 
 ### WhatsApp identity and phone approval
 
-You need OpenAI and CopilotKit Intelligence keys, a Meta app with WhatsApp Cloud API access, and an Auth0 tenant with **CIBA** access. Auth0 documents an Enterprise plan or appropriate add-on requirement. The development trial checked for this guide accepted CIBA configuration; verify availability in your own tenant and do not assume ongoing free access. Enable Guardian push and enroll your test user before testing approvals. See [Auth0 CIBA configuration](https://auth0.com/docs/get-started/applications/configure-client-initiated-backchannel-authentication) and [Guardian enrollment](https://auth0.com/docs/secure/multi-factor-authentication/auth0-guardian).
+You need an OpenAI or OpenRouter key, a CopilotKit Intelligence key, a Meta app with WhatsApp Cloud API access, and an Auth0 tenant with **CIBA** access. Auth0 documents an Enterprise plan or appropriate add-on requirement. The development trial checked for this guide accepted CIBA configuration; verify availability in your own tenant and do not assume ongoing free access. Enable Guardian push and enroll your test user before testing approvals. See [Auth0 CIBA configuration](https://auth0.com/docs/get-started/applications/configure-client-initiated-backchannel-authentication) and [Guardian enrollment](https://auth0.com/docs/secure/multi-factor-authentication/auth0-guardian).
 
 #### Auth0 application and user
 
@@ -185,7 +185,7 @@ The main server forwards the raw signed JSON to the SDK webhook listener after c
 
 #### OpenAI Agents SDK
 
-Set `OPENAI_API_KEY`. `OPENAI_MODEL` defaults to `gpt-4.1-mini`; choose a model available to your project that supports structured output. [agent.ts](apps/whatsapp/src/agent.ts) uses the actual `@openai/agents` `Agent` and `run()` APIs. It receives the authenticated display name and recent conversation and returns a validated proposal. The model has no privileged execution tool. See the [Agents SDK quickstart](https://openai.github.io/openai-agents-js/guides/quickstart/) and [structured output guide](https://openai.github.io/openai-agents-js/guides/agents/).
+Set `MODEL_PROVIDER=openai` with `OPENAI_API_KEY`, or `MODEL_PROVIDER=openrouter` with `OPENROUTER_API_KEY`. Choose `MODEL` with structured-output support. Defaults are `gpt-4.1-mini` for OpenAI and `openai/gpt-4.1-mini` for OpenRouter; the legacy `OPENAI_MODEL` setting remains a fallback when `MODEL` is absent. [agent.ts](apps/whatsapp/src/agent.ts) uses the actual `@openai/agents` `Agent` and `run()` APIs with either provider. It receives the authenticated display name and recent conversation and returns a validated proposal. The model has no privileged execution tool. See the [Agents SDK quickstart](https://openai.github.io/openai-agents-js/guides/quickstart/), [structured output guide](https://openai.github.io/openai-agents-js/guides/agents/), and [provider switching](dev-docs/model-switching.md).
 
 #### Environment and first working call
 
@@ -201,8 +201,9 @@ npm test --prefix apps/whatsapp
 Fill in `apps/whatsapp/.env` with the values from the steps above:
 
 ```dotenv
+MODEL_PROVIDER=openai
 OPENAI_API_KEY=your-openai-key
-OPENAI_MODEL=gpt-4.1-mini
+MODEL=gpt-4.1-mini
 PUBLIC_BASE_URL=https://your-public-origin.example
 AUTH0_ISSUER_BASE_URL=https://your-tenant.us.auth0.com
 AUTH0_CLIENT_ID=your-regular-web-app-client-id
@@ -219,7 +220,7 @@ PORT=3003
 WHATSAPP_WEBHOOK_PORT=3004
 ```
 
-Use the business phone-number ID from your Meta app. The default record store is `apps/whatsapp/.data/state.json`; optionally set `DATA_FILE` to an absolute persistent path. Run one process against that file. If upgrading an existing Twilio demo, archive its state and choose a fresh `DATA_FILE`, then link your user again; identities are not migrated across providers or business numbers.
+For OpenRouter, replace the three model lines with the [OpenRouter configuration](#openrouter), keeping the other settings. Use the business phone-number ID from your Meta app. The default record store is `apps/whatsapp/.data/state.json`; optionally set `DATA_FILE` to an absolute persistent path. Run one process against that file. If upgrading an existing Twilio demo, archive its state and choose a fresh `DATA_FILE`, then link your user again; identities are not migrated across messaging providers or business numbers. Changing only the model provider does not require relinking.
 
 ```bash
 npm start --prefix apps/whatsapp
@@ -231,7 +232,7 @@ Expose port 3003 through a public HTTPS tunnel or deploy the app with a persiste
 
 **Permission check:** after one minute, request a different label and deny the push. No record should be created. An expired request must also leave no record. A text saying “approved” is not an Auth0 approval. Labels are limited to 1–24 ASCII letters, digits, hyphens, or underscores so the entire action fits in the consent message.
 
-This is a persistent **local demo request**, not an external booking, purchase, or scheduled notification. The server owns the protected write and verifies the scoped token from the exact CIBA request. Offline tests exercise local HTTP adapters; live Meta delivery, Channels startup, OpenAI access, and Auth0 Guardian approval require your accounts. See the [WhatsApp app](apps/whatsapp/README.md) for operational limits and restart behavior.
+This is a persistent **local demo request**, not an external booking, purchase, or scheduled notification. The server owns the protected write and verifies the scoped token from the exact CIBA request. Offline tests exercise local HTTP adapters; live Meta delivery, Channels startup, model-provider access, and Auth0 Guardian approval require your accounts. See the [WhatsApp app](apps/whatsapp/README.md) for operational limits and restart behavior.
 
 ### Standalone protected API call
 

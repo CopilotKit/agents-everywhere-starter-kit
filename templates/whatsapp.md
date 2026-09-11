@@ -2,13 +2,15 @@
 
 **OpenAI Agents SDK + CopilotKit Channels + Auth0**, delivered directly through Meta’s WhatsApp Cloud API.
 
+Model choice: OpenAI directly or **OpenRouter**, both through OpenAI Agents SDK.
+
 A separate, runnable app that links a WhatsApp sender to an authenticated person, uses their recent conversation, and asks for phone approval before saving a named request. CopilotKit Channels receives and renders WhatsApp messages through its direct Meta adapter. OpenAI Agents SDK proposes the action; Auth0 verifies the user's identity and consent.
 
 [Step-by-step screenshot walkthrough](../dev-docs/template-walkthroughs/whatsapp/README.md) · [Verification evidence and live gaps](../dev-docs/template-validation.md)
 
 ## Start it
 
-You need an OpenAI API key, a CopilotKit Intelligence key, a Meta app with WhatsApp API access and a verified test recipient, and an Auth0 tenant with **CIBA enabled and a Guardian device enrolled**. Check CIBA availability in your tenant before choosing the phone demo; the trial configuration used in this guide does not establish ongoing free access.
+You need an OpenAI or OpenRouter API key, a CopilotKit Intelligence key, a Meta app with WhatsApp API access and a verified test recipient, and an Auth0 tenant with **CIBA enabled and a Guardian device enrolled**. Check CIBA availability in your tenant before choosing the phone demo; the trial configuration used in this guide does not establish ongoing free access.
 
 From the repository root, with Node.js 22+:
 
@@ -20,6 +22,24 @@ npm test --prefix apps/whatsapp
 ```
 
 Follow [the consolidated sponsor setup](../using-sponsor-tools.md#whatsapp-identity-and-phone-approval) for all account settings, environment variables, and webhook/callback URLs. This app uses its own `.env`, not the root Slack/web settings.
+
+Choose one model configuration in `apps/whatsapp/.env`. For **OpenAI**:
+
+```dotenv
+MODEL_PROVIDER=openai
+OPENAI_API_KEY=your-openai-key
+MODEL=gpt-4.1-mini
+```
+
+Or for **OpenRouter**:
+
+```dotenv
+MODEL_PROVIDER=openrouter
+OPENROUTER_API_KEY=your-openrouter-key
+MODEL=openai/gpt-4.1-mini
+```
+
+Only the selected model provider's key is required. Keep the Meta, Intelligence, and Auth0 settings in the same file. Choose an OpenRouter model/provider endpoint that supports [structured outputs](https://openrouter.ai/docs/guides/features/structured-outputs); the app requires that support and validates the proposal before requesting approval. Changing the model keeps the Auth0 approval gate. See [model switching](../dev-docs/model-switching.md) for defaults and the legacy `OPENAI_MODEL` setting.
 
 ```bash
 npm start --prefix apps/whatsapp

@@ -2,6 +2,8 @@
 
 **OpenAI + CopilotKit Channels + Exa**
 
+Model choice: OpenAI directly or **OpenRouter**.
+
 Build an agent that reads an existing conversation, researches what matters, and replies with native cards and source links. Try a team research discussion, support handoff, or project decision. The included incident scenario shows how the infrastructure fits together; replace it with your own workflow.
 
 [Step-by-step screenshot walkthrough](../dev-docs/template-walkthroughs/slack/README.md) · [Verification evidence and live gaps](../dev-docs/template-validation.md)
@@ -22,6 +24,16 @@ EXA_SEARCH_TYPE=fast
 
 Choose an OpenAI model available to your account. Create the managed Channel using `npm run channel:setup`; the [setup guide](../dev-docs/setup.md) and [screenshot walkthrough](../dev-docs/channels-sdk-walkthrough/README.md) cover the platform installation.
 
+To use **OpenRouter**, replace the three model settings above in root `.env` with:
+
+```dotenv
+MODEL_PROVIDER=openrouter
+OPENROUTER_API_KEY=your-openrouter-key
+MODEL=openai/gpt-4.1-mini
+```
+
+Keep the Channel, Intelligence, and Exa settings. Choose a [catalog model](https://openrouter.ai/models) with tool calling so it can read the thread and use Exa. This chat path only needs the selected provider's key. See [model switching](../dev-docs/model-switching.md) for defaults and other model slugs.
+
 ```bash
 npm run check-env
 npm run dev:slack
@@ -39,7 +51,7 @@ Invite the bot to a Slack channel and mention it in a populated thread. CopilotK
 | Native cards                | [Components](../apps/channel-slack/src/components.tsx): incident card and timeline via Channels JSX        |
 | Prompt                      | [Shared prompt](../packages/agent-core/src/prompt.ts)                                                      |
 
-This template uses OpenAI through CopilotKit's runtime. It does not claim that the built-in agent is OpenAI Agents SDK; the [WhatsApp template](whatsapp.md) demonstrates that SDK directly. [OpenRouter](../using-sponsor-tools.md#openrouter) is an optional model gateway for Slack and web.
+This template uses CopilotKit's built-in agent with the selected model provider. The [WhatsApp template](whatsapp.md) demonstrates OpenAI Agents SDK directly. Both support [OpenRouter](../using-sponsor-tools.md#openrouter).
 
 ## Prove the interaction
 
