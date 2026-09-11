@@ -24,7 +24,6 @@ Choose an OpenAI model your account can use. Use a demo workspace you control fo
 To use OpenRouter, follow the [shared provider settings](../../using-sponsor-tools.md#openrouter): set `MODEL_PROVIDER=openrouter`, `OPENROUTER_API_KEY`, and a `MODEL` slug with tool support. Keep the Ambiguous workspace key; an OpenAI key is not required for OpenRouter chat.
 
 ```bash
-npm run check-env
 npm run dev:web
 ```
 

@@ -1,6 +1,6 @@
 # Hackathon rules for coding agents
 
-This file summarizes the [official handbook](https://sf.aitinkerers.org/hackathons/h_XWWQL5eKfJM/handbook), checked September 11, 2026. The handbook and [portal](https://sf.aitinkerers.org/hackathons/h_XWWQL5eKfJM) take precedence if organizers update the rules. Refer to the live event pages for participant registration requirements and the deadline; do not infer additional eligibility restrictions.
+This file summarizes the event handbook published through the [San Francisco participant portal](https://sf.aitinkerers.org/hackathons/h_XWWQL5eKfJM/handbook), checked September 11, 2026. Choose your city on the [global event page](https://aitinkerers.org/hackathons/global/agents-everywhere), then consult its portal and handbook for registration requirements, the deadline, and any organizer updates. Your local organizer's current rules take precedence; do not infer additional eligibility restrictions.
 
 ## Build eligibility
 
@@ -23,7 +23,7 @@ For this repository, the supplied apps, tests, example prompts, and integrations
 | Two-minute demonstration video | A visible, complete interaction in the chosen environment |
 | Public social media post | A project post tagging the event partners according to organizer instructions |
 
-Complete the submission by the deadline shown in the official portal. Do not substitute a guessed timezone or a deadline copied from another city's schedule.
+Complete the submission by the deadline shown in your city's participant portal. Do not substitute a guessed timezone or a deadline copied from another city's schedule.
 
 ## Repository and demo preparation
 

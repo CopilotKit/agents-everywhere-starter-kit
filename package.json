@@ -14,16 +14,14 @@
     "apps/web"
   ],
   "scripts": {
-    "check-env": "bash scripts/check-env.sh",
-    "predev": "bash scripts/check-env.sh",
-    "dev": "bash scripts/dev.sh",
+    "dev": "npm run dev:web",
     "dev:slack": "npm run dev --workspace channel",
     "channel:status": "npx copilotkit@latest channels status --json",
     "channel:setup": "npx copilotkit@latest channels setup",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "dev:web": "npm run dev --workspace web",
-    "test": "node --import tsx --test scripts/check-env.test.ts scripts/verify.test.mjs && npm run test --workspaces --if-present",
-    "verify": "bash scripts/verify.sh"
+    "test": "npm run test --workspaces --if-present",
+    "verify": "npm run typecheck && npm test"
   },
   "overrides": {
     "@ag-ui/client": "0.0.59"

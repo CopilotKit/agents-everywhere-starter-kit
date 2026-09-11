@@ -28,11 +28,10 @@ MODEL=openai/gpt-5.6-sol
 Select an available model in your provider account. Restart after changing configuration. See [model switching](model-switching.md) for precedence and legacy provider prefixes.
 
 ```bash
-npm run check-env
-npm run dev
+npm run dev:web
 ```
 
-With no Channel configured, `dev` starts the web template. Open `http://127.0.0.1:3100` or `http://localhost:3100`. The web follow-up approval server is loopback-only by default because it can use local Ambiguous credentials. For the React Native template, the same command starts the mobile runtime endpoint; simulators can use the documented localhost/emulator URLs, while physical devices need a deliberate reachable host or deployment.
+`npm run dev` is an alias for the web template. Open `http://127.0.0.1:3100` or `http://localhost:3100`. The web follow-up approval server is loopback-only by default because it can use local Ambiguous credentials. For the React Native template, the same command starts the mobile runtime endpoint; simulators can use the documented localhost/emulator URLs, while physical devices need a deliberate reachable host or deployment.
 
 ## Add Slack
 
@@ -52,7 +51,7 @@ npx copilotkit@latest channels add --name my-agent \
 1. Complete the platform setup and installation.
 2. Copy the Channel **Code** into `CHANNEL_CODE` in root `.env`.
 3. Create a project-scoped Intelligence API key and set `INTELLIGENCE_API_KEY`.
-4. Run `npm run dev`; with the Channel configured this starts its listener.
+4. Run `npm run dev:slack` to start the Channel listener.
 5. In Slack, `/invite @yourbot`, then mention it inside a thread.
 
 ```bash
@@ -71,4 +70,4 @@ Choose the tools your [template](../README.md#templates) needs, then follow [usi
 npm run verify
 ```
 
-This needs no `.env` and makes no live sponsor calls. It checks retained workspace types and offline tests. Run `npm run check-env` separately for configured startup, then demonstrate an actual reply and the sponsor result you plan to show. [Demo prompts](demo-prompts.md)
+This needs no `.env` and makes no live sponsor calls. It checks retained workspace types and offline tests. Each app reports missing provider or surface credentials when the relevant integration is used; demonstrate an actual reply and the sponsor result you plan to show. [Demo prompts](demo-prompts.md)

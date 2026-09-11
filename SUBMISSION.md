@@ -1,6 +1,6 @@
 # Submission checklist
 
-Use the [official portal](https://sf.aitinkerers.org/hackathons/h_XWWQL5eKfJM) for the submission deadline and published judging criteria, and the [handbook](https://sf.aitinkerers.org/hackathons/h_XWWQL5eKfJM/handbook) for eligibility and required deliverables. See [hackathon-rules.md](hackathon-rules.md) for the agent-readable summary.
+Choose your city on the [global event page](https://aitinkerers.org/hackathons/global/agents-everywhere). Use that city's participant portal for the submission deadline and published judging criteria, and its handbook for eligibility and required deliverables. See [hackathon-rules.md](hackathon-rules.md) for the agent-readable summary.
 
 ## Build eligibility
 

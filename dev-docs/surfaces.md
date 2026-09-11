@@ -19,7 +19,7 @@ Run these from the repository root after [setup](setup.md):
 |---|---|---|
 | Channel | `npm run dev:slack` | Invite and mention the bot in a thread |
 | Web | `npm run dev:web` | Open `http://localhost:3100` |
-| Voice | `npm run dev:web` | Run `npm run check-env -- --voice`, then open `http://localhost:3100/voice` and allow microphone access |
+| Voice | `npm run dev:web` | Set `OPENAI_API_KEY`, then open `http://localhost:3100/voice` and allow microphone access |
 | Mobile | Start `npm run dev:web`, then `cd apps/mobile && npm ci && npm start` | Configure the runtime URL for your simulator or device; see [mobile setup](../apps/mobile/README.md) |
 
 `npm run verify` covers the retained root workspaces without credentials. Mobile is not an npm workspace member because React Native uses its own dependency versions; run its local install, tests, typecheck, and iOS/Android Metro export checks under `apps/mobile` when validating the mobile template.
