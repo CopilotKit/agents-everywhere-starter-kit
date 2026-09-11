@@ -28,11 +28,15 @@ Checked September 11, 2026. This page separates implemented boundaries, local te
 
 **Signed-in Exa setup check:** completed **Codex → JavaScript → Web search tool → Generate Code → Go to Dashboard** in an existing account. The existing default key was available for the runtime; no duplicate key was created. [Actual setup screenshots](template-walkthroughs/slack/README.md#2-configure-and-start-the-template) show onboarding and the dashboard with the key masked. These captures verify setup only.
 
-**Pending:** authenticated Exa search and an explicitly authorized Slack test destination for earlier thread facts → `read_thread` → Exa source links → native Channels card → contextual follow-up. The [Slack walkthrough](template-walkthroughs/slack/README.md) identifies precisely which screenshots still need capturing. No new Slack messages were sent during this verification.
+**Authenticated Exa search:** the actual starter `searchWeb` capability succeeded with the existing key using `fast`, three results, and the query `site:aws.amazon.com builders library timeouts retries backoff jitter connection pool`. It returned AWS’s Java timeout guide, backoff-and-jitter article, and Java retry-strategy guide. The same query succeeded in the signed-in Search playground. [Actual settings and results](template-walkthroughs/slack/README.md#4-research-with-exa-and-inspect-the-sources) document the provider response; two supporting AWS pages were opened and checked. All five workspace typechecks also passed before the live Slack trial.
+
+**Pending:** the authorized `#agents-everywhere` Slack trial for earlier thread facts → `read_thread` → Exa source links → native Channels card → contextual follow-up. The [Slack walkthrough](template-walkthroughs/slack/README.md) identifies precisely which screenshots still need capturing. No new Slack messages were sent during this verification.
 
 ## WhatsApp
 
 **Current local verification:** independent `npm ci --prefix apps/whatsapp`, `npm run typecheck --prefix apps/whatsapp`, and `npm test --prefix apps/whatsapp` passed, including 21 HTTP integration tests. These use locally signed tokens/provider adapters. This follow-up changes no WhatsApp app code or dependencies.
+
+**Account status:** the user confirmed WhatsApp, Twilio, and Auth0 are not set up yet. No live phone-flow success is available.
 
 **Pending:** a CIBA-enabled/entitled Auth0 tenant, push-only Guardian setup and enrolled device, configured Twilio Sandbox, public HTTPS origin, and an authorized test number. Run the real signed inbound → original-sender account link → OpenAI proposal → Guardian approval → exact local named-request record → status journey. Verify denial and expiry cannot save. The [WhatsApp capture guide](template-walkthroughs/whatsapp/README.md) has concrete setup/run steps and explicitly pending live screens; no simulated success screenshots are supplied.
 

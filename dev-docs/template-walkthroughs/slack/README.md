@@ -2,7 +2,7 @@
 
 [Template](../../../templates/slack.md) · [All walkthroughs](../README.md) · [Full account setup with screenshots](../../channels-sdk-walkthrough/README.md)
 
-This guide combines genuine September 10, 2026 Channels screenshots with a signed-in Exa setup capture from September 11. The earlier run verifies Channels setup, native card delivery, and contextual follow-up. The new captures verify Exa onboarding and dashboard access; the current Slack research journey remains pending.
+This guide combines genuine September 10, 2026 Channels screenshots with a signed-in Exa setup capture from September 11. The earlier run verifies Channels setup, native card delivery, and contextual follow-up. The new captures verify Exa onboarding, dashboard access, and authenticated search. The current Slack research journey remains pending.
 
 ## 1. Create the managed Slack Channel
 
@@ -20,7 +20,7 @@ On the dashboard, use **Get your API Key**, or open **Management → API Keys**.
 
 ![Signed-in Exa dashboard with the existing API key masked](images/02-exa-dashboard-key-hidden.jpg)
 
-These captures verify account access and configuration choices. A successful Exa search and its delivery through Slack still need separate checks below.
+These captures verify account access and configuration choices. Step 4 shows the successful authenticated Exa search; delivery of that research through Slack is a separate check.
 
 Put your provider, `CHANNEL_CODE`, `INTELLIGENCE_API_KEY`, and `EXA_API_KEY` settings in root `.env` using the [sponsor guide](../../../using-sponsor-tools.md). The CLI-provisioned `CPK_INTELLIGENCE_API_KEY` must also be copied privately to the `INTELLIGENCE_API_KEY` name this starter reads.
 
@@ -48,13 +48,25 @@ Verify `read_thread` used the earlier replies. The existing capture below demons
 
 ## 4. Research with Exa and inspect the sources
 
-Reply in the same thread:
+First verify Exa independently. In the dashboard, open **API Playground → Search**, choose **Fast**, set **Number of results** to **3**, and enable **Highlights**. Run the query used in the live trial:
+
+```text
+site:aws.amazon.com builders library timeouts retries backoff jitter connection pool
+```
+
+![Actual Exa query with Fast search, three results, and highlights enabled](images/03-exa-search-settings.jpg)
+
+**Live result:** the starter’s `searchWeb` capability and the signed-in playground both returned three AWS sources. The visible results include the [AWS SDK for Java timeout guide](https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/timeouts.html) and [Exponential Backoff And Jitter](https://aws.amazon.com/blogs/architecture/exponential-backoff-and-jitter/). Both supporting pages were opened and checked; search results can change.
+
+![Authenticated Exa results with titles, source URLs, and highlights](images/04-exa-search-results.jpg)
+
+To use that research inside Slack, reply in the same thread:
 
 > Research documented causes of connection-pool saturation and retry storms with Exa. Include source links and distinguish published evidence from facts in our thread. Account for the failed rollback.
 
 Inspect `search_web` in the runtime and open the returned URLs. Confirm the cited pages support the explanation. Public search does not read incident logs or prove a root cause.
 
-**Capture pending:** the Exa-backed answer, visible source links, and one opened supporting page. No existing screenshot is presented as evidence for this step.
+**Capture pending:** the Slack-delivered Exa-backed answer and visible source links. The screenshots above verify authenticated Exa search independently; they do not establish Slack delivery.
 
 ## 5. Ask a contextual follow-up without another mention
 

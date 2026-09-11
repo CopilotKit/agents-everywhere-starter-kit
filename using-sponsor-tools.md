@@ -142,7 +142,7 @@ EXA_SEARCH_TYPE=fast
 node --env-file=.env --input-type=module <<'JS'
 import { Exa } from 'exa-js';
 const exa = new Exa(process.env.EXA_API_KEY);
-const result = await exa.searchAndContents('documented causes of retry storms', {
+const result = await exa.searchAndContents('site:aws.amazon.com builders library timeouts retries backoff jitter connection pool', {
   type: 'fast',
   numResults: 3,
   highlights: { numSentences: 2, highlightsPerUrl: 1 },
@@ -150,6 +150,8 @@ const result = await exa.searchAndContents('documented causes of retry storms', 
 console.log(result.results.map(({ title, url, highlights }) => ({ title, url, highlights })));
 JS
 ```
+
+**Verified search:** the query above succeeded through the starter’s `searchWeb` capability and in Exa’s signed-in Search playground with **Fast** search and **3** results. The trial returned the AWS SDK for Java timeout guide, the AWS backoff-and-jitter article, and the AWS SDK for Java retry-strategy guide. [Actual search screenshots](dev-docs/template-walkthroughs/slack/README.md#4-research-with-exa-and-inspect-the-sources) show settings and returned sources. Results may change.
 
 **Check:** open the returned URLs and compare their evidence with the answer. In Slack ask the agent to research the question in the thread and include sources. The [search capability](packages/agent-core/src/capabilities/search.ts) is registered by the Slack template when the key exists. It also appears in MCP and voice search; ordinary web chat does not register Exa. [Search API quickstart](https://exa.ai/docs/reference/search-api-guide)
 
