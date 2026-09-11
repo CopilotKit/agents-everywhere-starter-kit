@@ -40,7 +40,7 @@ Review the proposed action and approve only the intended demo-workspace write. T
 
 Expected: a **real task record**, with a returned URL you can open from the thread. Verify its title and contents in the workspace. A card or “done” sentence without an actual record is not a successful task demo. MCP tools come from the live workspace; this route is not live-account-verified by the kit's offline checks.
 
-The prompt and `propose_action` guide approval behavior but do not enforce approval around every external MCP call. Use a demo workspace. For an enforced authorization example, run the standalone [Auth0 recipe](../examples/auth0/README.md).
+The prompt and `propose_action` guide approval behavior but do not enforce approval around every external MCP call. Use a demo workspace. For an enforced authorization example, run the standalone [Auth0 recipe](auth0/README.md).
 
 ## Browser: ambient context and approved workplace actions
 
