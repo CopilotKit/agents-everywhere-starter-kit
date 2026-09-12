@@ -90,8 +90,9 @@ most likely reason a correct-looking Channel refuses to typecheck.
 Standalone `@copilotkit/channels-ui` / `-slack` / `-teams` / … packages also
 exist and work, but the single umbrella dependency is the documented path.
 
-**A CopilotKit Intelligence API key is required** (free tier available). There is
-no standalone or DIY way to run a Channel.
+**This starter's managed Channel requires a CopilotKit Intelligence API key.**
+The [current Slack docs](https://docs.copilotkit.ai/slack) describe other runner
+and hosting options.
 
 **Reference app:** [OpenTag](https://github.com/CopilotKit/OpenTag) is a
 complete, real agent built on this SDK. When a task is close to "a full Slack
@@ -158,9 +159,10 @@ from `@copilotkit/channels`) pointed at your agent's URL.
 
 ### Direct adapter — only when you own the platform connection
 
-Pass `adapters` when *you* hold the platform tokens. This is the secondary path:
-platform secrets in your app and per-platform wiring in code. It does **not**
-avoid needing Intelligence — the runtime still owns the lifecycle.
+Pass `adapters` when *you* hold the platform tokens. This puts platform secrets
+in your app and per-platform wiring in code. Running your own Channel runner is
+a separate hosting choice; see the current Slack docs for those options. This
+starter uses the managed Intelligence runtime.
 
 Do not reach for this because a managed Channel reports `setup_required` or
 because the dashboard is unfamiliar. Swapping to a direct adapter to "make it
