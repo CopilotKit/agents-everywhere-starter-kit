@@ -45,15 +45,7 @@ prepare SUBMISSION.md, distinguishing inherited code from our event work.
 
 ### CopilotKit onboarding
 
-Use the team's maintained setup prompts in the same coding-agent session, with this checkout as the project root. Choose one app first; setup should adapt that app rather than scaffold a second starter over it.
-
-| Your starting point | Onboarding path |
-|---|---|
-| Slack template | Run `npm run channel:setup -- --no-clipboard`, then have your agent follow the prompt it prints. This installs the current `channels-setup` skill; the command itself does not create a Channel or sign you in. Tell the agent to connect **Slack** using `apps/channel` and read its bundled `build-channels-agent` skill. |
-| Web template | The existing model-provider setup runs without Intelligence. To add managed conversations with Rich Threads and other Intelligence capabilities, use the prompt below for `apps/web`. |
-| React Native template | Follow the [Expo setup instructions](apps/mobile/README.md#get-started), including its runtime in `apps/web`. |
-
-**CopilotKit onboarding prompt for web:**
+For web, paste this into your coding agent:
 
 ```text
 Help me get started with CopilotKit. Run this command and follow the instructions:
@@ -61,11 +53,7 @@ Help me get started with CopilotKit. Run this command and follow the instruction
 npx --yes copilotkit@latest onboard start
 ```
 
-For this starter, tell your agent that `apps/web` already has CopilotKit and ask it to preserve the existing app, agent, model provider, tools, and approval behavior. Have it read `AGENTS.md` and the app README, show the integration plan before editing, and verify the app before and after onboarding.
-
-The [docs home](https://docs.copilotkit.ai/) also offers **Copy Prompt**, **Open in Codex**, and **Open in Claude Code**. Use the web prompt above for `apps/web` and the [Channels onboarding path](https://docs.copilotkit.ai/slack) for Slack. Finish one selected workflow before starting another.
-
-Follow the CLI's returned instructions for sign-in, project selection, credentials, and verification. Keep credentials out of chat and preserve existing `.env` values. The starter reads `INTELLIGENCE_API_KEY`; if setup provisions `CPK_INTELLIGENCE_API_KEY`, map it to the variable the selected runtime actually reads. Review any required package upgrades together with the tested Channels/runtime pair and `@ag-ui/client` override. Intelligence onboarding changes the app; installing a skill or adding an API key alone does not complete that integration.
+For Slack, follow [Channels setup](apps/channel/README.md#get-started). For React Native, follow the [Expo setup instructions](apps/mobile/README.md#get-started).
 
 ## Templates
 
