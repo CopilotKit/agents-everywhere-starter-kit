@@ -1,0 +1,31 @@
+{
+  "name": "procure-api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Procurebot service layer: ERP read API, approval-gated writes, and the supplier portal.",
+  "scripts": {
+    "dev": "node --env-file=../../.env --import tsx --watch src/server.ts",
+    "start": "node --env-file=../../.env --import tsx src/server.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "node --import tsx --test 'src/**/*.test.ts'",
+    "test:db": "node --env-file=../../.env --import tsx --test --test-concurrency=1 'src/**/*.dbtest.ts'"
+  },
+  "dependencies": {
+    "bullmq": "^5.81.5",
+    "express": "^5.2.1",
+    "ioredis": "^5.11.1",
+    "jose": "^6.2.12",
+    "multer": "^2.3.0",
+    "nodemailer": "^10.0.9",
+    "procure-db": "*",
+    "zod": "^4.6.2"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/multer": "^2.2.0",
+    "@types/nodemailer": "^8.0.1",
+    "@types/supertest": "^7.2.1",
+    "supertest": "^7.2.2"
+  }
+}
