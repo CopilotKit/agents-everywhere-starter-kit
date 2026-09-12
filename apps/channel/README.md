@@ -22,7 +22,13 @@ EXA_API_KEY=your-key
 EXA_SEARCH_TYPE=fast
 ```
 
-Choose an OpenAI model available to your account. Create the managed Channel using `npm run channel:setup`; the [setup guide](../../dev-docs/setup.md) and [screenshot walkthrough](../../dev-docs/channels-sdk-walkthrough/README.md) cover the Slack installation.
+Choose an OpenAI model available to your account. Start the official onboarding handoff:
+
+```bash
+npm run channel:setup -- --no-clipboard
+```
+
+This installs the maintained `channels-setup` skill and prints a prompt. Give that prompt to your coding agent in this checkout and specify **Slack**, using the existing `apps/channel` app. Have the agent follow the skill through sign-in, project/Channel configuration, Slack installation, and a real reply. The command alone does not create the Channel. Keep existing `.env` values; the listener reads `CHANNEL_CODE` and `INTELLIGENCE_API_KEY`. The [shared onboarding notes](../../README.md#copilotkit-onboarding) explain CLI credential naming; the [setup guide](../../dev-docs/setup.md) and [screenshot walkthrough](../../dev-docs/channels-sdk-walkthrough/README.md) provide manual reference.
 
 ```bash
 npm run dev:slack
@@ -57,6 +63,9 @@ OpenRouter can be used as the model gateway through the shared provider settings
 ```text
 Read the root hackathon overview, rules, sponsor guide, and AGENTS.md.
 Read .agents/skills/build-channels-agent/SKILL.md before changing Slack code.
+If Slack is not connected, run npm run channel:setup -- --no-clipboard
+from the repository root and follow its prompt using the channels-setup
+skill. Select Slack and connect the existing apps/channel app.
 Adapt apps/channel to our project's user and conversation. Preserve
 read_thread, use Exa when research helps, and render results with Channels JSX.
 Replace incident-specific schemas, tools, and prompts with our own workflow.

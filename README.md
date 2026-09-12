@@ -38,12 +38,41 @@ Paste this into your coding agent:
 ```text
 Read AGENTS.md, hackathon-overview.md, hackathon-rules.md, and
 using-sponsor-tools.md. Help me choose one template app README for my idea,
-then build a new project using its infrastructure. Ask me who it is for and
-what the agent should do in that setting. Read the selected template before
-editing; for Slack also read .agents/skills/build-channels-agent/SKILL.md.
+then adapt this checkout into our own project. Ask me who it is for and
+what the agent should do in that setting. Follow this README's CopilotKit
+onboarding section for the selected app; keep its existing infrastructure.
 Use only the integrations the idea needs. Verify a complete interaction and
 prepare SUBMISSION.md, distinguishing inherited code from our event work.
 ```
+
+### CopilotKit onboarding
+
+Use the team's maintained setup prompts in the same coding-agent session, with this checkout as the project root. Choose one app first; setup should adapt that app rather than scaffold a second starter over it.
+
+| Your starting point | Onboarding path |
+|---|---|
+| Slack template | Run `npm run channel:setup -- --no-clipboard`, then have your agent follow the prompt it prints. This installs the current `channels-setup` skill; the command itself does not create a Channel or sign you in. Tell the agent to connect **Slack** using `apps/channel` and read its bundled `build-channels-agent` skill. |
+| Web or React Native template | The existing model-provider setup runs without Intelligence. To add managed conversations with Rich Threads and other Intelligence capabilities, use the prompt below for the chosen app. |
+
+**Connect the selected app to CopilotKit Intelligence:**
+
+```text
+Read AGENTS.md and the selected app README. Connect that app to CopilotKit
+Intelligence using the current official onboarding workflow. This checkout
+already has CopilotKit: preserve the existing app, agent, model provider,
+tools, and approval behavior. For apps/mobile, keep Expo and the separate
+mobile install; its runtime is served by apps/web.
+Generate a fresh 12-character hexadecimal run ID, substitute it for RUN_ID,
+then run from the repository root:
+npx --yes copilotkit@latest onboard start --run RUN_ID
+Follow the instructions returned by the CLI and reuse that ID for this run.
+Show the integration plan before editing, and prove the selected app works
+before and after connecting Intelligence.
+```
+
+The [official CopilotKit prompt](https://docs.copilotkit.ai/llms.txt) serves new projects, existing apps, and existing CopilotKit integrations. The [docs home](https://docs.copilotkit.ai/) also offers **Copy Prompt**, **Open in Codex**, and **Open in Claude Code**; add the selected template's context when using those entry points. For Slack, use the [Channels onboarding path](https://docs.copilotkit.ai/slack) above. Finish one selected workflow before starting another.
+
+Follow the CLI's returned instructions for sign-in, project selection, credentials, and verification. Keep credentials out of chat and preserve existing `.env` values. The starter reads `INTELLIGENCE_API_KEY`; if setup provisions `CPK_INTELLIGENCE_API_KEY`, map it to the variable the selected runtime actually reads. Review any required package upgrades together with the tested Channels/runtime pair and `@ag-ui/client` override. Intelligence onboarding changes the app; installing a skill or adding an API key alone does not complete that integration.
 
 ## Templates
 

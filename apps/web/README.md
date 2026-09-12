@@ -21,6 +21,8 @@ AMBIGUOUS_API_KEY=your-workspace-key
 
 Choose an OpenAI model your account can use. Use a demo workspace you control for the first write. This web template needs no managed Channel or Intelligence account.
 
+To add managed conversation persistence, use the [official Intelligence onboarding prompt](../../README.md#copilotkit-onboarding) with `apps/web` as the selected app. It connects this existing Next.js/CopilotKit app; keep the Ambiguous record workflow and page approval. Saving a task in Ambiguous and persisting a conversation in Intelligence are separate capabilities.
+
 To use OpenRouter, follow the [shared provider settings](../../using-sponsor-tools.md#openrouter): set `MODEL_PROVIDER=openrouter`, `OPENROUTER_API_KEY`, and a `MODEL` slug with tool support. Keep the Ambiguous workspace key; an OpenAI key is not required for OpenRouter chat.
 
 ```bash
@@ -57,6 +59,9 @@ The web chat does not receive raw Ambiguous write tools. It can propose a task a
 
 ```text
 Read the root hackathon overview, rules, sponsor guide, and AGENTS.md.
+Explain the model-only and Intelligence options in README.md's CopilotKit
+onboarding section. If I choose Intelligence, follow its official onboarding
+prompt for apps/web before customizing; preserve this existing integration.
 Adapt apps/web to our user and workflow. Keep CopilotKit React for page context,
 frontend tools, agent-rendered UI, and page approval. Use Ambiguous AI for
 persistent records. Do not expose raw write tools to the web chat when the page

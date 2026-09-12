@@ -38,10 +38,12 @@ npm run dev:web
 Intelligence manages platform credentials and delivers over an outbound socket. Your listener stays running; no public tunnel is needed.
 
 ```bash
-npm run channel:setup
+npm run channel:setup -- --no-clipboard
 ```
 
-Follow the setup instructions it prints. Alternatively, create the Channel **before** the Slack app so the wizard can generate the correct manifest:
+This installs the current `channels-setup` skill and prints the official prompt. Continue with that prompt in your coding agent, selecting **Slack** and the existing `apps/channel` app. Let the agent follow the skill through setup and verify a real Slack reply. The command itself does not authenticate or provision the Channel. See [CopilotKit onboarding](../README.md#copilotkit-onboarding) for this handoff and the web/mobile Intelligence path.
+
+For manual setup, create the Channel **before** the Slack app so the wizard can generate the correct manifest:
 
 ```bash
 npx copilotkit@latest channels add --name my-agent \
