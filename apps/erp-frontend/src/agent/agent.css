@@ -1,0 +1,182 @@
+/* Agent column and approval cards, in the console's chassis/printout language. */
+
+.console__agent {
+  flex: 0 0 400px;
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 1.25rem;
+  height: calc(100vh - 2.5rem);
+  background: var(--paper-raised);
+  border: 1px solid var(--chassis-border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.agent__header {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.8rem 1rem;
+  background: var(--chassis-raised);
+  color: var(--chassis-text);
+  font-weight: 700;
+  font-size: 0.85rem;
+  letter-spacing: 0.04em;
+  border-bottom: 1px solid var(--chassis-border);
+}
+
+.agent__chat {
+  flex: 1;
+  min-height: 0;
+}
+
+.agent-card {
+  margin: 0.5rem 0;
+  padding: 0.9rem 1rem;
+  background: var(--paper);
+  border: 1px solid var(--paper-border);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-display);
+  color: var(--ink);
+  font-size: 0.86rem;
+}
+
+.agent-card--gate {
+  border-left: 3px solid var(--amber);
+}
+
+.agent-card__eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.64rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  margin-bottom: 0.5rem;
+}
+
+.agent-card p {
+  margin: 0.4rem 0;
+}
+
+.agent-card__list {
+  margin: 0.3rem 0 0.6rem;
+  padding-left: 1.1rem;
+}
+
+.agent-card__list li {
+  margin: 0.15rem 0;
+}
+
+.agent-card__done {
+  font-weight: 600;
+}
+
+.agent-card__warn {
+  color: var(--tone-negative);
+  font-weight: 600;
+}
+
+.agent-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.agent-card table {
+  margin-bottom: 0.5rem;
+  font-size: 0.8rem;
+}
+
+.agent-card th,
+.agent-card td {
+  padding: 0.4rem 0.5rem;
+}
+
+.btn {
+  font-family: var(--font-display);
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 0.5rem 0.9rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--paper-border);
+  background: var(--paper-raised);
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.btn:hover:not(:disabled) {
+  border-color: var(--ink-muted);
+}
+
+.btn--primary {
+  background: var(--chassis);
+  border-color: var(--chassis);
+  color: var(--amber-bright);
+}
+
+.btn--primary:hover:not(:disabled) {
+  background: var(--chassis-raised);
+  border-color: var(--amber);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.mono {
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+  color: var(--ink-muted);
+}
+
+.table-scroll {
+  overflow-x: auto;
+}
+
+.comparison tr.is-recommended {
+  background: rgba(255, 176, 0, 0.14);
+}
+
+.badge {
+  display: table;
+  margin-top: 0.25rem;
+  padding: 0.05rem 0.4rem;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink);
+  background: var(--amber);
+  border-radius: 2px;
+}
+
+.comparison__reason {
+  font-size: 0.88rem;
+  color: var(--ink);
+}
+
+.filter-input {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  text-transform: none;
+  color: var(--ink);
+  background: var(--paper-raised);
+  border: 1px solid var(--paper-border);
+  border-radius: var(--radius-sm);
+  padding: 0.4rem 0.65rem;
+}
+
+@media (max-width: 1180px) {
+  .console {
+    flex-wrap: wrap;
+  }
+
+  .console__agent {
+    flex: 1 1 100%;
+    position: static;
+    height: 70vh;
+  }
+}

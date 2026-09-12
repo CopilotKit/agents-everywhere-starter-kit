@@ -1,0 +1,496 @@
+/* ============================================================
+   Procurebot ERP — "cassette futurist" console
+   Dark amber-lit chassis (chrome) framing a warm parchment
+   printout panel (content). See index.html's body comment for
+   the full direction contract.
+   ============================================================ */
+
+:root {
+  --font-display: "Space Grotesk", "Avenir Next", "Segoe UI", sans-serif;
+  --font-mono: "Space Mono", "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+
+  --chassis: #17140f;
+  --chassis-raised: #221d15;
+  --chassis-border: #453a26;
+  --chassis-text: #d9cdb0;
+  --chassis-text-muted: #8f8267;
+
+  --paper: #f4ead8;
+  --paper-raised: #fffaf0;
+  --paper-band: #e9dcc0;
+  --paper-border: #d6c6a1;
+
+  --ink: #241f16;
+  --ink-muted: #6f6350;
+
+  --amber: #ffb000;
+  --amber-bright: #ffcf5c;
+
+  --link: #7a4700;
+  --link-hover: #5c3600;
+
+  --tone-progress: #7a4700;
+  --tone-positive: #1f5c24;
+  --tone-negative: #8a3220;
+  --tone-neutral: #6f6350;
+
+  --radius: 10px;
+  --radius-sm: 5px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+::selection {
+  background: var(--amber);
+  color: var(--ink);
+}
+
+:focus-visible {
+  outline: 2px solid var(--amber);
+  outline-offset: 2px;
+}
+
+html {
+  scrollbar-color: var(--chassis-border) var(--chassis);
+}
+
+body {
+  font-family: var(--font-display);
+  margin: 0;
+  color: var(--ink);
+  background: var(--chassis);
+}
+
+/* ---------- Console shell ---------- */
+
+.console {
+  display: flex;
+  gap: 1.25rem;
+  min-height: 100vh;
+  padding: 1.25rem;
+  background:
+    radial-gradient(circle at 14px 14px, var(--chassis-border) 1.5px, transparent 2px),
+    radial-gradient(circle at calc(100% - 14px) 14px, var(--chassis-border) 1.5px, transparent 2px),
+    radial-gradient(circle at 14px calc(100% - 14px), var(--chassis-border) 1.5px, transparent 2px),
+    radial-gradient(circle at calc(100% - 14px) calc(100% - 14px), var(--chassis-border) 1.5px, transparent 2px),
+    var(--chassis);
+  background-repeat: no-repeat;
+}
+
+.console__panel {
+  flex-shrink: 0;
+  width: 220px;
+  display: flex;
+  flex-direction: column;
+  background: var(--chassis-raised);
+  border: 1px solid var(--chassis-border);
+  border-radius: var(--radius);
+  padding: 1.25rem 0.9rem;
+}
+
+.console__brand {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0 0.4rem 1.1rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid var(--chassis-border);
+}
+
+.console__brand-mark {
+  width: 0.6rem;
+  height: 0.6rem;
+  flex-shrink: 0;
+  background: var(--amber);
+  box-shadow: 0 0 6px var(--amber);
+  border-radius: 1px;
+}
+
+.console__brand-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+}
+
+.console__brand-name {
+  font-weight: 700;
+  font-size: 0.95rem;
+  letter-spacing: 0.04em;
+  color: var(--chassis-text);
+}
+
+.console__brand-sub {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.14em;
+  color: var(--chassis-text-muted);
+  text-transform: uppercase;
+}
+
+.console__nav {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  flex: 1;
+}
+
+.console__toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.55rem 0.65rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  color: var(--chassis-text);
+  text-decoration: none;
+  font-size: 0.82rem;
+  letter-spacing: 0.03em;
+}
+
+.console__toggle-dot {
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 1px;
+  background: var(--chassis-border);
+  flex-shrink: 0;
+}
+
+.console__toggle:hover {
+  background: rgba(255, 176, 0, 0.08);
+  border-color: var(--chassis-border);
+}
+
+.console__toggle.active {
+  background: rgba(255, 176, 0, 0.14);
+  border-color: var(--amber);
+  color: var(--amber-bright);
+  font-weight: 700;
+}
+
+.console__toggle.active .console__toggle-dot {
+  background: var(--amber);
+  box-shadow: 0 0 5px var(--amber);
+}
+
+/* ---------- Printout panel (main content) ---------- */
+
+.printout {
+  flex: 1;
+  min-width: 0;
+  background: var(--paper);
+  border: 1px solid var(--paper-border);
+  border-radius: var(--radius);
+  padding: 2rem 2.25rem 2.5rem;
+  box-shadow:
+    0 24px 48px -28px rgba(0, 0, 0, 0.65),
+    inset 0 1px 0 var(--paper-raised);
+  max-width: 1040px;
+}
+
+.printout h1 {
+  font-size: 1.5rem;
+  letter-spacing: 0.01em;
+  margin: 0 0 1.25rem;
+  color: var(--ink);
+}
+
+.printout h1 code,
+.printout h1 .record-id {
+  font-family: var(--font-mono);
+  font-size: 0.75em;
+  font-weight: 400;
+  color: var(--ink-muted);
+  margin-left: 0.6rem;
+}
+
+.printout > p:first-child {
+  margin-top: 0;
+}
+
+/* ---------- Back link ---------- */
+
+.crumb {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  color: var(--link);
+  text-decoration: none;
+  margin-bottom: 1.5rem;
+}
+
+.crumb:hover {
+  color: var(--link-hover);
+  text-decoration: underline;
+}
+
+.crumb-inline {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: var(--link);
+  text-decoration: none;
+}
+
+.crumb-inline:hover {
+  color: var(--link-hover);
+  text-decoration: underline;
+}
+
+.record-link {
+  color: var(--link);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.record-link:hover {
+  color: var(--link-hover);
+  text-decoration: underline;
+}
+
+/* ---------- Filter bar ---------- */
+
+.filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 1.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+
+.filter-bar select {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  text-transform: none;
+  color: var(--ink);
+  background: var(--paper-raised);
+  border: 1px solid var(--paper-border);
+  border-radius: var(--radius-sm);
+  padding: 0.4rem 1.8rem 0.4rem 0.65rem;
+  appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, var(--ink-muted) 50%),
+    linear-gradient(135deg, var(--ink-muted) 50%, transparent 50%);
+  background-position: calc(100% - 14px) 55%, calc(100% - 9px) 55%;
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+}
+
+.filter-bar select:hover {
+  border-color: var(--ink-muted);
+}
+
+/* ---------- Tables ---------- */
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 0 0 1.75rem;
+  font-variant-numeric: tabular-nums;
+}
+
+thead tr {
+  background: var(--paper-band);
+}
+
+th {
+  text-align: left;
+  padding: 0.55rem 0.85rem;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  font-weight: 400;
+  border-bottom: 1px solid var(--paper-border);
+}
+
+td {
+  padding: 0.6rem 0.85rem;
+  border-bottom: 1px solid var(--paper-border);
+  font-size: 0.9rem;
+  vertical-align: top;
+}
+
+tbody tr:hover {
+  background: var(--paper-raised);
+}
+
+/* ---------- Status lamps ---------- */
+
+.lamp {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  text-decoration: none;
+}
+
+.lamp::before {
+  content: "";
+  width: 0.55em;
+  height: 0.55em;
+  flex-shrink: 0;
+  border-radius: 1px;
+  background: currentColor;
+  box-shadow: 0 0 0.4em currentColor;
+}
+
+a.lamp:hover {
+  text-decoration: underline;
+}
+
+.lamp--progress {
+  color: var(--tone-progress);
+}
+
+.lamp--positive {
+  color: var(--tone-positive);
+}
+
+.lamp--negative {
+  color: var(--tone-negative);
+}
+
+.lamp--neutral {
+  color: var(--tone-neutral);
+}
+
+/* ---------- Section blocks (detail pages) ---------- */
+
+section {
+  margin: 2.25rem 0 0;
+}
+
+section h2 {
+  font-size: 0.95rem;
+  letter-spacing: 0.03em;
+  margin: 0 0 0.9rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--paper-border);
+  color: var(--ink);
+}
+
+section article {
+  margin-bottom: 1.25rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px dashed var(--paper-border);
+}
+
+section article:last-child {
+  border-bottom: none;
+}
+
+section article h3 {
+  font-size: 0.88rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem;
+  color: var(--ink);
+}
+
+section article p {
+  margin: 0 0 0.4rem;
+  font-size: 0.88rem;
+  color: var(--ink-muted);
+}
+
+/* ---------- Spec sheet (dl) ---------- */
+
+dl.spec-sheet {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.5rem 1.5rem;
+  padding: 1rem 1.25rem;
+  background: var(--paper-band);
+  border: 1px solid var(--paper-border);
+  border-radius: var(--radius-sm);
+}
+
+dl.spec-sheet dt {
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  align-self: center;
+}
+
+dl.spec-sheet dd {
+  margin: 0;
+  align-self: center;
+}
+
+dl.spec-sheet dd:not(.lamp) {
+  font-size: 0.92rem;
+  color: var(--ink);
+}
+
+/* ---------- Loading / empty / error states ---------- */
+
+.state-line {
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  letter-spacing: 0.03em;
+  color: var(--ink-muted);
+}
+
+.state-empty {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  padding: 0.9rem 1.1rem;
+  border: 1px dashed var(--paper-border);
+  border-radius: var(--radius-sm);
+}
+
+[role="alert"] {
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  color: var(--paper);
+  background: var(--tone-negative);
+  padding: 0.7rem 1rem;
+  border-radius: var(--radius-sm);
+  display: inline-block;
+}
+
+/* ---------- Responsive ---------- */
+
+@media (max-width: 720px) {
+  .console {
+    flex-direction: column;
+    padding: 0.75rem;
+    gap: 0.75rem;
+  }
+
+  .console__panel {
+    width: auto;
+  }
+
+  .console__nav {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .printout {
+    padding: 1.5rem 1.25rem 2rem;
+  }
+
+  dl.spec-sheet {
+    grid-template-columns: 1fr;
+  }
+}
