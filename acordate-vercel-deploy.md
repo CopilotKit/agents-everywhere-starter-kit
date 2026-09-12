@@ -16,8 +16,8 @@ openssl rand -hex 32
 
 ## Crear el proyecto en Vercel
 
-1. Entrá a https://vercel.com/new e importá el repo `DiegoNico3/agents-everywhere-qwerty-labs`.
-2. **Root Directory:** raíz del monorepo (usa el [`vercel.json`](vercel.json) de la raíz).
+1. Entrá a https://vercel.com/new e importá el repo (el de tu equipo en GitHub).
+2. **Root Directory:** raíz del monorepo (`.` / vacío). **No** uses `apps/channel` — Acordate vive en `apps/web`.
 3. Framework: Next.js.
 4. Cargá estas **Environment Variables** (Production + Preview):
 
@@ -55,12 +55,17 @@ curl -sS -X POST "${ACORDATE_PUBLIC_URL}/api/internal/run-due-reminders" \
   -H "Authorization: Bearer ${CRON_SECRET}"
 ```
 
-## Cron
+## Cron (Hobby no permite cada minuto)
 
-[`vercel.json`](vercel.json) declara cron cada minuto a `/api/internal/run-due-reminders`.
+En plan **Hobby**, Vercel solo permite crons **1× por día**. Por eso [`vercel.json`](vercel.json) **no** declara cron.
 
-- En **Hobby**, Vercel puede limitar la frecuencia. Si no dispara cada minuto, usá [cron-job.org](https://cron-job.org) o Supabase Cron con el mismo `POST` y `Authorization: Bearer <CRON_SECRET>`.
-- En **Pro**, el cron cada minuto suele funcionar.
+Usá un cron externo cada minuto para la demo:
+
+1. [cron-job.org](https://cron-job.org) (gratis) o similar
+2. URL: `https://TU-APP.vercel.app/api/internal/run-due-reminders`
+3. Método: `POST`
+4. Header: `Authorization: Bearer <CRON_SECRET>`
+5. Intervalo: cada 1 minuto
 
 ## Seguridad
 

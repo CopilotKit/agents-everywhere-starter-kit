@@ -228,6 +228,10 @@ export class AcordateSupabaseStore {
       body: JSON.stringify({
         user_id: input.userId,
         title: input.title,
+        // Legacy 001 columns still required by the live table.
+        start_at: input.scheduledAt,
+        task: input.context,
+        timezone: "America/Asuncion",
         scheduled_at: input.scheduledAt,
         status: "pending",
         context: input.context,
