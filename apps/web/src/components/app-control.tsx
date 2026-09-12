@@ -1,8 +1,21 @@
 "use client";
+/**
+ * TOOLS DEL AGENTE — dueño: P1. Reemplaza apps/web/src/components/app-control.tsx
+ *
+ * Heredado del starter kit: la forma de useAgentContext/useFrontendTool,
+ * toolResult, y las tools de Ambiguous (propose/retrieve/refresh).
+ * Construido hoy: map_dependencies, triage_blockers, research_blocker,
+ * propose_resolution.
+ *
+ * REGLA QUE NO SE ROMPE: el chat nunca recibe tools de escritura crudas.
+ * Propone y lee; el servidor escribe solo tras el clic de aprobar.
+ */
 
 import { useFrontendTool, useAgentContext } from "@copilotkit/react-core/v2";
 import { z } from "zod";
-import { findIncident, workspaceContext } from "@/lib/incidents";
+import { graphContext } from "@/lib/fixture";
+import { KIND_LABEL } from "@/lib/graph-types";
+import type { GraphControls, TriageVerdict } from "@/lib/use-graph";
 import type { WorkplaceControls } from "@/lib/use-workplace";
 
 async function toolResult<T>(action: () => Promise<T>) {
@@ -14,30 +27,33 @@ async function toolResult<T>(action: () => Promise<T>) {
       message:
         error instanceof Error
           ? error.message
-          : "Workplace operation failed. Check the page for setup details.",
+          : "La operación falló. Revisa la página para el detalle.",
     };
   }
 }
 
 export function AppControl({
-  selectedId,
-  selectIncident,
+  graph,
   workplace,
 }: {
-  selectedId: string;
-  selectIncident: (id: string) => void;
+  graph: GraphControls;
   workplace: WorkplaceControls;
 }) {
   const { status, propose, retrieve } = workplace;
+  const { state, applyTriage, attachResolution, setResolving } = graph;
 
   useAgentContext({
     description:
-      "The incident workspace currently visible to the user, including sample timeline and Ambiguous follow-ups. CRITICAL: propose_followup only prepares a proposal. Only the user's approval button saves it; prose/chat approval never executes a write. Use retrieve_followup or refresh_followups for real reads. Never claim a task was saved without a provider record. Never invent record links.",
+      "El proyecto y su cadena de bloqueos, tal como el usuario los ve ahora. " +
+      "Tu trabajo NO es agendar reuniones: es eliminarlas. Cada bloqueo se " +
+      "clasifica en info_gap, confirmation, handoff o real_decision. Los tres " +
+      "primeros se resuelven async. Solo real_decision llega a ser reunión. " +
+      "CRÍTICO: propose_resolution solo prepara una propuesta. Únicamente el " +
+      "botón de aprobación del usuario guarda algo; aprobar por chat nunca " +
+      "ejecuta una escritura. Nunca afirmes que algo se guardó sin un registro " +
+      "real. Nunca inventes links de registro.",
     value: {
-      ...workspaceContext(
-        selectedId,
-        status?.status === "connected" ? status.tasks : [],
-      ),
+      ...graphContext(state),
       workplace: status?.status ?? "unavailable",
       workplaceError: workplace.error,
       proposal: workplace.proposal ?? null,
@@ -45,26 +61,109 @@ export function AppControl({
     },
   });
 
+  // ---- P1 ----
   useFrontendTool(
     {
-      name: "select_incident",
+      name: "map_dependencies",
       description:
-        "Open an existing sample incident in the workspace. Use an ID from availableIncidents.",
-      parameters: z.object({ incidentId: z.string() }),
-      handler: async ({ incidentId }) => {
-        const incident = findIncident(incidentId);
-        selectIncident(incident.id);
-        return `Opened ${incident.id}: ${incident.title}. The visible details and agent context now show this incident.`;
+        "Devuelve la cadena de bloqueos del proyecto visible, con dueño y estado actual. Úsala primero, antes de clasificar.",
+      parameters: z.object({}),
+      handler: async () => graphContext(state),
+    },
+    [state],
+  );
+
+  // ---- P3: el Triador. UNA llamada, todos los nodos. ----
+  useFrontendTool(
+    {
+      name: "triage_blockers",
+      description:
+        "Clasifica TODOS los bloqueos pendientes de una sola vez y devuelve el veredicto de cada uno. " +
+        `Tipos: ${Object.entries(KIND_LABEL).map(([k, v]) => `${k} (${v})`).join(", ")}. ` +
+        "savedPersonHours son las horas-persona que se ahorran al no hacer la reunión que ese bloqueo habría provocado; " +
+        "para real_decision es 0 porque la reunión sí ocurre.",
+      parameters: z.object({
+        verdicts: z.array(
+          z.object({
+            id: z.string(),
+            kind: z.enum([
+              "info_gap",
+              "confirmation",
+              "handoff",
+              "real_decision",
+            ]),
+            summary: z.string().min(1).max(600),
+            savedPersonHours: z.number().min(0).max(40),
+          }),
+        ),
+      }),
+      handler: async ({ verdicts }) => {
+        applyTriage(verdicts as TriageVerdict[]);
+        return {
+          status: "applied",
+          applied: verdicts.length,
+          note: "El grafo ya refleja la clasificación. Ahora resuelve los info_gap con research_blocker.",
+        };
       },
     },
-    [selectIncident],
+    [applyTriage],
+  );
+
+  // ---- P4: Exa ----
+  useFrontendTool(
+    {
+      name: "research_blocker",
+      description:
+        "Solo para bloqueos kind=info_gap. Busca evidencia pública y genera un pre-read con fuentes citadas que ELIMINA la necesidad de reunirse. Devuelve el resumen y las URLs reales; nunca inventes fuentes.",
+      parameters: z.object({
+        blockerId: z.string(),
+        query: z.string().min(3).max(300),
+      }),
+      handler: async ({ blockerId, query }) =>
+        toolResult(async () => {
+          setResolving(blockerId);
+          const res = await fetch("/api/search", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ query, results: 3 }),
+          });
+          if (!res.ok) throw new Error(`Búsqueda falló: HTTP ${res.status}`);
+          const { results } = (await res.json()) as {
+            results: { title?: string; url?: string; text?: string }[];
+          };
+          const sources = (results ?? [])
+            .filter((r) => r.url)
+            .map((r) => ({ title: r.title ?? r.url!, url: r.url! }));
+          return { blockerId, sources, raw: results };
+        }),
+    },
+    [setResolving],
   );
 
   useFrontendTool(
     {
-      name: "propose_followup",
+      name: "attach_preread",
       description:
-        "Prepare an Ambiguous task from the selected incident context. Show the exact title and details for the user's approval button. Does not save anything. CRITICAL: wait for the user to click Approve & save to Ambiguous in the page.",
+        "Adjunta el pre-read redactado al bloqueo y lo marca resuelto en el grafo. Usa solo fuentes devueltas por research_blocker.",
+      parameters: z.object({
+        blockerId: z.string(),
+        summary: z.string().min(1).max(2000),
+        sources: z.array(z.object({ title: z.string(), url: z.string() })),
+      }),
+      handler: async ({ blockerId, summary, sources }) => {
+        attachResolution(blockerId, { summary, sources });
+        return { status: "resolved", blockerId };
+      },
+    },
+    [attachResolution],
+  );
+
+  // ---- Heredado del kit: la frontera de escritura. NO TOCAR la lógica. ----
+  useFrontendTool(
+    {
+      name: "propose_resolution",
+      description:
+        "Prepara un registro con la resolución de un bloqueo para que el usuario la apruebe. NO guarda nada. CRÍTICO: espera a que el usuario haga clic en el botón de aprobación de la página.",
       parameters: z.object({
         incidentId: z.string(),
         title: z.string().trim().min(1).max(200),
@@ -83,8 +182,8 @@ export function AppControl({
     {
       name: "retrieve_followup",
       description:
-        "Retrieve an existing Ambiguous task by its actual ID. Read-only; never creates a duplicate.",
-      parameters: z.object({ id: z.uuid() }),
+        "Recupera un registro guardado por su ID real. Solo lectura; nunca crea duplicados.",
+      parameters: z.object({ id: z.string() }),
       handler: async ({ id }) => toolResult(() => retrieve(id)),
     },
     [retrieve],
@@ -94,7 +193,7 @@ export function AppControl({
     {
       name: "refresh_followups",
       description:
-        "Read saved follow-ups for the currently selected incident from Ambiguous. Use after approval or browser refresh to verify persistence.",
+        "Lee los registros guardados desde el proveedor. Úsala después de aprobar o de refrescar el navegador para verificar persistencia.",
       parameters: z.object({}),
       handler: async () => toolResult(() => workplace.refresh()),
     },
