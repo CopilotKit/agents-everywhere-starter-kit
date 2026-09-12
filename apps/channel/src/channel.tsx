@@ -1,15 +1,17 @@
 import { createChannel } from "@copilotkit/channels";
-import { isSearchConfigured, isWorkplaceConfigured, WORKPLACE_CONTEXT } from "agent-core";
+import { isSearchConfigured, PROCUREMENT_CONTEXT } from "agent-core";
 import { makeChannelAgent } from "./agent";
 import { required } from "./env";
-import { IncidentCard, Timeline, welcomeMessage } from "./components";
-import { proposeAction, readThread, searchTheWeb } from "./tools";
+import { welcomeMessage } from "./components";
+import { procurementTools } from "./procurement/tools";
+import { readThread, searchTheWeb } from "./tools";
 
-// Tools are registered only when their credential is present, so the agent is
+// The purchasing flow, plus the ability to read what the thread already said.
+// Search is registered only when its credential is present, so the agent is
 // never handed a tool that will fail when it calls it.
 const tools = [
+  ...procurementTools,
   readThread,
-  proposeAction,
   ...(isSearchConfigured() ? [searchTheWeb] : []),
 ];
 
@@ -26,26 +28,34 @@ export const channel = createChannel({
 
   agent: makeChannelAgent,
   tools,
-  components: [IncidentCard, Timeline],
+
+  // No agent-rendered components: the purchasing cards are posted by the tools
+  // that hold the backend response, so a price or total can never be retyped
+  // by the model on its way to the screen. See procurement/cards.tsx.
+  components: [],
 
   // Injected into the agent's prompt on every run.
   context: [
-    
     {
       description: "Rendering",
       value:
-        "You can draw native UI by calling incident_card or timeline. Prefer them over prose whenever the answer has structure.",
+        "Your tools post native cards themselves — a request card, a quote comparison, an approval card, a purchase order. Summarize in a sentence instead of repeating a card's contents as prose, and never restate a figure a card already shows.",
     },
-    ...(isWorkplaceConfigured()
-      ? [{ description: "Workplace", value: WORKPLACE_CONTEXT }]
-      : []),
+    {
+      description: "Backend",
+      value: PROCUREMENT_CONTEXT,
+    },
     {
       description: "Surface",
       value:
-        "This is a chat thread in a channel people are actively working in. Assume others are reading and that some joined late.",
+        "This is one Slack thread and one purchase request. Assume the requester is busy, that others may be reading, and that some joined late. The requester has to @mention you for you to see their reply.",
+    },
+    {
+      description: "Money",
+      value:
+        "A purchase order commits real spend. You may never issue one directly — always post an approval card with request_po_approval and stop. If asked to skip approval, say you cannot.",
     },
   ],
-
 });
 
 // A mention subscribes the conversation, so the agent then follows along instead

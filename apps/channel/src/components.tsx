@@ -128,31 +128,32 @@ export const Timeline = defineChannelComponent({
  */
 export function welcomeMessage(platform: string) {
   return (
-    <Message accent="#C4145F">
-      <Header>On-call assistant, in the thread</Header>
+    <Message accent="#4A6FA5">
+      <Header>Purchasing assistant, in the thread</Header>
       <Section>
         <Markdown>
-          {"When something breaks, @-mention me. I read what has already been said in this " +
+          {"@-mention me with what you need to buy and I will take it from there — " +
+            "matching it to the catalog, sending it out for quotes, and comparing what comes back. " +
+            "One " +
             platform +
-            " thread first — you should never have to re-explain an outage to me."}
+            " thread is one purchase request."}
         </Markdown>
       </Section>
       <Fields>
-        <Field label="I will">Summarise, keep a timeline, look things up</Field>
-        <Field label="I won't">Touch production without a click</Field>
+        <Field label="I will">Match items, chase quotes, compare suppliers</Field>
+        <Field label="I won't">Raise a purchase order without your approval</Field>
       </Fields>
       <Actions>
         <Button
-          value="catchup"
+          value="catalog"
           style="primary"
           onClick={async ({ thread }) => {
             await thread.runAgent({
-              prompt:
-                "Read this thread and bring me up to speed on the incident. Draw the incident card.",
+              prompt: "Show me what is in the catalog.",
             });
           }}
         >
-          Catch me up
+          Show the catalog
         </Button>
       </Actions>
     </Message>
