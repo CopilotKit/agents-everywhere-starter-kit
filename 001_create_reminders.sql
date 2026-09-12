@@ -14,7 +14,8 @@ $$;
 
 create table if not exists public.reminders (
   id uuid primary key default gen_random_uuid(),
-  user_id uuid not null references auth.users(id) on delete cascade,
+  -- FK real a public.users se aplica en 006_reminders_user_fk.sql
+  user_id uuid not null,
   title text not null,
   task text,
   status text not null default 'active'
@@ -40,10 +41,4 @@ for each row execute function public.set_updated_at();
 
 alter table public.reminders enable row level security;
 
-drop policy if exists reminders_owner_policy on public.reminders;
-create policy reminders_owner_policy
-on public.reminders
-for all
-to authenticated
-using (user_id = auth.uid())
-with check (user_id = auth.uid());
+-- Policies con auth.uid() no aplican al bot (service_role). Ver 006.
