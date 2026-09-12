@@ -13,3 +13,26 @@ export {
   WORKPLACE_CONTEXT,
 } from "./capabilities/workplace";
 export * from "./shared";
+export { PROCUREMENT_PROMPT } from "./procurement-prompt";
+export {
+  procurementApi,
+  isProcurementConfigured,
+  isProcurementLive,
+  PROCUREMENT_CONTEXT,
+  ProcurementApiError,
+  httpProcurementApi,
+  createFakeProcurementApi,
+} from "./capabilities/procurement";
+export type {
+  ProcurementApi,
+  ItemRequest,
+  CatalogItem,
+  Comparison,
+  PurchaseOrder,
+  Quote,
+  Requisition,
+  RequisitionDetail,
+  RequisitionLine,
+  Rfq,
+  Supplier,
+} from "./capabilities/procurement";
