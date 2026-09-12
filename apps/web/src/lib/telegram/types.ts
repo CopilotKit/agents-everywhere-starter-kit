@@ -20,14 +20,31 @@ export type TelegramUpdate = z.infer<typeof telegramUpdateSchema>;
 export type IncomingTelegramMessage = {
   chatId: string;
   telegramUserId: string;
+  messageId: string;
   text: string;
+  receivedAt: string;
 };
 
-/**
- * Contract consumed by Persona 1. Persona 2 can replace the mock implementation
- * without changing the Telegram webhook.
- */
-export type AcordateAgent = (input: {
+export type AcordateUser = {
+  id: string;
+  telegramId: string;
+  timezone: string;
+  createdAt: string;
+};
+
+export type ActiveSentReminder = {
+  id: string;
+  title: string;
+  context: string;
+};
+
+export type AgentTurn = {
   userId: string;
-  message: string;
-}) => Promise<{ text: string }>;
+  text: string;
+  sourceMessageId: string;
+  receivedAt: string;
+  timezone: string;
+  activeSentReminder: ActiveSentReminder | null;
+};
+
+export type AcordateAgent = (turn: AgentTurn) => Promise<{ text: string }>;

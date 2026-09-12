@@ -16,7 +16,6 @@ export const searchMemoryInputSchema = z
     query: nonEmptyText
       .max(500)
       .describe("A concise query describing the memory to retrieve."),
-    limit: z.number().int().min(1).max(10).default(5),
   })
   .strict();
 
@@ -25,18 +24,17 @@ export const createReminderInputSchema = z
     title: nonEmptyText
       .max(160)
       .describe("A short action-oriented reminder title."),
-    dueAt: z.iso
+    scheduledAt: z.iso
       .datetime({ offset: true })
       .describe("Concrete ISO 8601 date-time including Z or a UTC offset."),
     context: nonEmptyText
       .max(2_000)
-      .optional()
-      .describe("Useful retrieved context to include in the notification."),
-    memoryIds: z
+      .describe("Retrieved context suitable for the notification."),
+    sourceMemoryIds: z
       .array(nonEmptyId)
-      .max(10)
+      .max(3)
       .default([])
-      .describe("IDs of memories that support this reminder."),
+      .describe("IDs returned by searchMemory that support this reminder."),
   })
   .strict();
 
@@ -71,14 +69,15 @@ export const runAcordateAgentInputSchema = z
       },
       { message: "timezone must be a valid IANA time zone" },
     ),
-    sourceMessageId: nonEmptyId.optional(),
-    activeReminder: z
+    sourceMessageId: nonEmptyId,
+    activeSentReminder: z
       .object({
         id: nonEmptyId,
         title: nonEmptyText.max(160),
+        context: nonEmptyText.max(2_000),
       })
       .strict()
-      .optional(),
+      .nullable(),
   })
   .strict()
   .refine((input) => input.messages.at(-1)?.role === "user", {

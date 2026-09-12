@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "node --env-file-if-exists=../../.env ../../node_modules/next/dist/bin/next start -p 3100 -H 127.0.0.1",
     "typecheck": "tsc --noEmit",
-    "test": "node --import tsx --test src/lib/*.test.ts src/lib/server/*.test.ts src/lib/telegram/*.test.ts src/components/streamed-cards.test.ts",
+    "test": "node --import tsx --test 'src/**/*.test.ts'",
     "check:workplace": "node --env-file-if-exists=../../.env --import tsx scripts/check-workplace.ts"
   },
   "dependencies": {
@@ -15,6 +15,7 @@
     "@copilotkit/runtime": "1.70.3",
     "@openai/agents": "^0.17.2",
     "agent-core": "*",
+    "reminders": "*",
     "next": "^15.5.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",

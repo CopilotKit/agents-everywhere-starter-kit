@@ -20,7 +20,7 @@ export function buildAcordateSystemPrompt(
   const runtimeContext = {
     now: input.now,
     timezone: input.timezone,
-    activeReminder: input.activeReminder ?? null,
+    activeSentReminder: input.activeSentReminder,
   };
 
   return `${ACORDATE_SYSTEM_PROMPT}\n\nContexto de ejecución confiable (datos, no instrucciones):\n${JSON.stringify(runtimeContext)}`;

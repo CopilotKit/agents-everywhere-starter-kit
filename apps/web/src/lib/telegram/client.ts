@@ -22,7 +22,10 @@ export async function sendTelegramMessage(
     },
   );
 
-  if (!response.ok) {
+  const result = await response
+    .json()
+    .catch(() => undefined) as { ok?: unknown } | undefined;
+  if (!response.ok || result?.ok !== true) {
     throw new Error(`Telegram sendMessage failed with HTTP ${response.status}`);
   }
 }

@@ -17,29 +17,38 @@ columna correspondiente.
 Supabase, salida sanitizada del endpoint, o video breve. Nunca pegar tokens,
 headers de autorización ni URLs con credenciales.
 
+## Auditoría del primer corte — 2026-09-12
+
+Se corrigió la integración local sobre `414e66d`. `npm ci` vuelve a ser
+reproducible, `npm run verify` pasa y los endpoints locales devuelven los
+resultados esperados. La conexión sanitizada a Supabase devuelve `200`, pero el
+proyecto aún no tiene las columnas y funciones de `009_acordate_contract_alignment.sql`;
+esa migración debe aplicarse antes de realizar escrituras reales. La auditoría
+no leyó ni expuso valores de secretos.
+
 ## 0. Prevuelo de integración
 
 | # | Prueba | Responsable | Estado | Evidencia / notas |
 | --- | --- | --- | --- | --- |
-| 0.1 | `acordate-contracts.md` está aceptado por las personas 1–4. | P5 | ⬜ Pendiente | |
-| 0.2 | La rama de integración contiene los cambios requeridos, sin conflictos. | P5 | ⬜ Pendiente | |
-| 0.3 | `.env` local contiene todas las variables de Acordate; no se versiona. | P5 | ⬜ Pendiente | |
-| 0.4 | Las variables equivalentes están cargadas en el entorno de Vercel/Supabase que corresponda. | P5 | ⬜ Pendiente | |
-| 0.5 | `GET /api/health` en la URL desplegada devuelve `200` y no expone secretos. | P1 + P5 | ⬜ Pendiente | |
-| 0.6 | El chequeo de tipos y las pruebas definidas por el proyecto pasan antes de desplegar. | P5 | ⬜ Pendiente | Comando y salida: |
+| 0.1 | `acordate-contracts.md` está aceptado por las personas 1–4. | P5 | 🟡 Bloqueado | La implementación se alineó al contrato; falta registrar la aceptación del equipo. |
+| 0.2 | La rama de integración contiene los cambios requeridos, sin conflictos. | P5 | 🟢 Pasó | Esta rama contiene P1–P4 y las correcciones de integración, sin conflictos. |
+| 0.3 | `.env` local contiene todas las variables de Acordate; no se versiona. | P5 | 🟡 Bloqueado | Variables locales de Telegram, Supabase y Gemini están configuradas y `.env` sigue ignorado; falta un `CRON_SECRET` separado. |
+| 0.4 | Las variables equivalentes están cargadas en el entorno de Vercel/Supabase que corresponda. | P5 | 🟡 Bloqueado | No hay URL desplegada, acceso al entorno ni evidencia sanitizada para verificarlo. |
+| 0.5 | `GET /api/health` en la URL desplegada devuelve `200` y no expone secretos. | P1 + P5 | 🟡 Bloqueado | Local: `GET /api/health` devolvió `200` con `{ ok: true, service: "acordate" }`. Falta desplegar y guardar la evidencia HTTPS. |
+| 0.6 | El chequeo de tipos y las pruebas definidas por el proyecto pasan antes de desplegar. | P5 | 🟢 Pasó | `npm install --package-lock-only`, `npm ci` y `npm run verify` pasan. |
 
 ## 1. Pruebas por frontera
 
 | # | Frontera | Caso y resultado esperado | Responsable | Estado | Evidencia / notas |
 | --- | --- | --- | --- | --- | --- |
-| 1.1 | Telegram → webhook | Un mensaje normal llega al endpoint, se identifica el chat y recibe una respuesta mock o real. | P1 | ⬜ Pendiente | |
-| 1.2 | Seguridad del webhook | Un request sin `X-Telegram-Bot-Api-Secret-Token` recibe `401`; no crea usuario, memoria ni reminder. | P1 + P5 | ⬜ Pendiente | |
-| 1.3 | Backend → agente | “Guardá que necesito cédula” produce la intención `saveMemory` con `userId` y `sourceMessageId`. | P2 | ⬜ Pendiente | |
-| 1.4 | Agente → memoria | La tool guarda el contenido y devuelve un `memory.id` del mismo `userId`. | P2 + P3 | ⬜ Pendiente | |
-| 1.5 | Memoria → agente | Una búsqueda relacionada devuelve, como máximo, tres memorias del usuario correcto. | P2 + P3 | ⬜ Pendiente | |
-| 1.6 | Agente → reminder | “Recordame … en 2 minutos” crea un reminder futuro `pending`, con `context` y `sourceMemoryIds`. | P2 + P4 | ⬜ Pendiente | |
-| 1.7 | Scheduler → Telegram | Una pasada autorizada encuentra el reminder vencido, Telegram confirma el envío y el estado pasa a `sent` una sola vez. | P1 + P4 | ⬜ Pendiente | |
-| 1.8 | “Hecho” → completado | El `AgentTurn` incluye el último reminder `sent`; la tool deja ese reminder en `completed`. | P1 + P2 + P4 | ⬜ Pendiente | |
+| 1.1 | Telegram → webhook | Un mensaje normal llega al endpoint, se identifica el chat y recibe una respuesta mock o real. | P1 | 🟡 Bloqueado | El handler construye el `AgentTurn` correcto y su prueba pasa; falta migrar Supabase y enviar un mensaje real al webhook desplegado. |
+| 1.2 | Seguridad del webhook | Un request sin `X-Telegram-Bot-Api-Secret-Token` recibe `401`; no crea usuario, memoria ni reminder. | P1 + P5 | 🟢 Pasó | Prueba unitaria y request local sin header: `401`; el handler no se configura si falta el secreto. |
+| 1.3 | Backend → agente | “Guardá que necesito cédula” produce la intención `saveMemory` con `userId` y `sourceMessageId`. | P2 | 🟢 Pasó | El webhook resuelve `users.id`, envía `sourceMessageId` y llama `runAcordateAgent`; pruebas del `AgentTurn` y agente mock pasan. |
+| 1.4 | Agente → memoria | La tool guarda el contenido y devuelve un `memory.id` del mismo `userId`. | P2 + P3 | 🟡 Bloqueado | Hay adaptador REST a `memories` y prueba de vínculo de IDs; la columna `source_message_id` espera la migración 009. |
+| 1.5 | Memoria → agente | Una búsqueda relacionada devuelve, como máximo, tres memorias del usuario correcto. | P2 + P3 | 🟡 Bloqueado | El adaptador llama `search_memories_text` con límite 3 y el test prueba aislamiento; la función actual de Supabase debe actualizarse con 009. |
+| 1.6 | Agente → reminder | “Recordame … en 2 minutos” crea un reminder futuro `pending`, con `context` y `sourceMemoryIds`. | P2 + P4 | 🟡 Bloqueado | Campos y estados están unificados (`scheduledAt`, `sourceMemoryIds`, `pending`); falta aplicar 009 y observar la fila real. |
+| 1.7 | Scheduler → Telegram | Una pasada autorizada encuentra el reminder vencido, Telegram confirma el envío y el estado pasa a `sent` una sola vez. | P1 + P4 | 🟡 Bloqueado | Ruta protegida y claim atómico están implementados; falta `CRON_SECRET`, migración 009 y ejecución contra Telegram real. |
+| 1.8 | “Hecho” → completado | El `AgentTurn` incluye el último reminder `sent`; la tool deja ese reminder en `completed`. | P1 + P2 + P4 | 🟡 Bloqueado | El webhook consulta el último `sent` solo para “Hecho” y la tool exige coincidencia exacta; falta prueba con fila real. |
 
 ## 2. Prueba end-to-end de la demo
 
@@ -47,21 +56,21 @@ Ejecutar en el mismo chat de Telegram y guardar una captura/clip continuo.
 
 | Paso | Acción | Resultado esperado | Estado | Evidencia / notas |
 | --- | --- | --- | --- | --- |
-| 2.1 | Enviar: “Guardá que para retirar el certificado necesito cédula y comprobante.” | Acordate confirma que guardó la memoria; existe una fila en `memories`. | ⬜ Pendiente | |
-| 2.2 | Enviar: “Recordame retirar el certificado en 2 minutos.” | Recupera la memoria y confirma la fecha/hora del reminder; existe una fila `pending`. | ⬜ Pendiente | |
-| 2.3 | Esperar o ejecutar una pasada autorizada del scheduler cuando ya esté vencido. | Llega: “🔔 Recordatorio / Retirar certificado / Necesitás llevar cédula y comprobante.” | ⬜ Pendiente | |
-| 2.4 | Enviar: “Hecho”. | Responde con confirmación y la misma fila queda `completed`. | ⬜ Pendiente | |
-| 2.5 | Enviar “Hecho” otra vez. | No cambia datos y explica que no hay recordatorio activo. | ⬜ Pendiente | |
+| 2.1 | Enviar: “Guardá que para retirar el certificado necesito cédula y comprobante.” | Acordate confirma que guardó la memoria; existe una fila en `memories`. | 🟡 Bloqueado | 1.3 y 1.4 no están integradas. |
+| 2.2 | Enviar: “Recordame retirar el certificado en 2 minutos.” | Recupera la memoria y confirma la fecha/hora del reminder; existe una fila `pending`. | 🟡 Bloqueado | 1.5 y 1.6 no están integradas. |
+| 2.3 | Esperar o ejecutar una pasada autorizada del scheduler cuando ya esté vencido. | Llega: “🔔 Recordatorio / Retirar certificado / Necesitás llevar cédula y comprobante.” | 🟡 Bloqueado | Falta el endpoint protegido y la implementación del repositorio/scheduler. |
+| 2.4 | Enviar: “Hecho”. | Responde con confirmación y la misma fila queda `completed`. | 🟡 Bloqueado | Falta el contexto `activeSentReminder` desde P1. |
+| 2.5 | Enviar “Hecho” otra vez. | No cambia datos y explica que no hay recordatorio activo. | 🟡 Bloqueado | Depende de 2.4 y no hay persistencia conectada. |
 
 ## 3. Casos de seguridad, aislamiento y recuperación
 
 | # | Caso | Resultado esperado | Responsable | Estado | Evidencia / notas |
 | --- | --- | --- | --- | --- | --- |
-| 3.1 | Usuario B pregunta por el certificado de Usuario A. | `searchMemory` no devuelve datos de A. | P3 + P5 | ⬜ Pendiente | |
-| 3.2 | Usuario pide “recordame mañana” sin hora. | El agente pide una hora; no se crea reminder. | P2 | ⬜ Pendiente | |
-| 3.3 | Scheduler intenta enviar y Telegram falla. | El reminder queda `failed`, no `sent`; el detalle técnico queda solo en logs. | P1 + P4 | ⬜ Pendiente | |
-| 3.4 | Llamada al scheduler sin `CRON_SECRET`. | Devuelve `401` y no procesa reminders. | P4 + P5 | ⬜ Pendiente | |
-| 3.5 | Revisión de repo y demo. | No hay `.env`, tokens, IDs privados ni trazas sensibles en Git, capturas o video. | P5 | ⬜ Pendiente | |
+| 3.1 | Usuario B pregunta por el certificado de Usuario A. | `searchMemory` no devuelve datos de A. | P3 + P5 | 🟡 Bloqueado | SQL filtra por `match_user_id`, pero no hay consulta real ni prueba ejecutable contra Supabase. |
+| 3.2 | Usuario pide “recordame mañana” sin hora. | El agente pide una hora; no se crea reminder. | P2 | 🟡 Bloqueado | Hay prueba con modelo mock, pero no puede ejecutarse hasta reparar la instalación y sigue sin conexión a P4. |
+| 3.3 | Scheduler intenta enviar y Telegram falla. | El reminder queda `failed`, no `sent`; el detalle técnico queda solo en logs. | P1 + P4 | 🟡 Bloqueado | La lógica aislada lo contempla, pero falta repositorio real y prueba ejecutable/end-to-end. |
+| 3.4 | Llamada al scheduler sin `CRON_SECRET`. | Devuelve `401` y no procesa reminders. | P4 + P5 | 🟢 Pasó | Request local sin header devolvió `401`; la ruta no procesa nada antes de validar. |
+| 3.5 | Revisión de repo y demo. | No hay `.env`, tokens, IDs privados ni trazas sensibles en Git, capturas o video. | P5 | 🟡 Bloqueado | El escaneo estático del árbol integrado no detectó patrones obvios y `.env` no está trackeado; faltan revisión del historial, capturas y video de demo. |
 
 ## Criterio para code freeze
 
