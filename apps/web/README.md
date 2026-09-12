@@ -10,7 +10,16 @@ _Ask for a follow-up, approve it, and reload to find the saved task in Ambiguous
 
 ## Get started
 
-Complete the [root clone/install steps](../../README.md#get-started). Configure `.env` with [OpenAI](../../using-sponsor-tools.md#openai) and [Ambiguous AI](../../using-sponsor-tools.md#ambiguous-ai):
+Use Node.js 22+, then clone and install the kit:
+
+```bash
+git clone https://github.com/CopilotKit/agents-everywhere-starter-kit.git
+cd agents-everywhere-starter-kit
+npm ci
+cp .env.example .env
+```
+
+Run the commands below from the repository root. Configure root `.env` with [OpenAI](../../using-sponsor-tools.md#openai) and [Ambiguous AI](../../using-sponsor-tools.md#ambiguous-ai):
 
 ```dotenv
 MODEL_PROVIDER=openai

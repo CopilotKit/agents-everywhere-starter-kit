@@ -20,17 +20,6 @@ Your project and its core functionality must be created during the event. Existi
 
 ## Get started
 
-Use Node.js 22+, then clone and install the kit:
-
-```bash
-git clone https://github.com/CopilotKit/agents-everywhere-starter-kit.git
-cd agents-everywhere-starter-kit
-npm ci
-cp .env.example .env
-```
-
-Choose one template and configure only the credentials it needs. Slack and web use the root install; React Native has its own install under `apps/mobile` because Expo pins its React Native stack separately.
-
 ### CopilotKit onboarding
 
 For web, paste this into your coding agent:

@@ -10,7 +10,16 @@ _Scroll through a completed Slack thread: incident context, Exa source cards, an
 
 ## Get started
 
-Complete the [root clone/install steps](../../README.md#get-started), then configure `.env` with [OpenAI](../../using-sponsor-tools.md#openai), [CopilotKit Intelligence](../../using-sponsor-tools.md#copilotkit), and [Exa](../../using-sponsor-tools.md#exa):
+Use Node.js 22+, then clone and install the kit:
+
+```bash
+git clone https://github.com/CopilotKit/agents-everywhere-starter-kit.git
+cd agents-everywhere-starter-kit
+npm ci
+cp .env.example .env
+```
+
+Run the commands below from the repository root. Configure root `.env` with [OpenAI](../../using-sponsor-tools.md#openai), [CopilotKit Intelligence](../../using-sponsor-tools.md#copilotkit), and [Exa](../../using-sponsor-tools.md#exa):
 
 ```dotenv
 MODEL_PROVIDER=openai

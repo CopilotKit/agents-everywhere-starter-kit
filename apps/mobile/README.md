@@ -12,7 +12,16 @@ This app is deliberately not an npm workspace member. React Native pins its own 
 
 ## Get started
 
-Complete the [root clone/install steps](../../README.md#get-started), then choose one model provider in the root `.env`.
+Use Node.js 22+, then clone the kit and install its shared runtime:
+
+```bash
+git clone https://github.com/CopilotKit/agents-everywhere-starter-kit.git
+cd agents-everywhere-starter-kit
+npm ci
+cp .env.example .env
+```
+
+The Expo app has a separate install under `apps/mobile`, shown below. Choose one model provider in the root `.env`.
 
 For OpenAI:
 

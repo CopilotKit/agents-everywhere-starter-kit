@@ -2,7 +2,7 @@
 
 One setup reference for the six sponsors featured in this kit. Choose the tools your workflow needs. **OpenAI** is the marquee sponsor; **CopilotKit and OpenRouter** share the next tier; **Exa, Auth0, and Ambiguous AI** provide additional capabilities. This is the kit's selected lineup; the [global event page](https://aitinkerers.org/hackathons/global/agents-everywhere) maintains the full event roster and links to each city's event.
 
-Use Node.js 22+. For Slack/web/mobile, run the homepage's clone/install steps and keep credentials in root `.env`. Never put keys in frontend code or a submission. `npm run verify` covers offline behavior, not live account access.
+Use Node.js 22+. For Slack/web/mobile, follow the chosen [template's setup instructions](README.md#templates) and keep credentials in root `.env`. Never put keys in frontend code or a submission. `npm run verify` covers offline behavior, not live account access.
 
 | Sponsor | Used by | First result |
 |---|---|---|
