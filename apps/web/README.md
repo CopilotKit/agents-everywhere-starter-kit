@@ -30,7 +30,7 @@ AMBIGUOUS_API_KEY=your-workspace-key
 
 Choose an OpenAI model your account can use. Use a demo workspace you control for the first write. This web template needs no managed Channel or Intelligence account.
 
-For CopilotKit onboarding, use the [official prompt](../../README.md#copilotkit-onboarding).
+For CopilotKit onboarding, use the [official prompt](../../README.md#onboarding-prompt).
 
 To use OpenRouter, follow the [shared provider settings](../../using-sponsor-tools.md#openrouter): set `MODEL_PROVIDER=openrouter`, `OPENROUTER_API_KEY`, and a `MODEL` slug with tool support. Keep the Ambiguous workspace key; an OpenAI key is not required for OpenRouter chat.
 

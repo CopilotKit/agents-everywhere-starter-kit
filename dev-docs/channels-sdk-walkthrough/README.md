@@ -6,7 +6,7 @@ Take this starter from account sign-in to an agent that reads a Slack thread, re
 
 The screenshots come from a real run on September 10, 2026. We used an existing account, created a new project, and tested a synthetic incident. Credential entry is intentionally not pictured. Slack images are crops of the actual thread, with unrelated workspace navigation excluded.
 
-**Prefer agent-assisted setup?** Start with [the current Channels onboarding prompt](../../README.md#copilotkit-onboarding). It installs the maintained setup skill; give the emitted prompt to your agent and select Slack with the existing `apps/channel` app. Use this captured walkthrough as a manual reference when a dashboard step needs illustration.
+**Prefer agent-assisted setup?** Start with [the current Channels onboarding prompt](../../apps/channel/README.md#get-started). It installs the maintained setup skill; give the emitted prompt to your agent and select Slack with the existing `apps/channel` app. Use this captured walkthrough as a manual reference when a dashboard step needs illustration.
 
 ## Before you start
 

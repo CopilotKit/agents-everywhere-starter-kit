@@ -20,7 +20,7 @@ Your project and its core functionality must be created during the event. Existi
 
 ## Get started
 
-### CopilotKit onboarding
+### Onboarding Prompt
 
 For web, paste this into your coding agent:
 

@@ -8,7 +8,7 @@ there is nothing to keep in sync.
   "common mistakes" list that will save you an hour. Vendored from
   [CopilotKit/channels-sdk](https://github.com/CopilotKit/channels-sdk).
 
-Use [the onboarding paths in the root README](../../README.md#copilotkit-onboarding)
+Use [the onboarding paths in the root README](../../README.md#onboarding-prompt)
 for account/project setup and a verified integration. To install the current
 CopilotKit development skills without starting onboarding:
 

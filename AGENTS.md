@@ -4,7 +4,7 @@ Read [hackathon-overview.md](hackathon-overview.md), [hackathon-rules.md](hackat
 
 CopilotKit powers the Slack and web templates. The mobile starting point in `apps/mobile` has its own install and environment; follow its README for setup and checks.
 
-For web onboarding, use the [official prompt](README.md#copilotkit-onboarding) as written. For Slack, follow [Channels setup](apps/channel/README.md#get-started). For mobile, follow the [Expo setup instructions](apps/mobile/README.md#get-started).
+For web onboarding, use the [official prompt](README.md#onboarding-prompt) as written. For Slack, follow [Channels setup](apps/channel/README.md#get-started). For mobile, follow the [Expo setup instructions](apps/mobile/README.md#get-started).
 
 Read `.agents/skills/build-channels-agent/SKILL.md` before touching anything in
 `apps/channel/`. It carries the verified API surface; the most common
