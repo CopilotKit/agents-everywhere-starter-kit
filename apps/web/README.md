@@ -10,7 +10,16 @@ _Ask for a follow-up, approve it, and reload to find the saved task in Ambiguous
 
 ## Get started
 
-Complete the [root clone/install steps](../../README.md#get-started). Configure `.env` with [OpenAI](../../using-sponsor-tools.md#openai) and [Ambiguous AI](../../using-sponsor-tools.md#ambiguous-ai):
+Use Node.js 22+, then clone and install the kit:
+
+```bash
+git clone https://github.com/CopilotKit/agents-everywhere-starter-kit.git
+cd agents-everywhere-starter-kit
+npm ci
+cp .env.example .env
+```
+
+Run the commands below from the repository root. Configure root `.env` with [OpenAI](../../using-sponsor-tools.md#openai) and [Ambiguous AI](../../using-sponsor-tools.md#ambiguous-ai):
 
 ```dotenv
 MODEL_PROVIDER=openai
@@ -21,7 +30,7 @@ AMBIGUOUS_API_KEY=your-workspace-key
 
 Choose an OpenAI model your account can use. Use a demo workspace you control for the first write. This web template needs no managed Channel or Intelligence account.
 
-For CopilotKit onboarding, use the [official prompt](../../README.md#copilotkit-onboarding).
+For CopilotKit onboarding, use the [official prompt](../../README.md#onboarding-prompt).
 
 To use OpenRouter, follow the [shared provider settings](../../using-sponsor-tools.md#openrouter): set `MODEL_PROVIDER=openrouter`, `OPENROUTER_API_KEY`, and a `MODEL` slug with tool support. Keep the Ambiguous workspace key; an OpenAI key is not required for OpenRouter chat.
 

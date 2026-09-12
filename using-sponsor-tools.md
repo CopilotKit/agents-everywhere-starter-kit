@@ -2,7 +2,7 @@
 
 One setup reference for the six sponsors featured in this kit. Choose the tools your workflow needs. **OpenAI** is the marquee sponsor; **CopilotKit and OpenRouter** share the next tier; **Exa, Auth0, and Ambiguous AI** provide additional capabilities. This is the kit's selected lineup; the [global event page](https://aitinkerers.org/hackathons/global/agents-everywhere) maintains the full event roster and links to each city's event.
 
-Use Node.js 22+. For Slack/web/mobile, run the homepage's clone/install steps and keep credentials in root `.env`. Never put keys in frontend code or a submission. `npm run verify` covers offline behavior, not live account access.
+Use Node.js 22+. For Slack/web/mobile, follow the chosen [template's setup instructions](README.md#templates) and keep credentials in root `.env`. Never put keys in frontend code or a submission. `npm run verify` covers offline behavior, not live account access.
 
 | Sponsor | Used by | First result |
 |---|---|---|
@@ -56,7 +56,7 @@ JS
 
 ## CopilotKit
 
-**Access and authentication.** The React web and React Native templates need only your model-provider account for CopilotKit's existing integration. To connect the web app to Intelligence, use the [official onboarding prompt](README.md#copilotkit-onboarding). For React Native, follow the [Expo setup instructions](apps/mobile/README.md#get-started). The Slack template additionally uses [CopilotKit Intelligence](https://intelligence.copilotkit.ai/) to manage the Channel and Slack installation. Run `npm run channel:setup -- --no-clipboard`, then give the emitted prompt to your coding agent and select Slack with the existing `apps/channel` app. This installs the maintained setup skill; the agent follows it to configure the Channel. Use [setup](dev-docs/setup.md) or the [illustrated walkthrough](dev-docs/channels-sdk-walkthrough/README.md) as manual references.
+**Access and authentication.** The React web and React Native templates need only your model-provider account for CopilotKit's existing integration. To connect the web app to Intelligence, use the [official onboarding prompt](README.md#onboarding-prompt). For React Native, follow the [Expo setup instructions](apps/mobile/README.md#get-started). The Slack template additionally uses [CopilotKit Intelligence](https://intelligence.copilotkit.ai/) to manage the Channel and Slack installation. Run `npm run channel:setup -- --no-clipboard`, then give the emitted prompt to your coding agent and select Slack with the existing `apps/channel` app. This installs the maintained setup skill; the agent follows it to configure the Channel. Use [setup](dev-docs/setup.md) or the [illustrated walkthrough](dev-docs/channels-sdk-walkthrough/README.md) as manual references.
 
 **Configure Slack** in root `.env`, alongside the model settings:
 
