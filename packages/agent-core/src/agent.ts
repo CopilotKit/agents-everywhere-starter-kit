@@ -1,4 +1,4 @@
-import { BuiltInAgent } from "@copilotkit/runtime/v2";
+import { BuiltInAgent, type ToolDefinition } from "@copilotkit/runtime/v2";
 import { resolveModel } from "./model";
 import { SYSTEM_PROMPT } from "./prompt";
 import { workplaceMcpServers } from "./capabilities/workplace";
@@ -23,6 +23,8 @@ export type AgentFactoryOptions = {
   workplace?: boolean;
   /** Override the default incident prompt for a surface-specific starter. */
   prompt?: string;
+  /** Server-side tools the agent can execute directly (defineTool). */
+  tools?: ToolDefinition[];
 };
 
 export function makeAgent(threadId: string, options: AgentFactoryOptions = {}) {
@@ -40,6 +42,7 @@ export function makeAgent(threadId: string, options: AgentFactoryOptions = {}) {
     // the same way — note HTTP transport takes `options` (with a wrapped
     // `options.fetch` for auth), not `headers`.
     mcpServers: options.workplace === false ? [] : [...workplaceMcpServers()],
+    tools: options.tools ?? [],
   });
   agent.threadId = threadId;
   return agent;
