@@ -1,0 +1,9 @@
+{
+  "default": {
+    "summary": "EU customer data hosted on US-owned cloud infrastructure stays reachable under the US CLOUD Act regardless of region (e.g. AWS eu-central-1), so DPF/SCC paperwork alone doesn't close the exposure — customer-held encryption keys outside the provider's control are the supplementary measure regulators expect post-Schrems II.",
+    "sources": [
+      "https://www.kiteworks.com/gdpr-compliance/us-cloud-provider-eu-data-sovereignty/",
+      "https://ironum.com/resources/blog/gdpr-us-saas-2026-changes/"
+    ]
+  }
+}
