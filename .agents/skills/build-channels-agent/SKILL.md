@@ -28,13 +28,12 @@ anything remembered.
 > `BotToolContext`) and they exist **nowhere** in the shipped packages —
 > importing them fails to compile. Name your variable `channel`, not `bot`.
 
-**Every code sample here compiles.** They were transcribed into one project and
-typechecked under `strict` against both `@copilotkit/channels@0.7.1` +
-`@copilotkit/runtime@1.66.1` and the `0.6.1` + `1.65.0` pair that the
-[Slack guide](https://docs.copilotkit.ai/slack) pins — zero errors on both. Every
-API here exists in both versions except `defineChannelComponent` and the
-native-node helpers, which are **0.7+ only**. Channels and Runtime ship as a pair —
-upgrade them together.
+The examples below are SDK reference material, not a fresh verification report
+for every snippet or older release. Use this repository's package manifests and
+lockfile for its tested Channels/runtime pair, and run the checks in
+`apps/channel/README.md` after changes. The [current Slack docs](https://docs.copilotkit.ai/slack)
+and installed setup skill supply current onboarding guidance. Channels and
+Runtime ship as a pair — review upgrades together.
 
 ## The mental model (five pieces)
 
@@ -91,8 +90,9 @@ most likely reason a correct-looking Channel refuses to typecheck.
 Standalone `@copilotkit/channels-ui` / `-slack` / `-teams` / … packages also
 exist and work, but the single umbrella dependency is the documented path.
 
-**A CopilotKit Intelligence API key is required** (free tier available). There is
-no standalone or DIY way to run a Channel.
+**This starter's managed Channel requires a CopilotKit Intelligence API key.**
+The [current Slack docs](https://docs.copilotkit.ai/slack) describe other runner
+and hosting options.
 
 **Reference app:** [OpenTag](https://github.com/CopilotKit/OpenTag) is a
 complete, real agent built on this SDK. When a task is close to "a full Slack
@@ -159,14 +159,15 @@ from `@copilotkit/channels`) pointed at your agent's URL.
 
 ### Direct adapter — only when you own the platform connection
 
-Pass `adapters` when *you* hold the platform tokens. This is the secondary path:
-platform secrets in your app and per-platform wiring in code. It does **not**
-avoid needing Intelligence — the runtime still owns the lifecycle.
+Pass `adapters` when *you* hold the platform tokens. This puts platform secrets
+in your app and per-platform wiring in code. Running your own Channel runner is
+a separate hosting choice; see the current Slack docs for those options. This
+starter uses the managed Intelligence runtime.
 
 Do not reach for this because a managed Channel reports `setup_required` or
 because the dashboard is unfamiliar. Swapping to a direct adapter to "make it
 work" is a known failure mode, not a fallback. Fix the managed setup instead —
-see the `setup-slack-channel` skill.
+see the `channels-setup` skill installed by `npm run channel:setup -- --no-clipboard`.
 
 ```ts
 import { slack, defaultSlackTools, defaultSlackContext } from "@copilotkit/channels/slack";
@@ -292,7 +293,7 @@ node --env-file=.env --import tsx channel.ts
 per-Channel map. These are **not** the same vocabulary as the Intelligence
 dashboard's states (Disabled, Setup incomplete, Setup failed, Waiting for
 runtime, Conflict, Offline, Delivery failing, Online); for what each dashboard
-state means and how to clear it, see the `setup-slack-channel` skill.
+state means and how to clear it, see the installed `channels-setup` skill.
 
 | `status().overall` | What it means |
 | --- | --- |
@@ -627,7 +628,9 @@ task is specifically "add support for platform X".
 
 Creating the Slack app, storing its credentials, creating the managed Channel,
 and lining it up with a local runtime is a setup workflow rather than an API
-question. Use the **`setup-slack-channel`** skill for that, and for diagnosing a
+question. Run `npm run channel:setup -- --no-clipboard` from the repository root
+and follow the emitted prompt using the installed **`channels-setup`** skill.
+Choose Slack and reuse `apps/channel`. Use that skill also for diagnosing a
 Channel stuck at `setup_required`, sitting at Waiting for runtime, or Online but
 silent.
 
