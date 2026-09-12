@@ -11,55 +11,96 @@ const update = {
   update_id: 10,
   message: {
     message_id: 20,
-    date: 1,
+    date: 1_789_205_220,
     chat: { id: 12345 },
     from: { id: 67890 },
     text: "  Guardá mi documento  ",
   },
 };
-const request = (body: unknown, secret = "test-secret") =>
+const request = (body: unknown, secret?: string) =>
   new Request("http://localhost/api/telegram/webhook", {
     method: "POST",
-    headers: { "content-type": "application/json", "x-telegram-bot-api-secret-token": secret },
+    headers: {
+      "content-type": "application/json",
+      ...(secret ? { "x-telegram-bot-api-secret-token": secret } : {}),
+    },
     body: JSON.stringify(body),
   });
 
-test("webhook identifies the Telegram user and returns the agent result to the chat", async () => {
-  const sent: Array<{ chatId: string; text: string }> = [];
-  const handler = createTelegramWebhookHandler({
+function handler(overrides: Partial<Parameters<typeof createTelegramWebhookHandler>[0]> = {}) {
+  return createTelegramWebhookHandler({
     config,
-    agent: async (input) => {
-      assert.deepEqual(input, { userId: "67890", message: "Guardá mi documento" });
+    agent: async (turn) => {
+      assert.deepEqual(turn, {
+        userId: "user-1",
+        text: "Guardá mi documento",
+        sourceMessageId: "20",
+        receivedAt: "2026-09-12T09:27:00.000Z",
+        timezone: "America/Asuncion",
+        activeSentReminder: null,
+      });
       return { text: "Listo" };
     },
-    send: async (chatId, text) => void sent.push({ chatId, text }),
+    resolveUser: async () => ({
+      id: "user-1",
+      telegramId: "67890",
+      timezone: "America/Asuncion",
+      createdAt: "2026-09-12T15:00:00.000Z",
+    }),
+    findLatestSentReminder: async () => null,
+    send: async () => {},
+    ...overrides,
   });
-  const response = await handler(request(update));
+}
+
+test("webhook builds an AgentTurn from the authenticated Telegram update", async () => {
+  const sent: Array<{ chatId: string; text: string }> = [];
+  const response = await handler({
+    send: async (chatId, text) => void sent.push({ chatId, text }),
+  })(request(update, "test-secret"));
   assert.equal(response.status, 200);
   assert.deepEqual(await response.json(), { ok: true, dryRun: true, reply: "Listo" });
   assert.deepEqual(sent, [{ chatId: "12345", text: "Listo" }]);
 });
 
-test("webhook rejects an incorrect secret before reading the update", async () => {
-  let called = false;
-  const handler = createTelegramWebhookHandler({
-    config,
-    agent: async () => {
-      called = true;
-      return { text: "unused" };
+test("webhook rejects missing or incorrect secrets before resolving a user", async () => {
+  let resolved = false;
+  const secureHandler = handler({
+    resolveUser: async () => {
+      resolved = true;
+      throw new Error("should not run");
     },
-    send: async () => {},
   });
-  assert.equal((await handler(request(update, "wrong-secret"))).status, 401);
-  assert.equal(called, false);
+  assert.equal((await secureHandler(request(update))).status, 401);
+  assert.equal((await secureHandler(request(update, "wrong-secret"))).status, 401);
+  assert.equal(resolved, false);
 });
 
-test("webhook safely acknowledges unsupported and malformed updates", async () => {
-  const handler = createTelegramWebhookHandler({
-    config,
-    agent: async () => ({ text: "unused" }),
-    send: async () => assert.fail("should not send"),
+test("webhook supplies the latest sent reminder only for Hecho", async () => {
+  let queriedFor: string | undefined;
+  const doneUpdate = {
+    ...update,
+    message: { ...update.message, text: "Hecho" },
+  };
+  const doneHandler = handler({
+    agent: async (turn) => {
+      assert.deepEqual(turn.activeSentReminder, {
+        id: "reminder-1",
+        title: "Retirar certificado",
+        context: "Llevá cédula.",
+      });
+      return { text: "Completado" };
+    },
+    findLatestSentReminder: async (userId) => {
+      queriedFor = userId;
+      return { id: "reminder-1", title: "Retirar certificado", context: "Llevá cédula." };
+    },
   });
-  assert.equal((await handler(request({ update_id: 1 }))).status, 200);
-  assert.equal((await handler(request({ nope: true }))).status, 400);
+  assert.equal((await doneHandler(request(doneUpdate, "test-secret"))).status, 200);
+  assert.equal(queriedFor, "user-1");
+});
+
+test("webhook reports unavailable configuration without accepting a request", async () => {
+  const unavailable = handler({ config: undefined, ready: false });
+  assert.equal((await unavailable(request(update, "test-secret"))).status, 503);
 });

@@ -5,7 +5,7 @@ import type {
   MemoryService,
   ReminderRecord,
   ReminderService,
-  ServiceResult,
+  ToolFailure,
 } from "./contracts";
 
 type Clock = () => Date;
@@ -21,8 +21,8 @@ function tokens(value: string): Set<string> {
   );
 }
 
-function notFound<T>(message: string): ServiceResult<T> {
-  return { ok: false, error: { code: "not_found", message } };
+function failure(code: ToolFailure["code"], message: string): ToolFailure {
+  return { ok: false, code, message };
 }
 
 export class InMemoryMemoryService implements MemoryService {
@@ -36,40 +36,42 @@ export class InMemoryMemoryService implements MemoryService {
     content,
     sourceMessageId,
   }: Parameters<MemoryService["save"]>[0]) {
-    const record: MemoryRecord = {
+    const memory: MemoryRecord = {
       id: `memory-${++this.#sequence}`,
+      userId,
       content,
+      sourceMessageId,
       createdAt: this.clock().toISOString(),
-      ...(sourceMessageId ? { sourceMessageId } : {}),
     };
     const records = this.#records.get(userId) ?? [];
-    records.push(record);
+    records.push(memory);
     this.#records.set(userId, records);
-    return { ok: true as const, value: record };
+    return { ok: true as const, memory };
   }
 
-  async search({
-    userId,
-    query,
-    limit,
-  }: Parameters<MemoryService["search"]>[0]) {
+  async search({ userId, query }: Parameters<MemoryService["search"]>[0]) {
     const queryTokens = tokens(query);
-    const matches = (this.#records.get(userId) ?? [])
-      .map((record) => ({
-        record,
-        score: [...queryTokens].filter((token) =>
-          tokens(record.content).has(token),
+    const memories = (this.#records.get(userId) ?? [])
+      .map((memory) => ({
+        memory,
+        matches: [...queryTokens].filter((token) =>
+          tokens(memory.content).has(token),
         ).length,
       }))
-      .filter(({ score }) => score > 0)
+      .filter(({ matches }) => matches > 0)
       .sort(
         (a, b) =>
-          b.score - a.score ||
-          b.record.createdAt.localeCompare(a.record.createdAt),
+          b.matches - a.matches ||
+          b.memory.createdAt.localeCompare(a.memory.createdAt),
       )
-      .slice(0, limit)
-      .map(({ record }) => record);
-    return { ok: true as const, value: matches };
+      .slice(0, 3)
+      .map(({ memory, matches }) => ({
+        id: memory.id,
+        content: memory.content,
+        createdAt: memory.createdAt,
+        score: Math.min(1, matches / Math.max(queryTokens.size, 1)),
+      }));
+    return { ok: true as const, memories };
   }
 
   recordsFor(userId: string): readonly MemoryRecord[] {
@@ -84,20 +86,22 @@ export class InMemoryReminderService implements ReminderService {
   constructor(private readonly clock: Clock = () => new Date()) {}
 
   async create(input: CreateReminderRequest) {
-    const record: ReminderRecord = {
+    const reminder: ReminderRecord = {
       id: `reminder-${++this.#sequence}`,
+      userId: input.userId,
       title: input.title,
-      dueAt: input.dueAt,
-      timezone: input.timezone,
-      ...(input.context ? { context: input.context } : {}),
-      memoryIds: [...input.memoryIds],
+      scheduledAt: input.scheduledAt,
       status: "pending",
+      context: input.context,
+      sourceMemoryIds: [...input.sourceMemoryIds],
+      sentAt: null,
+      completedAt: null,
       createdAt: this.clock().toISOString(),
     };
     const records = this.#records.get(input.userId) ?? [];
-    records.push(record);
+    records.push(reminder);
     this.#records.set(input.userId, records);
-    return { ok: true as const, value: record };
+    return { ok: true as const, reminder };
   }
 
   async complete({
@@ -108,27 +112,42 @@ export class InMemoryReminderService implements ReminderService {
     const index = records.findIndex((record) => record.id === reminderId);
     const current = records[index];
     if (!current) {
-      return notFound<ReminderRecord>(
-        "El recordatorio no existe para este usuario. No se completó nada.",
+      return failure(
+        "NO_ACTIVE_REMINDER",
+        "No tenés un recordatorio enviado para completar.",
       );
     }
     if (current.status === "completed") {
-      return {
-        ok: false as const,
-        error: {
-          code: "already_completed",
-          message: "El recordatorio ya estaba completado.",
-        },
-      };
+      return failure("CONFLICT", "El recordatorio ya estaba completado.");
+    }
+    if (current.status !== "sent") {
+      return failure(
+        "NO_ACTIVE_REMINDER",
+        "Ese recordatorio todavía no fue enviado.",
+      );
     }
 
-    const completed: ReminderRecord = {
+    const reminder: ReminderRecord = {
       ...current,
       status: "completed",
       completedAt: this.clock().toISOString(),
     };
-    records[index] = completed;
-    return { ok: true as const, value: completed };
+    records[index] = reminder;
+    return { ok: true as const, reminder };
+  }
+
+  markSent(userId: string, reminderId: string): ReminderRecord | undefined {
+    const records = this.#records.get(userId) ?? [];
+    const index = records.findIndex((record) => record.id === reminderId);
+    const current = records[index];
+    if (!current) return undefined;
+    const reminder: ReminderRecord = {
+      ...current,
+      status: "sent",
+      sentAt: this.clock().toISOString(),
+    };
+    records[index] = reminder;
+    return reminder;
   }
 
   recordsFor(userId: string): readonly ReminderRecord[] {

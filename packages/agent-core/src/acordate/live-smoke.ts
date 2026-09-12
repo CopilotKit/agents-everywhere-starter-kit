@@ -14,6 +14,7 @@ const first = await runAcordateAgent(
     now: new Date().toISOString(),
     timezone,
     sourceMessageId: "local-demo-message-1",
+    activeSentReminder: null,
   },
   services,
 );
@@ -33,6 +34,7 @@ const second = await runAcordateAgent(
     now: new Date().toISOString(),
     timezone,
     sourceMessageId: "local-demo-message-2",
+    activeSentReminder: null,
   },
   services,
 );
