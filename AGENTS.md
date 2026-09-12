@@ -4,7 +4,7 @@ Read [hackathon-overview.md](hackathon-overview.md), [hackathon-rules.md](hackat
 
 CopilotKit powers the Slack and web templates. The mobile starting point in `apps/mobile` has its own install and environment; follow its README for setup and checks.
 
-For setup, follow [CopilotKit onboarding](README.md#copilotkit-onboarding) after choosing an app. For Slack, run `npm run channel:setup -- --no-clipboard` and continue with the emitted prompt and installed `channels-setup` skill. For web/mobile, explain the model-only and Intelligence options before starting the official `onboard start` workflow. Preserve the chosen app and its working behavior; do not scaffold over this checkout or provision every template. Use current CLI instructions instead of copying authentication and provisioning steps from memory.
+For setup, follow [CopilotKit onboarding](README.md#copilotkit-onboarding) after choosing an app. For Slack, run `npm run channel:setup -- --no-clipboard` and continue with the emitted prompt and installed `channels-setup` skill. For web, explain the model-only and Intelligence options before starting the official `onboard start` workflow. For mobile, follow the Expo setup instructions in `apps/mobile/README.md`, including its runtime in `apps/web`. Preserve the chosen app and its working behavior; do not scaffold over this checkout or provision every template. Use current CLI instructions instead of copying authentication and provisioning steps from memory.
 
 Read `.agents/skills/build-channels-agent/SKILL.md` before touching anything in
 `apps/channel/`. It carries the verified API surface; the most common

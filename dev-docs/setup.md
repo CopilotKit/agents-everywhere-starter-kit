@@ -41,7 +41,7 @@ Intelligence manages platform credentials and delivers over an outbound socket. 
 npm run channel:setup -- --no-clipboard
 ```
 
-This installs the current `channels-setup` skill and prints the official prompt. Continue with that prompt in your coding agent, selecting **Slack** and the existing `apps/channel` app. Let the agent follow the skill through setup and verify a real Slack reply. The command itself does not authenticate or provision the Channel. See [CopilotKit onboarding](../README.md#copilotkit-onboarding) for this handoff and the web/mobile Intelligence path.
+This installs the current `channels-setup` skill and prints the official prompt. Continue with that prompt in your coding agent, selecting **Slack** and the existing `apps/channel` app. Let the agent follow the skill through setup and verify a real Slack reply. The command itself does not authenticate or provision the Channel. See [CopilotKit onboarding](../README.md#copilotkit-onboarding) for this handoff and the web onboarding prompt; follow the [mobile README](../apps/mobile/README.md#get-started) for Expo setup.
 
 For manual setup, create the Channel **before** the Slack app so the wizard can generate the correct manifest:
 

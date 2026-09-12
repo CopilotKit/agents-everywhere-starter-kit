@@ -108,14 +108,12 @@ Good mobile fits include field checklists, travel plans, patient intake preparat
 
 ## Give this to your coding agent
 
-The existing Expo template runs with the configured model provider. To connect its conversations to Intelligence, use the [official onboarding prompt](../../README.md#copilotkit-onboarding) for `apps/mobile`, including its runtime in `apps/web`. Preserve the separate mobile install and device networking; onboarding must verify the native app, not just the web template. Managed conversations do not make the sample finance data persistent.
+The existing Expo template runs with the configured model provider. Follow [Get started](#get-started), including its runtime in `apps/web`. Preserve the separate mobile install and device networking, and verify the native app. The sample finance data is local and does not persist after restarting the app.
 
 ```text
 Read the root hackathon overview, rules, sponsor guide, AGENTS.md, and
-apps/mobile/README.md. Explain the model-only and Intelligence options in
-README.md's CopilotKit onboarding section. If I choose Intelligence, follow
-its official prompt for the existing Expo app and its apps/web runtime.
-Adapt apps/mobile to our mobile workflow. Keep
+apps/mobile/README.md. Follow the mobile setup instructions, including the
+runtime in apps/web. Adapt apps/mobile to our mobile workflow. Keep
 CopilotKit React Native headless APIs for app context, native tool rendering,
 and human-in-the-loop approval. Keep the runtime URL/device networking notes.
 Replace sample finance state and tools with our own app state and one complete
