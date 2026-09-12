@@ -6,16 +6,20 @@
   "description": "The one agent every surface points at. Model, prompt, and surface-agnostic capabilities.",
   "exports": {
     ".": "./src/index.ts",
+    "./acordate": "./src/acordate/index.ts",
     "./shared": "./src/shared.ts",
     "./mobile-finance-prompt": "./src/mobile-finance-prompt.ts"
   },
   "scripts": {
+    "demo:acordate": "node --env-file-if-exists=../../.env --import tsx src/acordate/live-smoke.ts",
     "typecheck": "tsc --noEmit",
-    "test": "node --import tsx --test 'src/**/*.test.ts'"
+    "test": "node --import tsx --test src/**/*.test.ts"
   },
   "dependencies": {
+    "@ai-sdk/google": "3.0.122",
     "@ai-sdk/openai": "^3.0.36",
     "@copilotkit/runtime": "1.70.3",
+    "ai": "6.0.277",
     "exa-js": "^2.19.0",
     "zod": "^4.1.0"
   }
