@@ -1,0 +1,26 @@
+{
+  "name": "procure-db",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Procurebot's Postgres schema, migrations, seed data, and shared queries.",
+  "exports": {
+    ".": "./src/index.ts",
+    "./types": "./src/types.ts",
+    "./rank": "./src/rank.ts",
+    "./testing": "./src/testing.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "node --import tsx --test 'src/**/*.test.ts'",
+    "test:db": "node --env-file=../../.env --import tsx --test 'src/**/*.dbtest.ts'",
+    "migrate": "node --env-file=../../.env --import tsx src/cli/migrate.ts",
+    "seed": "node --env-file=../../.env --import tsx src/cli/seed.ts"
+  },
+  "dependencies": {
+    "pg": "^8.13.1"
+  },
+  "devDependencies": {
+    "@types/pg": "^8.23.1"
+  }
+}
