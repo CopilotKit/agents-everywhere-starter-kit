@@ -31,18 +31,6 @@ cp .env.example .env
 
 Choose one template and configure only the credentials it needs. Slack and web use the root install; React Native has its own install under `apps/mobile` because Expo pins its React Native stack separately.
 
-Paste this into your coding agent:
-
-```text
-Read AGENTS.md, hackathon-overview.md, hackathon-rules.md, and
-using-sponsor-tools.md. Help me choose one template app README for my idea,
-then adapt this checkout into our own project. Ask me who it is for and
-what the agent should do in that setting. Follow this README's CopilotKit
-onboarding section for the selected app; keep its existing infrastructure.
-Use only the integrations the idea needs. Verify a complete interaction and
-prepare SUBMISSION.md, distinguishing inherited code from our event work.
-```
-
 ### CopilotKit onboarding
 
 For web, paste this into your coding agent:
