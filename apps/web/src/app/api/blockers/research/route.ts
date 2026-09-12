@@ -1,5 +1,5 @@
 import { researchBlocker } from "@/lib/research-blocker";
-import type { Blocker } from "@/lib/ruta-critica-types";
+import type { Blocker } from "@/lib/graph-types";
 
 export async function POST(request: Request) {
   const blocker = (await request.json()) as Blocker;

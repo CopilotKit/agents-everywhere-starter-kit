@@ -4,7 +4,7 @@
  */
 import { searchWeb, type SearchHit } from "agent-core";
 import fallback from "./fallback-research.json" with { type: "json" };
-import type { Blocker } from "./ruta-critica-types";
+import type { Blocker, Resolution } from "./graph-types";
 
 const SUMMARY_MAX_CHARS = 320;
 
@@ -25,9 +25,7 @@ function shortSummary(hit: SearchHit): string {
   return summary || first.slice(0, SUMMARY_MAX_CHARS).trimEnd() + "…";
 }
 
-export async function researchBlocker(
-  blocker: Blocker,
-): Promise<{ summary: string; sources: string[] }> {
+export async function researchBlocker(blocker: Blocker): Promise<Resolution> {
   try {
     const query = `${blocker.label}. What does the owner (${blocker.owner}) need to know to resolve this async, with sources?`;
     const hits = await searchWeb({ query, results: 3 });
@@ -38,7 +36,7 @@ export async function researchBlocker(
 
     return {
       summary: shortSummary(hits[0]),
-      sources: hits.map((hit) => hit.url),
+      sources: hits.map((hit) => ({ title: hit.title, url: hit.url })),
     };
   } catch {
     // Demo must not die on a flaky live call. Cached backup, clearly not live.
