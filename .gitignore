@@ -13,3 +13,10 @@ apps/mobile/.expo/
 
 # Web approval and attempt metadata (not task storage)
 .data/
+
+# Added by CopilotKit CLI: credential files, which must never be committed.
+.env.*
+!.env.example
+
+# Added by CopilotKit CLI: managed Channel setup credentials and artifacts.
+.copilotkit/artifacts/
