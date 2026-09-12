@@ -1,232 +1,172 @@
 /**
- * The purchasing agent's tools.
+ * The Slack purchasing tools.
  *
- * Two rules shape this file:
+ * Deliberately the same shape as apps/procure-agent's six server tools, so a
+ * request behaves the same in Slack as it does in the ERP chat. The difference
+ * is the SDK (`defineChannelTool` + Slack-native cards) and the two approval
+ * gates, which are Channels cards here rather than React components.
  *
- * 1. **Every number the requester sees comes from the backend.** Tools post
- *    their own cards from the response they already hold, so a price or total
- *    never round-trips through the model as a component argument.
+ * Two rules:
  *
- * 2. **The purchase order is gated on a human click.** `request_po_approval`
- *    posts a card and returns; issuing happens in the click handler, outside
- *    the agent loop. There is no tool the model can call to spend money.
+ * 1. No tool sends email. `propose_rfq` and `propose_award` post a card and
+ *    return; the emails and the purchase order happen in the click handler,
+ *    outside the agent loop. This mirrors erp-frontend exactly.
  *
- * The thread-to-requisition binding lives in Channel thread state, because the
- * Channels `Thread` exposes no stable conversation id. That state is in-memory
- * unless `createChannel({ store })` is given a durable one, so a restart can
- * orphan an open thread — `get_request({ code })` is the recovery path.
+ * 2. Figures reach the screen from the backend response the tool holds, never
+ *    as component arguments the model could retype.
+ *
+ * Managed Channels cannot block on `awaitChoice` (`supportsBlockingChoice` is
+ * false on the Intelligence HTTP loop), so the pattern is post-then-update
+ * rather than the ERP's `respond()` resume. The agent is told to stop and does
+ * not learn the outcome; the card itself reports it.
  */
 import { defineChannelTool } from "@copilotkit/channels";
-import type {
-  ChannelToolContext,
-  InteractionContext,
-} from "@copilotkit/channels";
-import {
-  procurementApi,
-  ProcurementApiError,
-  type ProcurementApi,
-  type Requisition,
-} from "agent-core";
+import type { ChannelToolContext, InteractionContext } from "@copilotkit/channels";
 import { z } from "zod";
 import {
-  approvalCard,
+  awardApprovalCard,
   comparisonCard,
+  money,
   purchaseOrderCard,
   requisitionCard,
-  rfqCard,
+  rfqApprovalCard,
+  rfqResultCard,
 } from "./cards";
+import {
+  BackendError,
+  describeFailure,
+  liveBackend,
+  today,
+  type ProcurementBackend,
+} from "./backend";
 
+type ToolThread = ChannelToolContext["thread"];
+/** The requisition this thread is about. Channels' Thread exposes no id, so
+ *  the binding lives in thread state. */
 type ThreadBinding = { requisitionId?: string };
 
-/**
- * The thread a tool actually receives.
- *
- * `@copilotkit/channels` also exports a `Thread` — the concrete core class,
- * with `deps`, `store` and friends — which is NOT what a tool context carries.
- * Deriving the type from the context keeps these helpers assignable.
- */
-type ToolThread = ChannelToolContext["thread"];
+const UUID = z
+  .string()
+  .regex(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i, "expected an id from an earlier tool result");
 
-/** Runs a backend call and turns a known failure into text the model can act on. */
-async function attempt<T>(work: () => Promise<T>): Promise<T | string> {
-  try {
-    return await work();
-  } catch (error) {
-    if (error instanceof ProcurementApiError) return error.message;
-    throw error;
-  }
-}
-
-function isFailure<T>(result: T | string): result is string {
-  return typeof result === "string";
-}
-
-async function boundRequisitionId(
-  thread: ToolThread,
-): Promise<string | undefined> {
+async function boundId(thread: ToolThread): Promise<string | undefined> {
   return (await thread.state<ThreadBinding>())?.requisitionId;
 }
 
-async function bind(thread: ToolThread, requisitionId: string): Promise<void> {
-  await thread.setState<ThreadBinding>({ requisitionId });
+/**
+ * Models fill an optional id parameter with a placeholder rather than omitting
+ * it — `00000000-0000-0000-0000-000000000000` was sent verbatim in testing.
+ * Only `get_request` takes an id at all now, and it discards that.
+ */
+function realId(value: string | undefined): string | undefined {
+  if (!value) return undefined;
+  return /^0+(-0+)*$/.test(value.replace(/[^0-9a-f-]/gi, "")) ? undefined : value;
 }
 
-/** The requisition for this thread, opening one on first use. */
-async function ensureRequisition(
-  api: ProcurementApi,
-  thread: ToolThread,
-  requesterId: string,
-  title?: string,
-): Promise<Requisition> {
-  const existingId = await boundRequisitionId(thread);
-  if (existingId) {
-    const detail = await api.getRequisition(existingId);
-    if (detail) return detail.requisition;
-    // The binding outlived the record (backend reset mid-thread). Start over
-    // rather than reporting a request that no longer exists.
-  }
-  const created = await api.createRequisition({ requesterId, title });
-  await bind(thread, created.id);
-  return created;
-}
-
-/** Line summaries the model needs to ask a good confirming question. */
-function describeLines(requisition: Requisition) {
-  return {
-    code: requisition.code,
-    status: requisition.status,
-    lines: requisition.lines.map((line) => ({
-      lineId: line.id,
-      item: line.itemName,
-      quantity: line.quantity,
-      unit: line.unit,
-      status: line.status,
-      ...(line.candidates
-        ? {
-            options: line.candidates.map((candidate) => ({
-              itemId: candidate.itemId,
-              name: candidate.name,
-              unit: candidate.unit,
-            })),
-          }
-        : {}),
-    })),
-  };
+/** A Slack requester id. The schema stores requester_id as TEXT for this. */
+function requesterOf(ctx: Pick<ChannelToolContext, "user" | "actor" | "platform">): string {
+  return `${ctx.platform}:${ctx.user?.id ?? ctx.actor.id}`;
 }
 
 /**
- * The tools, over one backend.
- *
- * Injected rather than resolved inside each handler so tests can hand in a
- * fresh in-memory backend per case — the module-level `procurementApi()`
- * stand-in is one instance per process, which would otherwise leak state
- * between tests. Same reason `createSearchTool` takes its search function.
+ * Runs a backend call and turns any failure into one digestible sentence the
+ * requester can pass on. Never a stack, never a response body — the detail is
+ * logged against the reference inside `describeFailure`.
  */
-export function createProcurementTools(api: ProcurementApi = procurementApi()) {
+async function attempt<T>(action: string, work: () => Promise<T>): Promise<T | string> {
+  try {
+    return await work();
+  } catch (cause) {
+    // procure-db's DomainError messages are already written for people.
+    if (cause instanceof Error && cause.name === "DomainError") return cause.message;
+    const failure = cause instanceof BackendError ? cause : describeFailure(cause, action);
+    return failure.retryable
+      ? `${failure.message} You can ask me to try again.`
+      : `${failure.message} Do not ask me to retry; report it instead.`;
+  }
+}
+
+export function createProcurementTools(backend: ProcurementBackend = liveBackend()) {
   const browseCatalog = defineChannelTool({
     name: "browse_catalog",
     description:
-      "List or search what can actually be ordered. Only catalog items are orderable — there is no way to add a new one. Call this when the requester asks what is available, or when you need to check whether something they named exists before telling them it does not.",
+      "Search the item catalog by the words in a request (e.g. 'ballpoint pens'), optionally within a category. Returns best matches first with a matchScore. Always call this before creating a request — only catalog items can be ordered, and you cannot add new ones.",
     parameters: z.object({
-      query: z
-        .string()
-        .optional()
-        .describe(
-          "Optional free-text filter, e.g. 'monitor' or 'pantry'. Omit to list everything.",
-        ),
+      query: z.string().optional().describe("Words from the request, without quantities or dates"),
+      category: z.string().optional().describe("office_supplies, it_equipment, or facilities"),
     }),
-    async handler({ query }) {
-      return attempt(async () => {
-        const items = await api.listCatalog({ query, limit: 20 });
+    async handler({ query, category }) {
+      return attempt("searching the catalog", async () => {
+        const items = await backend.searchItems({ query, category, limit: 10 });
         if (items.length === 0) {
-          return query
-            ? `Nothing in the catalog matches "${query}". Tell the requester it is not available and offer to show what is.`
-            : "The catalog is empty.";
+          return "No catalog items matched. Tell the requester it is not in the catalog and ask them to rephrase.";
         }
         return items.map((item) => ({
           itemId: item.id,
           name: item.name,
-          unit: item.unit,
+          sku: item.sku,
+          unitOfMeasure: item.unitOfMeasure,
           category: item.category,
+          matchScore: item.matchScore,
         }));
       });
     },
   });
 
-  const addItems = defineChannelTool({
-    name: "add_items",
+  const findSuppliers = defineChannelTool({
+    name: "find_suppliers",
     description:
-      "Add what the requester wants to buy to this request, in their own words — matching against the catalog is done for you. Returns every line with its status. A line coming back as needs_confirmation or unmatched is NOT settled: show the options and ask which they meant. Never pick for them.",
-    parameters: z.object({
-      items: z
-        .array(
-          z.object({
-            text: z
-              .string()
-              .describe(
-                "The requester's own words for one thing, e.g. 'a box of HDMI cables'.",
-              ),
-            quantity: z
-              .number()
-              .int()
-              .positive()
-              .optional()
-              .describe("How many, when they said."),
-          }),
-        )
-        .min(1)
-        .describe("One entry per distinct thing they asked for."),
-    }),
-    async handler({ items }, { thread, user, actor }) {
-      return attempt(async () => {
-        const requisition = await ensureRequisition(
-          api,
-          thread,
-          user?.id ?? actor.id,
-          items[0]?.text.slice(0, 60),
-        );
-        const updated = await api.addItems({
-          requisitionId: requisition.id,
-          requests: items,
-        });
-        return describeLines(updated);
+      "List the suppliers that would receive an RFQ for a category (preferred first, filled to at least three), plus every supplier in that category. Call this for each category on the request before propose_rfq.",
+    parameters: z.object({ category: z.string().describe("office_supplies, it_equipment, or facilities") }),
+    async handler({ category }) {
+      return attempt("looking up suppliers", async () => {
+        const { wouldInvite, allInCategory } = await backend.findSuppliers(category);
+        return {
+          category,
+          wouldInvite: wouldInvite.map((s) => ({ id: s.id, name: s.name, preferred: s.preferred, hasEmail: Boolean(s.email) })),
+          allInCategory: allInCategory.map(({ id, name }) => ({ id, name })),
+        };
       });
     },
   });
 
-  const resolveLine = defineChannelTool({
-    name: "resolve_line",
+  const createRequisition = defineChannelTool({
+    name: "create_requisition",
     description:
-      "Settle one line on this request: choose which catalog item they meant, change its quantity, or drop it. Pass itemId null to drop the line — that is the answer when they say none of the options is right. Call this once per line they answer about.",
+      "Create a draft request from catalog items you have already resolved. Sends nothing to anyone. Every line needs an itemId from browse_catalog. Resolve a vague date to YYYY-MM-DD against today first, and say which date you used. Follow this with find_suppliers, then propose_rfq.",
     parameters: z.object({
-      lineId: z.string().describe("The lineId from add_items or get_request."),
-      itemId: z
+      neededBy: z
         .string()
+        .regex(/^\d{4}-\d{2}-\d{2}$/)
         .nullable()
-        .optional()
-        .describe(
-          "Catalog itemId they picked, or null to drop the line. Omit to change only the quantity.",
-        ),
-      quantity: z
-        .number()
-        .int()
-        .positive()
-        .optional()
-        .describe("New quantity, when they changed it."),
+        .describe("Concrete date YYYY-MM-DD, or null if they did not say"),
+      lines: z
+        .array(
+          z.object({
+            itemId: UUID,
+            quantity: z.number().positive(),
+            rawDescription: z.string().describe("The requester's own words for this line"),
+          }),
+        )
+        .min(1),
     }),
-    async handler({ lineId, itemId, quantity }, { thread }) {
-      return attempt(async () => {
-        const requisitionId = await boundRequisitionId(thread);
-        if (!requisitionId) {
-          return "This thread has no open request yet. Add items first, or ask the requester for the request code.";
-        }
-        const updated = await api.resolveLine({
-          requisitionId,
-          lineId,
-          itemId,
-          quantity,
+    async handler({ neededBy, lines }, { thread, user, actor, platform }) {
+      return attempt("creating the request", async () => {
+        const detail = await backend.createDraft({
+          requesterId: requesterOf({ user, actor, platform }),
+          neededBy,
+          lines,
         });
-        return describeLines(updated);
+        await thread.setState<ThreadBinding>({ requisitionId: detail.id });
+        await thread.post(requisitionCard(detail));
+        return {
+          requisitionId: detail.id,
+          status: detail.status,
+          neededBy: detail.neededBy,
+          categories: [...new Set(detail.lines.map((line) => line.category).filter(Boolean))],
+          posted: "request card",
+          next: "Call find_suppliers for each category, then propose_rfq.",
+        };
       });
     },
   });
@@ -234,51 +174,33 @@ export function createProcurementTools(api: ProcurementApi = procurementApi()) {
   const getRequest = defineChannelTool({
     name: "get_request",
     description:
-      "The full state of a request — items, suppliers invited, quotes received, and any purchase order. Call this for every 'has it gone out', 'who has quoted', 'where is my PO' question instead of answering from memory. Posts a card, so do not restate the whole thing in prose. Pass a code to look up a different request and attach this thread to it.",
+      "The full state of a request — items, suppliers invited, quotes received, approvals and purchase orders. Call this for any 'has it gone out', 'who has quoted', 'where is my PO' question rather than answering from memory. Posts a card, so do not restate it all in prose. Omit the id for the request this thread is about.",
     parameters: z.object({
-      code: z
-        .string()
-        .optional()
-        .describe(
-          "A request code like 'REQ-1042'. Omit for the request this thread is about.",
-        ),
+      requisitionId: UUID.optional().describe("Omit to use this thread's request"),
     }),
-    async handler({ code }, { thread }) {
-      return attempt(async () => {
-        let requisitionId = await boundRequisitionId(thread);
-
-        if (code) {
-          const found = await api.getRequisitionByCode(code);
-          if (!found)
-            return `No request found with code ${code}. Say you cannot find it; do not guess at its state.`;
-          requisitionId = found.id;
-          await bind(thread, found.id);
-        }
-        if (!requisitionId) {
-          return "This thread has no request yet. Ask what they would like to buy, or ask for a request code.";
-        }
-
-        const detail = await api.getRequisition(requisitionId);
-        if (!detail)
-          return "That request no longer exists. Say so rather than describing it.";
+    async handler({ requisitionId }, { thread }) {
+      return attempt("looking up the request", async () => {
+        const given = realId(requisitionId);
+        const id = given ?? (await boundId(thread));
+        if (!id) return "This thread has no request yet. Ask what they need to order.";
+        const detail = await backend.getRequisition(id);
+        if (!detail) return "I cannot find that request. Say so; do not guess at its state.";
+        if (given) await thread.setState<ThreadBinding>({ requisitionId: id });
 
         await thread.post(requisitionCard(detail));
         return {
-          posted: "requisition card",
-          ...describeLines(detail.requisition),
-          invited:
-            detail.rfq?.invitations.map((invitation) => ({
-              supplier: invitation.supplierName,
-              status: invitation.status,
-              ...(invitation.error ? { error: invitation.error } : {}),
-            })) ?? [],
+          posted: "request card",
+          requisitionId: detail.id,
+          status: detail.status,
+          waitingOn: detail.waitingOn,
+          neededBy: detail.neededBy,
+          invitations: (detail.rfq?.invitations ?? []).map((i) => ({
+            supplier: i.supplierName,
+            status: i.status,
+            ...(i.sendError ? { error: i.sendError } : {}),
+          })),
           quotesReceived: detail.quotes.length,
-          purchaseOrder: detail.purchaseOrder
-            ? {
-                number: detail.purchaseOrder.number,
-                supplier: detail.purchaseOrder.supplierName,
-              }
-            : null,
+          purchaseOrders: detail.purchaseOrders.map((po) => ({ poNumber: po.poNumber, total: money(po.totalCents) })),
         };
       });
     },
@@ -287,220 +209,207 @@ export function createProcurementTools(api: ProcurementApi = procurementApi()) {
   const findRequests = defineChannelTool({
     name: "find_requests",
     description:
-      "This requester's other requests, newest first. Use it for 'which of mine are still open' or 'where is the monitor request'. Report what each one is waiting on in plain words, not as a status code.",
+      "This requester's recent requests with what each is waiting on. Use it for 'which of mine are still open' or 'where is the pens request'. Report what each is waiting on in plain words, not as a status code.",
     parameters: z.object({
       status: z
-        .enum([
-          "draft",
-          "rfq_sent",
-          "quotes_in",
-          "approved",
-          "ordered",
-          "cancelled",
-        ])
+        .enum(["intake", "rfq_dispatched", "comparing", "pending_approval", "approved", "rejected", "po_issued", "closed"])
         .optional()
-        .describe("Optional filter. Omit for all of them."),
+        .describe("Optional filter; omit for all of them"),
+      mine: z
+        .boolean()
+        .default(true)
+        .describe("True (default) for only this requester's requests; false for everyone's"),
     }),
-    async handler({ status }, { user, actor }) {
-      return attempt(async () => {
-        const found = await api.findRequisitions({
-          requesterId: user?.id ?? actor.id,
+    async handler({ status, mine }, { user, actor, platform }) {
+      return attempt("listing requests", async () => {
+        const found = await backend.listRequisitions({
           status,
+          ...(mine ? { requesterId: requesterOf({ user, actor, platform }) } : {}),
         });
-        if (found.length === 0)
-          return "This requester has no requests matching that.";
-        return found.map((requisition) => ({
-          code: requisition.code,
-          title: requisition.title,
-          status: requisition.status,
-          itemCount: requisition.lines.length,
+        if (found.length === 0) {
+          return mine
+            ? "This requester has no requests matching that. Note that requests raised in the ERP belong to a different requester."
+            : "No requests match that.";
+        }
+        return found.map((r) => ({
+          requisitionId: r.id,
+          summary: r.summary,
+          status: r.status,
+          waitingOn: r.waitingOn,
+          neededBy: r.neededBy,
+          quotesReceived: r.quotesReceived,
         }));
       });
     },
   });
 
-  const sendForQuotes = defineChannelTool({
-    name: "send_for_quotes",
-    description:
-      "Dispatch this request to suppliers for quotes. Only call this once the requester has said they are finished adding items. It refuses while any line is unconfirmed — if it does, confirm those lines first rather than retrying. Posts a card showing who was invited and whether any invitation failed.",
-    parameters: z.object({}),
-    async handler(_args, { thread }) {
-      return attempt(async () => {
-        const requisitionId = await boundRequisitionId(thread);
-        if (!requisitionId) return "This thread has no open request to send.";
-
-        const rfq = await api.sendForQuotes({ requisitionId });
-        const detail = await api.getRequisition(requisitionId);
-        if (detail) await thread.post(rfqCard(rfq, detail.requisition));
-
-        const failed = rfq.invitations.filter(
-          (invitation) => invitation.status === "failed",
-        );
-        return {
-          posted: "RFQ card",
-          invited: rfq.invitations.length,
-          failed: failed.map((invitation) => ({
-            supplier: invitation.supplierName,
-            error: invitation.error,
-          })),
-          quotesAlreadyIn: detail?.quotes.length ?? 0,
-          next:
-            failed.length > 0
-              ? "Tell the requester which invitations failed and offer resend_invitations."
-              : "Tell them it is out with suppliers and you will compare quotes when they are back.",
-        };
-      });
-    },
-  });
-
-  const resendInvitations = defineChannelTool({
-    name: "resend_invitations",
-    description:
-      "Retry only the supplier invitations that failed to deliver. Call this when the requester asks you to, after send_for_quotes reported a failure.",
-    parameters: z.object({}),
-    async handler(_args, { thread }) {
-      return attempt(async () => {
-        const requisitionId = await boundRequisitionId(thread);
-        if (!requisitionId) return "This thread has no open request.";
-
-        const rfq = await api.resendFailedInvitations({ requisitionId });
-        const detail = await api.getRequisition(requisitionId);
-        if (detail) await thread.post(rfqCard(rfq, detail.requisition));
-        const stillFailed = rfq.invitations.filter(
-          (invitation) => invitation.status === "failed",
-        );
-        return {
-          posted: "RFQ card",
-          stillFailed: stillFailed.map((invitation) => invitation.supplierName),
-          next:
-            stillFailed.length > 0
-              ? "Say which supplier still cannot be reached."
-              : "Say the invitations went out on retry.",
-        };
-      });
-    },
-  });
-
-  const compareQuotes = defineChannelTool({
+  const compareQuotesTool = defineChannelTool({
     name: "compare_quotes",
     description:
-      "Post the quote comparison for this request and return the figures. The card carries the totals, lead times and the recommendation — summarize in a sentence rather than repeating the table. If any line went unquoted, say so before recommending anything.",
+      "Rank the quotes for a request: complete quotes first, then those arriving by the needed-by date, then lowest total, then shortest lead time. Posts the comparison card and returns the figures. Summarize the recommendation in one sentence; do not repeat the table. Say who has not answered yet.",
+    // No requisitionId parameter: this always means the request this thread is
+    // about, and an optional id is something the model invents a value for.
     parameters: z.object({}),
     async handler(_args, { thread }) {
-      return attempt(async () => {
-        const requisitionId = await boundRequisitionId(thread);
-        if (!requisitionId) return "This thread has no open request.";
+      return attempt("comparing the quotes", async () => {
+        const id = await boundId(thread);
+        if (!id) return "This thread has no request yet.";
+        const [comparison, detail] = await Promise.all([backend.compare(id), backend.getRequisition(id)]);
+        if (!comparison || !detail) return "I cannot find that request.";
 
-        const detail = await api.getRequisition(requisitionId);
-        if (!detail) return "That request no longer exists.";
-        const comparison = await api.compareQuotes({ requisitionId });
-
-        await thread.post(comparisonCard(comparison, detail.requisition));
+        await thread.post(comparisonCard(comparison));
+        const outstanding = (detail.rfq?.invitations ?? [])
+          .filter((i) => i.status === "sent" || i.status === "send_failed")
+          .map((i) => `${i.supplierName} (${i.status})`);
         return {
           posted: "quote comparison card",
-          quotes: comparison.quotes.map((quote) => ({
-            quoteId: quote.id,
-            supplier: quote.supplierName,
-            total: quote.total,
-            currency: quote.currency,
-            leadTimeDays: quote.leadTimeDays,
-            coversEveryLine: quote.lines.every((line) => line.available),
+          today: today(),
+          neededBy: comparison.neededBy,
+          rows: comparison.rows.map((row) => ({
+            quoteId: row.quoteId,
+            supplier: row.supplierName,
+            total: money(row.totalCents),
+            estimatedDelivery: row.estimatedDelivery,
+            meetsDeadline: row.meetsDeadline,
+            coversEveryLine: row.complete,
           })),
           recommendedQuoteId: comparison.recommendedQuoteId,
-          rationale: comparison.rationale,
-          unquotedItems: comparison.unquotedItemNames,
+          reason: comparison.reason,
+          outstanding,
+          alreadyOrdered: detail.purchaseOrders.map((po) => po.poNumber),
           next: comparison.recommendedQuoteId
-            ? "Ask whether to raise a purchase order for the recommended quote, then call request_po_approval with its quoteId."
-            : "There is nothing to recommend yet. Do not call request_po_approval.",
+            ? "Ask which quote they want, then call propose_award with that quoteId."
+            : "There is nothing complete to recommend. Do not call propose_award.",
         };
       });
     },
   });
 
-  const requestPoApproval = defineChannelTool({
-    name: "request_po_approval",
+  /** Settles a click exactly once, so a second or opposite click cannot re-send. */
+  function onceOnly(
+    run: (approved: boolean, ctx: InteractionContext<boolean>) => Promise<void>,
+  ): (approved: boolean, ctx: InteractionContext<boolean>) => Promise<void> {
+    let settled = false;
+    let chain = Promise.resolve();
+    return (approved, ctx) => {
+      const step = async () => {
+        if (settled) return;
+        try {
+          await run(approved, ctx);
+          settled = true;
+        } catch (cause) {
+          // No model is in the loop here, so people must see this.
+          const failure = cause instanceof BackendError ? cause : describeFailure(cause, "that action");
+          await ctx.thread.post(failure.message);
+          // Left unsettled only when retrying is safe.
+          settled = !failure.retryable;
+        }
+      };
+      chain = chain.then(step, step);
+      return chain;
+    };
+  }
+
+  const proposeRfq = defineChannelTool({
+    name: "propose_rfq",
     description:
-      "Post an approval card for one quote. This is the ONLY way a purchase order is issued: a human clicks approve, and the click issues it. Call this and then STOP — do not say a PO exists, do not call other write tools, and do not describe the order as placed. The click posts the record itself.",
-    parameters: z.object({
-      quoteId: z
-        .string()
-        .describe("The quoteId to order against, from compare_quotes."),
-    }),
-    async handler({ quoteId }, { thread, user, actor }) {
-      return attempt(async () => {
-        const requisitionId = await boundRequisitionId(thread);
-        if (!requisitionId) return "This thread has no open request.";
-
-        const detail = await api.getRequisition(requisitionId);
-        if (!detail) return "That request no longer exists.";
-        if (detail.purchaseOrder) {
-          return `${detail.requisition.code} already has purchase order ${detail.purchaseOrder.number}. Say so; do not raise another.`;
+      "Ask the requester to approve emailing RFQs for a draft request. Shows the lines and the exact suppliers. Emails go out ONLY if they click send. Call this and then STOP: say one short sentence that it is waiting on them, call no further tools, and do not claim anything was sent. The card reports the outcome itself.",
+    parameters: z.object({}),
+    async handler(_args, { thread }) {
+      return attempt("preparing the RFQ", async () => {
+        const id = await boundId(thread);
+        if (!id) return "This thread has no request yet.";
+        const detail = await backend.getRequisition(id);
+        if (!detail) return "I cannot find that request.";
+        if (detail.status !== "intake") {
+          return `This request has already been sent out (${detail.waitingOn}). Say so; do not send it again.`;
         }
-        const quote = detail.quotes.find(
-          (candidate) => candidate.id === quoteId,
-        );
-        if (!quote) {
-          return `No quote ${quoteId} on this request. Call compare_quotes and use a quoteId from it.`;
-        }
-        const comparison = await api.compareQuotes({ requisitionId });
-        const approvedBy = user?.id ?? actor.id;
 
-        // The SDK keeps inline handlers alive after a message is replaced, so
-        // queue clicks and settle only once. A second click — or the opposite
-        // one — must not issue a second order.
-        let settled = false;
-        let chain = Promise.resolve();
-        const decide = (
-          approved: boolean,
-          ctx: InteractionContext<boolean>,
-        ) => {
-          const run = async () => {
-            if (settled) return;
-            if (!approved) {
-              await ctx.thread.update(
-                ctx.message.ref,
-                `Held by ${ctx.user?.name ?? "the approver"}. No purchase order was issued for ${detail.requisition.code}.`,
-              );
-              settled = true;
-              return;
-            }
-            try {
-              const order = await api.issuePurchaseOrder({
-                requisitionId,
-                quoteId,
-                approvedBy,
-              });
-              // Replace the approval card first so it cannot be clicked again,
-              // then post the record as its own message.
-              await ctx.thread.update(
-                ctx.message.ref,
-                `Approved by ${ctx.user?.name ?? "the approver"} — ${order.number} issued to ${order.supplierName}.`,
-              );
-              await ctx.thread.post(purchaseOrderCard(order));
-              settled = true;
-            } catch (error) {
-              // No model is in the loop here, so this has to be visible to people.
-              const message =
-                error instanceof ProcurementApiError
-                  ? error.message
-                  : "The purchase order could not be issued.";
-              await ctx.thread.post(
-                `Could not issue the purchase order for ${detail.requisition.code}: ${message}`,
-              );
-              // Deliberately left unsettled so the approver can retry the click.
-            }
-          };
-          chain = chain.then(run, run);
-          return chain;
-        };
+        // Same invitee computation apps/api's rfq-preview does, so the card
+        // shows who will actually be emailed.
+        const categories = [...new Set(detail.lines.map((line) => line.category).filter((c): c is string => Boolean(c)))];
+        const invitees = new Map<string, Awaited<ReturnType<typeof backend.findSuppliers>>["wouldInvite"][number]>();
+        for (const category of categories) {
+          for (const supplier of (await backend.findSuppliers(category)).wouldInvite) {
+            invitees.set(supplier.id, supplier);
+          }
+        }
+        const list = [...invitees.values()];
+        if (list.length === 0) return "No suppliers are set up for these categories, so I cannot send this out.";
 
         await thread.post(
-          approvalCard(quote, detail.requisition, comparison, decide),
+          rfqApprovalCard(
+            detail,
+            list,
+            onceOnly(async (approved, ctx) => {
+              if (!approved) {
+                await ctx.thread.update(
+                  ctx.message.ref,
+                  `Cancelled by ${ctx.user?.name ?? "the requester"}. Nothing was emailed; the request is still a draft.`,
+                );
+                return;
+              }
+              const result = await backend.dispatchRfq(id);
+              const failed = result.invitations.filter((i) => i.status === "send_failed").length;
+              await ctx.thread.update(
+                ctx.message.ref,
+                `Approved by ${ctx.user?.name ?? "the requester"} — RFQs sent to ${result.invitations.length - failed} of ${result.invitations.length} suppliers.`,
+              );
+              await ctx.thread.post(rfqResultCard(result));
+            }),
+          ),
         );
+        return `Approval card posted for ${list.length} supplier(s). Reply with ONE short sentence that it is waiting on their approval, then stop. Call no further tools. Nothing is emailed until someone clicks send, and the card reports the result itself.`;
+      });
+    },
+  });
 
-        // "Stop" on its own reads as "say nothing", which leaves the card sitting
-      // in the thread with no sentence around it. Ask for the one line.
-      return `Approval card posted for ${quote.supplierName} at ${quote.currency} ${quote.total.toFixed(2)}. Reply with ONE short sentence telling the requester it is waiting on their approval, then stop. Call no further tools. The purchase order is not issued until someone clicks approve, and that click posts the record itself — do not claim an order exists.`;
+  const proposeAward = defineChannelTool({
+    name: "propose_award",
+    description:
+      "Ask the requester to approve issuing a purchase order for one quote. On approval the PO is created and emailed to the supplier. Call this and then STOP: say one short sentence that it is waiting on them, call no further tools, and never say a PO exists — a purchase order exists only once the card shows its number.",
+    parameters: z.object({ quoteId: UUID.describe("The quoteId from compare_quotes") }),
+    async handler({ quoteId }, { thread }) {
+      return attempt("preparing the purchase order", async () => {
+        const id = await boundId(thread);
+        if (!id) return "This thread has no request yet.";
+        const detail = await backend.getRequisition(id);
+        if (!detail) return "I cannot find that request.";
+        if (detail.purchaseOrders.length > 0) {
+          return `This request already has purchase order ${detail.purchaseOrders[0]!.poNumber}. Say so; do not raise another.`;
+        }
+        const comparison = await backend.compare(id);
+        if (!comparison) return "I cannot find that request.";
+        const row = comparison.rows.find((candidate) => candidate.quoteId === quoteId);
+        if (!row) return "That quote is not on this request. Call compare_quotes and use a quoteId from it.";
+        if (!row.complete) {
+          return `${row.supplierName}'s quote does not price every line, so it cannot be ordered as-is. Tell the requester and offer a complete quote instead.`;
+        }
+
+        await thread.post(
+          awardApprovalCard(
+            comparison,
+            quoteId,
+            onceOnly(async (approved, ctx) => {
+              if (!approved) {
+                await ctx.thread.update(
+                  ctx.message.ref,
+                  `Cancelled by ${ctx.user?.name ?? "the requester"}. No purchase order was created.`,
+                );
+                return;
+              }
+              const award = await backend.awardQuote(id, quoteId);
+              await ctx.thread.update(
+                ctx.message.ref,
+                `Approved by ${ctx.user?.name ?? "the requester"} — ${award.purchaseOrder.poNumber} issued to ${award.purchaseOrder.supplierName}.`,
+              );
+              await ctx.thread.post(
+                purchaseOrderCard(award.purchaseOrder, award.emailed, award.emailError),
+              );
+            }),
+          ),
+        );
+        return `Approval card posted for ${row.supplierName} at ${money(row.totalCents)}. Reply with ONE short sentence that it is waiting on their approval, then stop. Call no further tools. No purchase order exists until someone clicks approve, and the card posts the record itself.`;
       });
     },
   });
@@ -508,16 +417,15 @@ export function createProcurementTools(api: ProcurementApi = procurementApi()) {
   /** In the order the flow runs. */
   return [
     browseCatalog,
-    addItems,
-    resolveLine,
+    findSuppliers,
+    createRequisition,
     getRequest,
     findRequests,
-    sendForQuotes,
-    resendInvitations,
-    compareQuotes,
-    requestPoApproval,
+    compareQuotesTool,
+    proposeRfq,
+    proposeAward,
   ];
 }
 
-/** Registered in channel.tsx, against the configured backend. */
+/** Registered in channel.tsx, against Postgres and apps/api. */
 export const procurementTools = createProcurementTools();

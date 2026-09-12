@@ -1,6 +1,7 @@
 import { AbstractAgent } from "@ag-ui/client";
 import type { BaseEvent, RunAgentInput } from "@ag-ui/core";
-import { makeAgent, PROCUREMENT_PROMPT } from "agent-core";
+import { makeAgent } from "agent-core";
+import { SLACK_PROCUREMENT_PROMPT } from "./procurement/prompt";
 import { Observable, type Subscription } from "rxjs";
 
 type ChannelAgentFactory = (threadId: string) => AbstractAgent;
@@ -87,7 +88,7 @@ export class ChannelRunAgent extends AbstractAgent {
  */
 export function makeChannelAgent(threadId: string) {
   return new ChannelRunAgent(
-    (id) => makeAgent(id, { prompt: PROCUREMENT_PROMPT, workplace: false }),
+    (id) => makeAgent(id, { prompt: SLACK_PROCUREMENT_PROMPT, workplace: false }),
     threadId,
   );
 }

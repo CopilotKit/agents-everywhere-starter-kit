@@ -1,15 +1,13 @@
 /**
- * Native cards for the purchasing flow.
+ * Native Slack cards for the purchasing flow.
  *
- * These are plain render functions called by the tools, NOT
- * `defineChannelComponent` components the agent calls. That is deliberate:
- * every number here — unit prices, totals, lead times, PO references — comes
- * straight from the backend response the tool already holds. Routing it back
- * through the model as component arguments would give it an opportunity to
- * retype a price, and a purchasing agent that fabricates a total is worse than
- * one that renders nothing.
+ * Plain render functions called by the tools, not `defineChannelComponent`
+ * components the agent calls. Every figure here — unit prices, totals, lead
+ * times, PO numbers — comes from the backend response the tool already holds,
+ * so the model never gets a chance to retype a price on its way to the screen.
+ * Same reasoning as erp-frontend's approval cards re-fetching their own data.
  *
- * The agent still decides *when* a card appears, by choosing to call the tool.
+ * Money from procure-db is integer cents. It is formatted here, once.
  */
 import {
   Actions,
@@ -26,163 +24,112 @@ import {
   Section,
   Table,
 } from "@copilotkit/channels";
+import type { Invitee } from "procure-db";
 import type {
-  Comparison,
   PurchaseOrder,
-  Quote,
-  Requisition,
+  QuoteComparison,
   RequisitionDetail,
-  Rfq,
-} from "agent-core";
+  RequisitionStatus,
+  RfqDispatchResult,
+} from "procure-db/types";
+import type { InteractionContext } from "@copilotkit/channels";
 
 const ACCENT_REQUEST = "#4A6FA5";
 const ACCENT_QUOTES = "#1F8A70";
-const ACCENT_APPROVAL = "#C4145F";
+const ACCENT_GATE = "#C4145F";
 const ACCENT_ORDERED = "#5B3FA8";
 
-function money(amount: number, currency: string): string {
-  return `${currency} ${amount.toFixed(2)}`;
+/** Integer cents → "$1,295.00". */
+export function money(cents: number | null | undefined): string {
+  if (cents === null || cents === undefined) return "—";
+  return `$${(cents / 100).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
-const STATUS_WORDS: Record<Requisition["status"], string> = {
-  draft: "still being put together",
-  rfq_sent: "out with suppliers, waiting on quotes",
-  quotes_in: "quotes received, ready to compare",
+function day(value: string | null): string {
+  return value ?? "no date set";
+}
+
+/** NUMERIC comes back as a string; show it without trailing zeros. */
+function qty(value: string, unit: string | null): string {
+  const n = Number(value);
+  const shown = Number.isFinite(n) ? String(n) : value;
+  return unit ? `${shown} ${unit}` : shown;
+}
+
+const STATUS_WORDS: Record<RequisitionStatus, string> = {
+  intake: "still being put together",
+  rfq_dispatched: "out with suppliers, waiting on quotes",
+  comparing: "quotes in, ready to compare",
+  pending_approval: "waiting on approval",
   approved: "approved, purchase order pending",
-  ordered: "ordered",
-  cancelled: "cancelled",
+  rejected: "rejected",
+  po_issued: "ordered",
+  closed: "closed",
 };
 
-/** The request itself: what is on it, and what it is waiting on. */
+/** The request: what is on it, and what it is waiting on. */
 export function requisitionCard(detail: RequisitionDetail) {
-  const { requisition, rfq, quotes, purchaseOrder } = detail;
-  const unsettled = requisition.lines.filter((line) => line.status !== "confirmed");
-
+  const ordered = detail.purchaseOrders.length > 0;
   return (
-    <Message accent={purchaseOrder ? ACCENT_ORDERED : ACCENT_REQUEST}>
-      <Header>{`${requisition.code} — ${requisition.title}`}</Header>
-      <Context>{STATUS_WORDS[requisition.status]}</Context>
+    <Message accent={ordered ? ACCENT_ORDERED : ACCENT_REQUEST}>
+      <Header>{`Request — ${STATUS_WORDS[detail.status] ?? detail.status}`}</Header>
+      {/* waitingOn is computed by procure-db; prefer it over re-deriving. */}
+      <Context>{detail.waitingOn}</Context>
 
-      {requisition.lines.length === 0 ? (
+      {detail.lines.length === 0 ? (
         <Section>Nothing on this request yet.</Section>
       ) : (
-        <Table
-          columns={[
-            { header: "Item" },
-            { header: "Qty", align: "right" },
-            { header: "Unit" },
-          ]}
-        >
-          {requisition.lines.map((line) => (
+        <Table columns={[{ header: "Item" }, { header: "Qty", align: "right" }, { header: "SKU" }]}>
+          {detail.lines.map((line) => (
             <Row>
-              <Cell>
-                {line.status === "confirmed" ? line.itemName : `${line.itemName} (unconfirmed)`}
-              </Cell>
-              <Cell>{String(line.quantity)}</Cell>
-              <Cell>{line.unit}</Cell>
+              <Cell>{line.itemName ?? line.rawDescription}</Cell>
+              <Cell>{qty(line.quantityRequested, line.unitOfMeasure)}</Cell>
+              <Cell>{line.sku ?? "—"}</Cell>
             </Row>
           ))}
         </Table>
       )}
 
-      {unsettled.length > 0 && (
-        <Context>
-          {`${unsettled.length} line${unsettled.length === 1 ? "" : "s"} still need confirming before this can go out for quotes.`}
-        </Context>
-      )}
+      <Fields>
+        <Field label="Needed by">{day(detail.neededBy)}</Field>
+        <Field label="Quotes in">{String(detail.quotes.length)}</Field>
+        <Field label="Invited">{String(detail.rfq?.invitations.length ?? 0)}</Field>
+      </Fields>
 
-      {rfq && (
+      {detail.purchaseOrders.length > 0 && (
         <>
           <Divider />
-          <Fields>
-            <Field label="Invited">{String(rfq.invitations.length)}</Field>
-            <Field label="Quoted">{String(quotes.length)}</Field>
-            <Field label="Failed">
-              {String(rfq.invitations.filter((invitation) => invitation.status === "failed").length)}
-            </Field>
-          </Fields>
+          {detail.purchaseOrders.map((po) => (
+            <Section>
+              <Markdown>{`**${po.poNumber}** — ${po.supplierName}, ${money(po.totalCents)}`}</Markdown>
+            </Section>
+          ))}
         </>
-      )}
-
-      {purchaseOrder && (
-        <Section>
-          <Markdown>
-            {`Ordered from **${purchaseOrder.supplierName}** — ${purchaseOrder.number}, ${money(purchaseOrder.total, purchaseOrder.currency)}`}
-          </Markdown>
-        </Section>
       )}
     </Message>
   );
 }
 
-/** Who was invited, and who bounced. Separated so a resend can be offered. */
-export function rfqCard(rfq: Rfq, requisition: Requisition) {
-  const failed = rfq.invitations.filter((invitation) => invitation.status === "failed");
-
+/** Who was emailed, and who bounced. */
+export function rfqResultCard(result: RfqDispatchResult) {
+  const failed = result.invitations.filter((invitation) => invitation.status === "send_failed");
   return (
-    <Message accent={failed.length > 0 ? ACCENT_APPROVAL : ACCENT_QUOTES}>
-      <Header>{`${requisition.code} sent for quotes`}</Header>
+    <Message accent={failed.length > 0 ? ACCENT_GATE : ACCENT_QUOTES}>
+      <Header>RFQs sent</Header>
       <Table columns={[{ header: "Supplier" }, { header: "Invitation" }]}>
-        {rfq.invitations.map((invitation) => (
+        {result.invitations.map((invitation) => (
           <Row>
             <Cell>{invitation.supplierName}</Cell>
-            <Cell>{invitation.status === "failed" ? "failed to deliver" : invitation.status}</Cell>
+            <Cell>{invitation.status === "send_failed" ? "failed to send" : invitation.status}</Cell>
           </Row>
         ))}
       </Table>
       {failed.map((invitation) => (
-        <Context>{`${invitation.supplierName}: ${invitation.error ?? "invitation failed"}`}</Context>
+        <Context>{`${invitation.supplierName}: ${invitation.error ?? "the email could not be sent"}`}</Context>
       ))}
-    </Message>
-  );
-}
-
-/** The comparison. The recommendation is the backend's, not the model's. */
-export function comparisonCard(comparison: Comparison, requisition: Requisition) {
-  const { quotes, recommendedQuoteId, rationale, unquotedItemNames } = comparison;
-
-  return (
-    <Message accent={ACCENT_QUOTES}>
-      <Header>{`Quotes for ${requisition.code}`}</Header>
-
-      {quotes.length === 0 ? (
-        <Section>No quotes have come back yet.</Section>
-      ) : (
-        <Table
-          columns={[
-            { header: "Supplier" },
-            { header: "Total", align: "right" },
-            { header: "Lead time", align: "right" },
-            { header: "Covers" },
-          ]}
-        >
-          {quotes.map((quote) => {
-            const missing = quote.lines.filter((line) => !line.available).length;
-            return (
-              <Row>
-                <Cell>
-                  {quote.id === recommendedQuoteId
-                    ? `${quote.supplierName} ← recommended`
-                    : quote.supplierName}
-                </Cell>
-                <Cell>{money(quote.total, quote.currency)}</Cell>
-                <Cell>{`${quote.leadTimeDays}d`}</Cell>
-                <Cell>{missing === 0 ? "all lines" : `${missing} line(s) missing`}</Cell>
-              </Row>
-            );
-          })}
-        </Table>
-      )}
-
-      {quotes.length > 0 && (
-        <Section>
-          <Markdown>{rationale}</Markdown>
-        </Section>
-      )}
-
-      {unquotedItemNames.length > 0 && (
+      {failed.length > 0 && (
         <Context>
-          {`No supplier quoted: ${unquotedItemNames.join(", ")}. Ordering any of these quotes leaves those items unfulfilled.`}
+          There is no retry for a failed invitation yet — someone will need to contact that supplier directly.
         </Context>
       )}
     </Message>
@@ -190,88 +137,178 @@ export function comparisonCard(comparison: Comparison, requisition: Requisition)
 }
 
 /**
- * The approval gate. The click is what issues the PO — see `tools.tsx`.
- * `onIssue` is passed in so this file stays free of backend calls.
+ * The ranked comparison. Ordering is procure-db's `rankQuotes`: complete
+ * quotes first, then on-time against needed-by, then total, then lead time.
  */
-export function approvalCard(
-  quote: Quote,
-  requisition: Requisition,
-  comparison: Comparison,
-  onIssue: (approved: boolean, ctx: import("@copilotkit/channels").InteractionContext<boolean>) => Promise<void>,
-) {
-  const missing = quote.lines.filter((line) => !line.available);
-
+export function comparisonCard(comparison: QuoteComparison) {
   return (
-    <Message accent={ACCENT_APPROVAL}>
-      <Header>{`Approve purchase order for ${requisition.code}?`}</Header>
+    <Message accent={ACCENT_QUOTES}>
+      <Header>Quotes</Header>
+      <Context>{`Needed by ${day(comparison.neededBy)}`}</Context>
+
+      {comparison.rows.length === 0 ? (
+        <Section>No quotes have come back yet.</Section>
+      ) : (
+        <Table
+          columns={[
+            { header: "Supplier" },
+            { header: "Total", align: "right" },
+            { header: "Delivery" },
+            { header: "Covers all" },
+          ]}
+        >
+          {comparison.rows.map((row) => (
+            <Row>
+              <Cell>
+                {row.quoteId === comparison.recommendedQuoteId
+                  ? `${row.supplierName} ← recommended`
+                  : row.supplierName}
+              </Cell>
+              <Cell>{money(row.totalCents)}</Cell>
+              <Cell>
+                {`${day(row.estimatedDelivery)}${row.meetsDeadline === false ? " (late)" : ""}`}
+              </Cell>
+              <Cell>{row.complete ? "yes" : "no"}</Cell>
+            </Row>
+          ))}
+        </Table>
+      )}
+
+      {comparison.rows.length > 0 && (
+        <Section>
+          <Markdown>{comparison.reason}</Markdown>
+        </Section>
+      )}
+    </Message>
+  );
+}
+
+/**
+ * The RFQ gate. Clicking emails every listed supplier a quote link.
+ *
+ * This mirrors erp-frontend's `propose_rfq`: the agent may prepare the send,
+ * but only a person causes the emails to leave.
+ */
+export function rfqApprovalCard(
+  detail: RequisitionDetail,
+  invitees: Invitee[],
+  onDecide: (approved: boolean, ctx: InteractionContext<boolean>) => Promise<void>,
+) {
+  const alreadySent = detail.status !== "intake";
+  return (
+    <Message accent={ACCENT_GATE}>
+      <Header>Approve sending this out for quotes?</Header>
+      <Table columns={[{ header: "Item" }, { header: "Qty", align: "right" }]}>
+        {detail.lines.map((line) => (
+          <Row>
+            <Cell>{line.itemName ?? line.rawDescription}</Cell>
+            <Cell>{qty(line.quantityRequested, line.unitOfMeasure)}</Cell>
+          </Row>
+        ))}
+      </Table>
       <Section>
-        <Markdown>
-          {`**${quote.supplierName}** — ${money(quote.total, quote.currency)}, delivering in ${quote.leadTimeDays} days.`}
-        </Markdown>
+        <Markdown>{`Needed by **${day(detail.neededBy)}**. A quote link will be emailed to:`}</Markdown>
       </Section>
-      <Fields>
-        <Field label="Request">{requisition.code}</Field>
-        <Field label="Lines">{String(quote.lines.length)}</Field>
-        <Field label="Currency">{quote.currency}</Field>
-      </Fields>
-
-      {quote.id !== comparison.recommendedQuoteId && comparison.recommendedQuoteId !== null && (
+      {invitees.map((supplier) => (
         <Context>
-          This is not the recommended quote. Recommended:{" "}
-          {comparison.quotes.find((candidate) => candidate.id === comparison.recommendedQuoteId)
-            ?.supplierName ?? "unknown"}
-          .
+          {`${supplier.name}${supplier.preferred ? " (preferred)" : ""} — ${supplier.email ?? "no email on file"}`}
         </Context>
-      )}
-
-      {missing.length > 0 && (
-        <Context>
-          {`This quote does not cover: ${missing.map((line) => line.itemName).join(", ")}.`}
-        </Context>
-      )}
-
-      <Context>Approving issues a purchase order. This spends money and is not reversible here.</Context>
-
+      ))}
+      {alreadySent && <Context>This request has already been sent out once.</Context>}
+      <Context>Approving sends real email to these suppliers.</Context>
       <Actions>
         <Button
           value={true}
           style="primary"
           onClick={async (ctx) => {
-            await onIssue(true, ctx);
+            await onDecide(true, ctx);
           }}
         >
-          Approve and issue PO
+          {`Send to ${invitees.length} supplier${invitees.length === 1 ? "" : "s"}`}
         </Button>
         <Button
           value={false}
           style="danger"
           onClick={async (ctx) => {
-            await onIssue(false, ctx);
+            await onDecide(false, ctx);
           }}
         >
-          Hold
+          Cancel
         </Button>
       </Actions>
     </Message>
   );
 }
 
-/** The result: a real record, which is the whole point of the flow. */
-export function purchaseOrderCard(order: PurchaseOrder) {
+/** The award gate. Clicking creates the purchase order and emails the supplier. */
+export function awardApprovalCard(
+  comparison: QuoteComparison,
+  quoteId: string,
+  onDecide: (approved: boolean, ctx: InteractionContext<boolean>) => Promise<void>,
+) {
+  const row = comparison.rows.find((candidate) => candidate.quoteId === quoteId);
+  const recommended = comparison.recommendedQuoteId === quoteId;
+  return (
+    <Message accent={ACCENT_GATE}>
+      <Header>Approve this purchase order?</Header>
+      {row ? (
+        <>
+          <Section>
+            <Markdown>
+              {`**${row.supplierName}** — ${money(row.totalCents)}, delivery ${day(row.estimatedDelivery)} (needed by ${day(comparison.neededBy)}).`}
+            </Markdown>
+          </Section>
+          {!recommended && <Context>This is not the recommended quote.</Context>}
+          {!row.complete && <Context>This quote does not price every line on the request.</Context>}
+        </>
+      ) : (
+        <Section>That quote is not on this request.</Section>
+      )}
+      <Context>Approving issues a purchase order and emails it to the supplier.</Context>
+      <Actions>
+        <Button
+          value={true}
+          style="primary"
+          onClick={async (ctx) => {
+            await onDecide(true, ctx);
+          }}
+        >
+          Issue PO and email supplier
+        </Button>
+        <Button
+          value={false}
+          style="danger"
+          onClick={async (ctx) => {
+            await onDecide(false, ctx);
+          }}
+        >
+          Cancel
+        </Button>
+      </Actions>
+    </Message>
+  );
+}
+
+/** The result: a real record. */
+export function purchaseOrderCard(po: PurchaseOrder, emailed: boolean, emailError: string | null) {
   return (
     <Message accent={ACCENT_ORDERED}>
-      <Header>{`${order.number} issued`}</Header>
+      <Header>{`${po.poNumber} issued`}</Header>
       <Section>
-        <Markdown>
-          {`**${order.supplierName}** — ${money(order.total, order.currency)}`}
-        </Markdown>
+        <Markdown>{`**${po.supplierName}** — ${money(po.totalCents)}`}</Markdown>
       </Section>
-      <Context>{`Issued ${new Date(order.issuedAt).toUTCString()}`}</Context>
-      {order.url && (
-        <Actions>
-          <Button url={order.url}>Open purchase order</Button>
-        </Actions>
-      )}
+      <Table columns={[{ header: "Item" }, { header: "Qty", align: "right" }, { header: "Total", align: "right" }]}>
+        {po.lines.map((line) => (
+          <Row>
+            <Cell>{line.itemName}</Cell>
+            <Cell>{qty(line.orderedQty, null)}</Cell>
+            <Cell>{money(line.totalPriceCents)}</Cell>
+          </Row>
+        ))}
+      </Table>
+      <Context>
+        {emailed ? "Emailed to the supplier." : `The PO was created but the email failed: ${emailError ?? "unknown error"}.`}
+      </Context>
     </Message>
   );
 }
