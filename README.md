@@ -6,9 +6,60 @@
 
 **Build an agent that belongs where people already work, talk, and live.**
 
-[Overview](#overview) · [Get started](#get-started) · [Templates](#templates) · [Coding agent](#coding-agent) · [Resources](#resources)
+[Procurebot](#procurebot) · [Overview](#overview) · [Get started](#get-started) · [Templates](#templates) · [Coding agent](#coding-agent) · [Resources](#resources)
 
 </div>
+
+## Procurebot
+
+A procurement agent for the ops person at a small company. Type "Need 4000 ballpoint pens by Friday" in the ERP's chat panel. Procurebot:
+
+1. Matches the request to the catalog, asking when more than one item fits.
+2. Drafts a requisition.
+3. After you approve, emails a request for quotation (RFQ) to the right suppliers, each with a personal magic link.
+4. Collects each supplier's quote through the portal.
+5. Ranks the quotes (on time first, then price, then lead time) and recommends one.
+6. After you approve, issues a purchase order and emails it to the supplier.
+
+The ERP pages (requisitions, suppliers, items, POs) update as quotes arrive.
+
+| Piece | Path | Port |
+|---|---|---|
+| ERP console + agent chat panel (Vite, React, CopilotKit React) | `apps/erp-frontend` | 5173 |
+| Agent (CopilotKit runtime, OpenRouter or OpenAI via `agent-core`) | `apps/procure-agent` | 3002 |
+| Service layer + supplier portal (Express) | `apps/api` | 3001 |
+| Schema, migrations, seed, shared queries, quote ranking | `packages/procure-db` | — |
+| Postgres, Redis, Mailpit (local email inbox) | `docker-compose.yml` | 5434, 6381, 1026/8026 |
+
+### Quickstart
+
+Needs Node 22+ and Docker.
+
+```bash
+npm install
+cp .env.example .env        # then set MODEL_PROVIDER=openrouter, OPENROUTER_API_KEY, MODEL,
+                            # and a random JWT_SIGNING_SECRET (openssl rand -hex 32)
+npm run db:up               # Postgres, Redis, Mailpit
+npm run db:migrate
+npm run db:seed             # sample catalog and suppliers (example.com addresses)
+
+# three terminals
+npm run dev:api
+npm run dev:agent
+npm run dev:erp             # open http://localhost:5173
+```
+
+Supplier emails land in Mailpit at http://localhost:8026. Open a magic link there to submit a quote as that supplier. `npm run typecheck` checks every workspace. To start from an empty database, run `docker compose down -v`, then `db:up`, `db:migrate` and `db:seed`.
+
+### What is real and what is sample data
+
+- **Sample data:** the catalog items and suppliers are seeded.
+- **Local email only:** RFQ and PO emails are real SMTP sends, but go to the local Mailpit capture unless you point `SMTP_*` at a real server.
+- **Approval gate:** sending RFQs and issuing POs happen only when you click an approval card; the agent has no tool that sends email or creates POs.
+- **No login:** the web requester is a fixed demo user (`web:demo`).
+- **Queued jobs:** submitting a quote queues a `quote_submitted` job in Redis for the planned Slack surface. Nothing consumes it yet.
+
+---
 
 ## Overview
 

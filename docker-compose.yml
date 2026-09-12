@@ -1,0 +1,32 @@
+# Local backing services for Procurebot. Ports are offset from the defaults so
+# they can run alongside other local Postgres/Redis/Mailpit instances.
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: procurebot
+      POSTGRES_PASSWORD: procurebot
+      POSTGRES_DB: procurebot
+    ports:
+      - "5434:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U procurebot"]
+      interval: 2s
+      timeout: 3s
+      retries: 20
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6381:6379"
+
+  mailpit:
+    image: axllent/mailpit:latest
+    ports:
+      - "1026:1025"
+      - "8026:8025"
+
+volumes:
+  postgres_data:

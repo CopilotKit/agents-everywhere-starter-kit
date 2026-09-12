@@ -11,7 +11,10 @@
   "workspaces": [
     "packages/*",
     "apps/channel",
-    "apps/web"
+    "apps/web",
+    "apps/api",
+    "apps/procure-agent",
+    "apps/erp-frontend"
   ],
   "scripts": {
     "dev": "npm run dev:web",
@@ -21,7 +24,14 @@
     "typecheck": "npm run typecheck --workspaces --if-present",
     "dev:web": "npm run dev --workspace web",
     "test": "npm run test --workspaces --if-present",
-    "verify": "npm run typecheck && npm test"
+    "verify": "npm run typecheck && npm test",
+    "db:up": "docker compose up -d --wait",
+    "db:migrate": "npm run migrate --workspace procure-db",
+    "db:seed": "npm run seed --workspace procure-db",
+    "test:db": "npm run test:db --workspaces --if-present",
+    "dev:api": "npm run dev --workspace procure-api",
+    "dev:agent": "npm run dev --workspace procure-agent",
+    "dev:erp": "npm run dev --workspace erp-frontend"
   },
   "overrides": {
     "@ag-ui/client": "0.0.59"
