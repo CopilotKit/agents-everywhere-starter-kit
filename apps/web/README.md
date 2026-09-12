@@ -28,6 +28,35 @@ MODEL=gpt-5.6-sol
 AMBIGUOUS_API_KEY=your-workspace-key
 ```
 
+## Acordate: Telegram channel
+
+The hackathon project uses Telegram as its conversation surface. Persona 1 owns
+`POST /api/telegram/webhook`: it validates Telegram's optional secret header,
+maps `message.from.id` to the stable application `userId`, calls the agent
+contract, and replies to `message.chat.id`. Non-text updates are acknowledged
+without running the agent.
+
+Add these root `.env` values before connecting the bot:
+
+```dotenv
+TELEGRAM_BOT_TOKEN=token-from-botfather
+TELEGRAM_WEBHOOK_SECRET=a-long-random-value
+```
+
+For a safe local webhook check, set `TELEGRAM_DRY_RUN=true`; the endpoint will
+process the update and log the outgoing reply without contacting Telegram.
+
+Deploy first, then configure Telegram with the public HTTPS URL:
+
+```text
+https://api.telegram.org/bot<BOT_TOKEN>/setWebhook?url=https://<your-domain>/api/telegram/webhook&secret_token=<WEBHOOK_SECRET>
+```
+
+The initial adapter in `src/lib/telegram/agent.ts` is deliberately a mock.
+Persona 2 replaces it with the AI/tool implementation while preserving
+`({ userId, message }) => Promise<{ text }>`. `sendTelegramMessage` in
+`src/lib/telegram/client.ts` is also the integration point for the scheduler.
+
 Choose an OpenAI model your account can use. Use a demo workspace you control for the first write. This web template needs no managed Channel or Intelligence account.
 
 For CopilotKit onboarding, use the [official prompt](../../README.md#onboarding-prompt).
