@@ -56,7 +56,7 @@ JS
 
 ## CopilotKit
 
-**Access and authentication.** The React web and React Native templates need only your model-provider account for CopilotKit's existing integration. To connect either app to Intelligence, use the [official onboarding prompt](README.md#copilotkit-onboarding). The Slack template additionally uses [CopilotKit Intelligence](https://intelligence.copilotkit.ai/) to manage the Channel and Slack installation. Run `npm run channel:setup -- --no-clipboard`, then give the emitted prompt to your coding agent and select Slack with the existing `apps/channel` app. This installs the maintained setup skill; the agent follows it to configure the Channel. Use [setup](dev-docs/setup.md) or the [illustrated walkthrough](dev-docs/channels-sdk-walkthrough/README.md) as manual references.
+**Access and authentication.** The React web and React Native templates need only your model-provider account for CopilotKit's existing integration. To connect the web app to Intelligence, use the [official onboarding prompt](README.md#copilotkit-onboarding). For React Native, follow the [Expo setup instructions](apps/mobile/README.md#get-started). The Slack template additionally uses [CopilotKit Intelligence](https://intelligence.copilotkit.ai/) to manage the Channel and Slack installation. Run `npm run channel:setup -- --no-clipboard`, then give the emitted prompt to your coding agent and select Slack with the existing `apps/channel` app. This installs the maintained setup skill; the agent follows it to configure the Channel. Use [setup](dev-docs/setup.md) or the [illustrated walkthrough](dev-docs/channels-sdk-walkthrough/README.md) as manual references.
 
 **Configure Slack** in root `.env`, alongside the model settings:
 
